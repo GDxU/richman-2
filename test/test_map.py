@@ -3,12 +3,12 @@
 import unittest
 from unittest.mock import MagicMock
 
-from dafuweng.map import (
+from richman.map import (
     BaseMap,
     PlaceAlreadyExistException,
     PlayerAlreadyExistException
 )
-from dafuweng.place import BasePlace
+from richman.place import BasePlace
 
 
 class TestBaseMap(unittest.TestCase):

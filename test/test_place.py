@@ -4,13 +4,13 @@ import unittest
 from unittest.mock import MagicMock
 
 
-from dafuweng.place import (
+from richman.place import (
     BasePlace,
     PledgeWithNoOwnerException,
     PledgeTwiceException,
     BuyPlaceWithoutEnoughMoneyException
 )
-from dafuweng.player import BasePlayer
+from richman.player import BasePlayer
 
 
 class TestBasePlace(unittest.TestCase):

@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 
 
-from dafuweng.player import (
+from richman.player import (
     BasePlayer,
     PlayerMoneyBelowZeroException
 )

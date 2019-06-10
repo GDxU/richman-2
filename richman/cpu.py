@@ -5,7 +5,7 @@ import random
 import datetime
 
 
-class DafuwengCpu:
+class RichmanCpu:
 
     __is_finished = False
 
@@ -83,7 +83,7 @@ class DafuwengCpu:
 
 
 def main():
-    cpu = DafuwengCpu()
+    cpu = RichmanCpu()
     cpu.run()
 
 if __name__ == "__main__":
