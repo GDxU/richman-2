@@ -9,9 +9,10 @@ from richman.place import (
     PlaceEstate,
     PlaceEstateBlock,
     PledgeWithNoOwnerException,
-    PledgeTwiceException
+    PledgeTwiceException,
+    RebuyNotPledgedException
 )
-from richman.player import BasePlayer
+from richman.player import (BasePlayer, PlayerMoneyBelowZeroException) 
 
 
 class TestBasePlace(unittest.TestCase):
@@ -27,6 +28,19 @@ class TestBasePlace(unittest.TestCase):
         self.assertEqual(self.hangzhou.buy_value, 2200)
         self.assertEqual(self.hangzhou.pledge_value, 1100)
 
+    def test_buy_and_rebuy_should_raise_execption(self):
+        player = BasePlayer('Dengzhe', 100)
+        with self.assertRaises(PlayerMoneyBelowZeroException):
+            self.hangzhou.buy(player)
+        player.money = 10000
+        self.hangzhou.buy(player)
+        with self.assertRaises(RebuyNotPledgedException):
+            self.hangzhou.rebuy()
+        self.hangzhou.pledge()
+        player.money = 10
+        with self.assertRaises(PlayerMoneyBelowZeroException):
+            self.hangzhou.rebuy()
+
     def test_base_place_pledge_should_execute_correctlly(self):
         with self.assertRaises(PledgeWithNoOwnerException):
             self.hangzhou.pledge()
@@ -41,6 +55,15 @@ class TestBasePlace(unittest.TestCase):
         place2 = BasePlace('Xiamen', 3300, 1100)
         self.assertEqual(self.hangzhou, place1)
         self.assertNotEqual(self.hangzhou, place2)
+
+
+class TestPlaceEstate(unittest.TestCase):
+    
+    def setUp(self):
+        pass
+    
+    def tearDown(self):
+        pass
 
 
 class TestPlaceEstateBlock(unittest.TestCase):
@@ -65,13 +88,4 @@ class TestPlaceEstateBlock(unittest.TestCase):
         place1.upgrade()
         place2.buy(player)
         self.assertEqual(block.block_fee_calc(player), 300)
-
-
-class TestPlaceEstate(unittest.TestCase):
-    
-    def setUp(self):
-        pass
-    
-    def tearDown(self):
-        pass
 
