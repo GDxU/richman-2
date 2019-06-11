@@ -110,7 +110,7 @@ class BasePlace:
 class PlaceEstate(BasePlace):
 
     __block = None
-    __kMaxLevel = 3
+    __kMaxLevel = 4
     __current_level = 0
 
     def __init__(self, name: str, fees: list,
@@ -131,8 +131,12 @@ class PlaceEstate(BasePlace):
         self.__block = block
         block.add_to_block(self)  # 将该地添加到对应 block
         # init others
-        self.__kMaxLevel = 3
+        self.__kMaxLevel = 4
         self.__current_level = 0
+        # check
+        assert len(self.__fees) == self.__kMaxLevel
+        assert fees == sorted(fees), \
+            'fees of estate should go up with level up'
 
     @property
     def block(self):
@@ -149,9 +153,9 @@ class PlaceEstate(BasePlace):
 
     def upgrade(self):
         if self.__current_level < self.__kMaxLevel:
+            self.owner.add_money(-self.upgrade_value)
             self.__current_level += 1
             self.value = self.__fees[self.__current_level]
-            self.owner.add_money(-self.upgrade_value)
         else:
             raise UpgradeMaxException()
 
