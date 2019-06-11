@@ -6,9 +6,10 @@ from unittest.mock import MagicMock
 
 from richman.place import (
     BasePlace,
+    PlaceEstate,
+    PlaceEstateBlock,
     PledgeWithNoOwnerException,
-    PledgeTwiceException,
-    BuyPlaceWithoutEnoughMoneyException
+    PledgeTwiceException
 )
 from richman.player import BasePlayer
 
@@ -35,16 +36,35 @@ class TestBasePlace(unittest.TestCase):
         with self.assertRaises(PledgeTwiceException):
             self.hangzhou.pledge()
 
-    def test_buy_should_fail_for_not_enough_money(self):
-        with self.assertRaises(BuyPlaceWithoutEnoughMoneyException):
-            player = BasePlayer('Dengzhe', 1000)
-            self.hangzhou.buy(player)
-
     def test_two_place_eq_check(self):
         place1 = BasePlace('Hangzhou', 2200, 1100)
         place2 = BasePlace('Xiamen', 3300, 1100)
         self.assertEqual(self.hangzhou, place1)
         self.assertNotEqual(self.hangzhou, place2)
+
+
+class TestPlaceEstateBlock(unittest.TestCase):
+    
+    def setUp(self):
+        pass
+    
+    def tearDown(self):
+        pass
+    
+    def test_block_fee_calc_should_calculate_rightly(self):
+        block = PlaceEstateBlock('block1')
+        place1 = PlaceEstate('杭州', [100, 200, 300],
+                             2000, 1000, 300, block)
+        place2 = PlaceEstate('厦门', [100, 200, 300],
+                             3000, 2000, 300, block)
+        place3 = PlaceEstate('苏州', [100, 200, 300],
+                             3000, 2000, 300, block)
+
+        player = BasePlayer('邓哲', 20000)
+        place1.buy(player)
+        place1.upgrade()
+        place2.buy(player)
+        self.assertEqual(block.block_fee_calc(player), 300)
 
 
 class TestPlaceEstate(unittest.TestCase):

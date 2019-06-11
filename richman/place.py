@@ -10,10 +10,6 @@ class BuyPlaceWithOwnerException(Exception):
     def __init__(self, *args):
         super().__init__("该地已经卖出，无法购买！")
 
-class BuyPlaceWithoutEnoughMoneyException(Exception):
-    def __init__(self, *args):
-        super().__init__("玩家资金不够，无法购买！")
-
 class UpgradeMaxException(Exception):
     def __init__(self, *args):
         super().__init__("已经满级，无法升级！")
@@ -80,9 +76,8 @@ class BasePlace:
     def buy(self, owner: BasePlayer):
         if self.__owner:
             raise BuyPlaceWithOwnerException()
-        elif owner.money < self.buy_value:
-            raise BuyPlaceWithoutEnoughMoneyException()
         else:
+            owner.add_money(-self.buy_value)
             self.__owner = owner
 
     def pledge(self):
@@ -91,6 +86,7 @@ class BasePlace:
         elif self.__is_pledged:
             raise PledgeTwiceException()
         else:
+            self.owner.add_money(self.pledge_value)
             self.__is_pledged = True
 
     def rebuy(self):
@@ -99,9 +95,10 @@ class BasePlace:
         elif not self.__is_pledged:
             raise RebuyNotPledgedException()
         else:
+            self.owner.add_money(-self.buy_value)
             self.__is_pledged = False
 
-    def take_effect(self, player: BasePlayer):
+    def trigger(self, player: BasePlayer):
         '''take the effect of the place, triggered by the player
         '''
         raise NotImplementedError('override is needed.')
@@ -112,40 +109,49 @@ class BasePlace:
 
 class PlaceEstate(BasePlace):
 
+    __block = None
     __kMaxLevel = 3
     __current_level = 0
 
     def __init__(self, name: str, fees: list,
                  buy_value: int, pledge_value: int,
-                 block):
+                 upgrade_value: int, block):
         '''init
 
         :param fees: fees accordding to estate level
+        :param upgrade_value: money value to upgrade
         :param block: block that holds the place.
                       None if the place is a project.
         other params, refer to BasePlace
         '''
         super().__init__(name=name, buy_value=buy_value,
-                       pledge_value=pledge_value)
+                         pledge_value=pledge_value)
         self.__fees = fees
-        self.block = block
+        self.__upgrade_value = upgrade_value
+        self.__block = block
+        block.add_to_block(self)  # 将该地添加到对应 block
+        # init others
         self.__kMaxLevel = 3
         self.__current_level = 0
 
     @property
     def block(self):
         return self.__block
-    @block.setter
-    def block(self, value):
-        self.__block = value
     @property
     def fee(self):
         return self.__fees[self.__current_level]
+    @property
+    def block_fee(self):
+        return self.block.block_fee_calc(self.owner)
+    @property
+    def upgrade_value(self):
+        return self.__upgrade_value
 
     def upgrade(self):
         if self.__current_level < self.__kMaxLevel:
             self.__current_level += 1
             self.value = self.__fees[self.__current_level]
+            self.owner.add_money(-self.upgrade_value)
         else:
             raise UpgradeMaxException()
 
@@ -156,7 +162,7 @@ class PlaceEstate(BasePlace):
         else:
             raise DegradeMinException()
 
-    def take_effect(self, player: BasePlayer):
+    def trigger(self, player: BasePlayer):
         '''if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
@@ -173,22 +179,44 @@ class PlaceEstate(BasePlace):
             player.buy_place_action(self)
 
 
-class BlockEstate:
+class PlaceEstateBlock:
     '''a block that holds estates with same color
     '''
 
-    def __init__(self, name: str, estates: list):
+    __estates = []
+
+    def __init__(self, name: str):
         '''init
 
         :param name: block name
-        :param estates: list of estates belonging to block
         '''
-        self.__estates = estates
-        for estate in estates:
-            self._add_to_block(estate)
+        self.__name = name
 
-    def _add_to_block(self, estate: PlaceEstate):
-        estate.block = self
+    @property
+    def name(self):
+        return self.__name
+
+    def add_to_block(self, estate: PlaceEstate):
+        '''add estate to this block
+
+        :param estate: estate to add
+        '''
+        assert isinstance(estate, PlaceEstate)
+        self.__estates.append(estate)
+
+    def block_fee_calc(self, owner: BasePlayer)->int:
+        '''calculate block fee that belongs to the owner
+
+        :param owner: the owner of the palces
+        :returns: the block fee
+        '''
+        block_fee = 0
+        if owner is None:
+            return block_fee
+        for estate in self.__estates:
+            if estate.owner and estate.owner == owner:
+                block_fee += estate.fee
+        return block_fee
 
 
 class PlaceProject(BasePlace):
@@ -198,5 +226,5 @@ class PlaceProject(BasePlace):
     #     super().__init__(name=name, buy_value=buy_value,
     #                    pledge_value=pledge_value)
     
-    def take_effect(self, player: BasePlayer):
+    def trigger(self, player: BasePlayer):
         pass
