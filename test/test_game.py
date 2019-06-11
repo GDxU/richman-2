@@ -3,10 +3,10 @@
 import unittest
 from unittest.mock import MagicMock
 
-from dafuweng.place import BasePlace
-from dafuweng.map import BaseMap
-from dafuweng.player import BasePlayer
-from dafuweng.game import BaseGame, PlayerNamesDuplicatedException
+from richman.place import BasePlace
+from richman.map import BaseMap
+from richman.player import BasePlayer
+from richman.game import BaseGame, PlayerNamesDuplicatedException
 
 
 class TestBaseGame(unittest.TestCase):
