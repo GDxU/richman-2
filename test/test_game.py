@@ -34,4 +34,4 @@ class TestBaseGame(unittest.TestCase):
         with self.assertRaises(PlayerNamesDuplicatedException):
             game = BaseGame(None, ['戎萍', '戎萍'], 20000)
 
-    def test_
+    # def test_

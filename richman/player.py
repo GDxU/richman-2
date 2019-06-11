@@ -46,7 +46,7 @@ class BasePlayer:
         return self.__pos
     @pos.setter
     def pos(self, value: int):
-        self.pos = value % self.pos_max
+        self.__pos = value % self.pos_max
     @property
     def pos_max(self):
         return self.__pos_max
