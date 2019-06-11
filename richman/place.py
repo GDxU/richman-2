@@ -26,6 +26,10 @@ class PledgeTwiceException(Exception):
     def __init__(self, *args):
         super().__init__("该地已经抵押！")
 
+class SellPlaceWithNoOwner(Exception):
+    def __init__(self, *args):
+        super().__init__("该地无主，不能卖！")
+
 class RebuyWithNoOwnerException(Exception):
     def __init__(self, *args):
         super().__init__("该地当前无主！")
@@ -41,21 +45,25 @@ class BasePlace:
     __is_pledged = False
     __buy_value = 0
     __pledge_value = 0
-    
+
     def __init__(self, name: str, buy_value: int,
-                 pledge_value: int):
+                 pledge_value: int, sell_value:int = None):
         '''init
 
         :param name: name of place
         :param buy_value: value to buy
         :param pledge_value: value to pledge
+        :param sell_value: value to sell, default is the buy_value
         '''
         self.__name = name
         self.__buy_value = buy_value
         self.__pledge_value = pledge_value
+        self.__sell_value = sell_value if sell_value else self.__buy_value
         # init others
         self.__owner = None
         self.__is_pledged = False
+        # check
+        assert sell_value >= pledge_value
 
     @property
     def name(self):
@@ -72,6 +80,9 @@ class BasePlace:
     @property
     def pledge_value(self):
         return self.__pledge_value
+    @property
+    def sell_value(self):
+        return self.__sell_value
 
     def buy(self, owner: BasePlayer):
         if self.__owner:
@@ -88,6 +99,15 @@ class BasePlace:
         else:
             self.owner.add_money(self.pledge_value)
             self.__is_pledged = True
+
+    def sell(self):
+        if not self.owner:
+            raise SellPlaceWithNoOwner()
+        sell_value = self.sell_value
+        if self.is_pledged:
+            sell_value -= self.pledge_value
+        self.owner.add_money(sell_value)
+        self.__owner = None
 
     def rebuy(self):
         if self.__owner is None:
@@ -224,11 +244,29 @@ class PlaceEstateBlock:
 
 
 class PlaceProject(BasePlace):
-    
-    # def __init__(self, name: str, buy_value: int,
-    #              pledge_value: int):
-    #     super().__init__(name=name, buy_value=buy_value,
-    #                    pledge_value=pledge_value)
-    
-    def trigger(self, player: BasePlayer):
-        pass
+    def __init__(self, name, buy_value, sell_value):
+        super().__init__(name=name, buy_value=buy_value,
+                         pledge_value=0, sell_value=sell_value)
+
+
+class PlaceProjectNuclear(PlaceProject):
+    pass
+
+class PlaceProjectBuilder(PlaceProject):
+    pass
+
+class PlaceProjectStation(PlaceProject):
+    pass
+
+class PlaceProjectTv(PlaceProject):
+    pass
+
+class PlaceProjectAirport(PlaceProject):
+    pass
+
+class PlaceProjectSewerage(PlaceProject):
+    pass
+
+class PlaceProjectSeaport(PlaceProject):
+    pass
+
