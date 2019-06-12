@@ -3,7 +3,7 @@
 '''
 import logging
 
-from richman.player import (BasePlayer, PlayerMoneyBelowZeroException)
+from richman.player import BasePlayer
 
 
 class BuyPlaceWithOwnerException(Exception):
@@ -84,12 +84,12 @@ class BasePlace:
     def sell_value(self):
         return self.__sell_value
 
-    def buy(self, owner: BasePlayer):
+    def buy(self, player: BasePlayer):
         if self.__owner:
             raise BuyPlaceWithOwnerException()
         else:
-            owner.add_money(-self.buy_value)
-            self.__owner = owner
+            player.add_money(-self.buy_value)
+            self.__owner = player
 
     def pledge(self):
         if self.__owner is None:
@@ -193,14 +193,10 @@ class PlaceEstate(BasePlace):
         # take the fee
         if self.owner and self.owner != player:
             self.owner.add_money(self.fee)
-            try:
-                player.add_money(-self.fee)
-            except PlayerMoneyBelowZeroException as err:
-                logging.info(str(err))
-                player.no_money_action()
+            player.add_money(-self.fee)
         # ask whether to buy
         else:
-            player.buy_place_action(self)
+            player.trigger_buy(self)
 
 
 class PlaceEstateBlock:
