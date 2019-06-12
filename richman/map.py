@@ -20,9 +20,10 @@ class PlayerAlreadyExistException(Exception):
 class BaseMap:
 
     __items = []
-    __items_set = set()
+    __blocks = []
+    __estate_set = set()
     
-    def __init__(self, name: str, items:list = []):
+    def __init__(self, name: str, items:list = None):
         '''init
 
         :param name: map name
@@ -30,8 +31,10 @@ class BaseMap:
         '''
         self.__name = name
         self.__items = []
-        self.__items_set = set()
-        self._add_items_to_map(items)
+        self.__blocks = []
+        self.__estate_set = set()
+        if items:
+            self._add_items(items)
 
     @property
     def name(self):
@@ -40,14 +43,14 @@ class BaseMap:
     def items(self):
         return self.__items
 
-    def _add_items_to_map(self, items: list):
+    def _add_items(self, items: list):
         if items and not isinstance(items, list):
             items = [items]
         for item in items:
             if isinstance(item, PlaceEstate):
-                if not item.name in self.__items_set:
+                if not item.name in self.__estate_set:
                     self.__items.append(item)
-                    self.__items_set.add(item.name)
+                    self.__estate_set.add(item.name)
                 else:
                     raise PlaceAlreadyExistInMapException()
             else:
@@ -77,67 +80,5 @@ class BaseMap:
         with open(file_path, 'wb') as f:
             pickle.dump(map, f)
 
-
-from richman.place import (
-    PlaceEstate,
-    PlaceEstateBlock,
-    PlaceProjectNuclear,
-    PlaceProjectBuilder,
-    PlaceProjectStation,
-    PlaceProjectTv,
-    PlaceProjectAirport,
-    PlaceProjectSewerage,
-    PlaceProjectSeaport
-)
-from richman.event import (
-    EventStart,
-    EventNews,
-    EventTrial,
-    EventLuck,
-    EventStock,
-    EventPrison,
-    EventPark,
-    EventTax
-)
-
-class MapSuperRichman(BaseMap):
-    '''超级地产富翁：地产大亨
-    '''
-    __blocks = []
-    __estates = []
-
-    def __init__(self):
-        self.__name == '超级地产富翁：地产大亨'
-        self._build()
-    
-    @property
-    def name(self):
-        return self.__name
-
-    def _build(self):
-        # setup estate block
-        self.__blocks = []
-        self.__blocks.append(PlaceEstateBlock('block0'))
-        self.__blocks.append(PlaceEstateBlock('block1'))
-        self.__blocks.append(PlaceEstateBlock('block2'))
-        self.__blocks.append(PlaceEstateBlock('block3'))
-        self.__blocks.append(PlaceEstateBlock('block4'))
-        self.__blocks.append(PlaceEstateBlock('block5'))
-        # setup estates
-        self.__estates = []
-        self.__estates.append(PlaceEstate(
-            name='沈阳',
-            fees=[400, 1000, 2500, 5500],
-            buy_value=2400,
-            pledge_value=1200,
-            upgrade_value=600,
-            block=self.__blocks[0]
-            ))
-        self.__estates.append(PlaceEstate(
-            name='天津',
-            fees=[500, 1100, 3000, 6000],
-            buy_value=2600,
-            pledge_value=1300,
-            upgrade_value=600,
-            block=self.__blocks[0]
-            ))
+    def __len__(self):
+        return len(self.items)
