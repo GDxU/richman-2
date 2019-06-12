@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*
 '''hold the whole game
 '''
-from richman.place import BasePlace
-from richman.player import BasePlayer
-from richman.map import BaseMap
+from richman.base import BasePlace, BaseMap
+from richman.player import PlayerImplement
 
 
 class PlayerNamesDuplicatedException(Exception):
@@ -11,7 +10,7 @@ class PlayerNamesDuplicatedException(Exception):
         super().__init__("该玩家已经存在！")
 
 
-class BaseGame:
+class GameImplement:
 
     __players = []
     __player_index = 0  # 当前 player index
@@ -44,7 +43,7 @@ class BaseGame:
         if len(set(player_names)) != len(player_names):
             raise PlayerNamesDuplicatedException()
         for name in player_names:
-            player = BasePlayer(name=name, money=money)
+            player = PlayerImplement(name=name, money=money, map=self.map)
             self.__players.append(player)
 
     def play(self):

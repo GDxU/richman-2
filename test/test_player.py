@@ -4,27 +4,40 @@ import unittest
 from unittest.mock import MagicMock
 
 
-from richman.player import (
-    BasePlayer,
-    PlayerMoneyBelowZeroException
-)
+from richman.player import PlayerImplement
+from richman.maps.map_test import MapTest
 
 
 class TestBasePlayer(unittest.TestCase):
 
     def setUp(self):
-        self.dengzhe = BasePlayer('Hangzhou', 10000)
+        map = MapTest()
+        self.player = PlayerImplement(name='Hangzhou',
+                                      money=10000,
+                                      map=map)
     
     def tearDown(self):
         pass
 
     def test_add_money_should_execute_correctlly(self):
-        self.dengzhe.add_money(-10000)
-        with self.assertRaises(PlayerMoneyBelowZeroException):
-            self.dengzhe.add_money(-1)
-    
-    def test_pos_should_set_right_value(self):
-        self.dengzhe.pos_max = 10
-        self.dengzhe.pos = 13
-        self.assertEqual(self.dengzhe.pos, 3)
+        self.player.add_money(-10000)
+        self.player._make_money = MagicMock()
+        self.player.add_money(-1)
+        self.assertTrue(self.player._make_money.called)
 
+    def test_pos_should_set_right_value(self):
+        pos_max = len(self.player.map)
+        self.player.pos = pos_max + 3
+        self.assertEqual(self.player.pos, 3)
+
+
+class TestPlayerSimple(unittest.TestCase):
+
+    def setUp(self):
+        map = MapTest()
+        self.player = PlayerImplement(name='Hangzhou',
+                                      money=10000,
+                                      map=map)
+    
+    def tearDown(self):
+        pass

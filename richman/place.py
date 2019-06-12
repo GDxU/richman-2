@@ -3,7 +3,7 @@
 '''
 import logging
 
-from richman.player import BasePlayer
+from richman.base import BasePlace, BasePlayer
 
 
 class BuyPlaceWithOwnerException(Exception):
@@ -39,7 +39,7 @@ class RebuyNotPledgedException(Exception):
         super().__init__("该地当前未被抵押！")
 
 
-class BasePlace:
+class PlaceImplement(BasePlace):
 
     __owner = None
     __is_pledged = False
@@ -47,23 +47,23 @@ class BasePlace:
     __pledge_value = 0
 
     def __init__(self, name: str, buy_value: int,
-                 pledge_value: int, sell_value:int = None):
+                 sell_value:int = None, pledge_value:int = None):
         '''init
 
         :param name: name of place
         :param buy_value: value to buy
-        :param pledge_value: value to pledge
         :param sell_value: value to sell, default is the buy_value
+        :param pledge_value: value to pledge, can not be pledge if is None
         '''
         self.__name = name
         self.__buy_value = buy_value
-        self.__pledge_value = pledge_value
         self.__sell_value = sell_value if sell_value else self.__buy_value
+        self.__pledge_value = pledge_value
         # init others
         self.__owner = None
         self.__is_pledged = False
         # check
-        assert sell_value >= pledge_value
+        assert pledge_value is None or self.sell_value >= pledge_value
 
     @property
     def name(self):
@@ -127,7 +127,7 @@ class BasePlace:
         return self.name == obj.name
 
 
-class PlaceEstate(BasePlace):
+class PlaceEstate(PlaceImplement):
 
     __block = None
     __kMaxLevel = 4
@@ -142,7 +142,7 @@ class PlaceEstate(BasePlace):
         :param upgrade_value: money value to upgrade
         :param block: block that holds the place.
                       None if the place is a project.
-        other params, refer to BasePlace
+        other params, refer to PlaceImplement
         '''
         super().__init__(name=name, buy_value=buy_value,
                          pledge_value=pledge_value)
@@ -228,7 +228,7 @@ class PlaceEstateBlock:
         '''calculate block fee that belongs to the owner
 
         :param owner: the owner of the palces
-        :returns: the block fee
+        :return: the block fee
         '''
         block_fee = 0
         if owner is None:
@@ -239,7 +239,7 @@ class PlaceEstateBlock:
         return block_fee
 
 
-class PlaceProject(BasePlace):
+class PlaceProject(PlaceImplement):
     def __init__(self, name, buy_value, sell_value):
         super().__init__(name=name, buy_value=buy_value,
                          pledge_value=0, sell_value=sell_value)

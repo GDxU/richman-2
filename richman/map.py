@@ -4,25 +4,19 @@
 import pickle
 import os
 
-from richman.place import BasePlace
-from richman.player import BasePlayer
+from richman.base import BaseMap
 
-
-class PlaceAlreadyExistInMapException(Exception):
-    def __init__(self, *args):
-        super().__init__("该土地或项目已经存在！")
 
 class PlayerAlreadyExistException(Exception):
     def __init__(self, *args):
         super().__init__("该玩家已经存在！")
 
 
-class BaseMap:
+class MapImplement(BaseMap):
 
     __items = []
-    __blocks = []
-    __estate_set = set()
-    
+    _blocks = []
+
     def __init__(self, name: str, items:list = None):
         '''init
 
@@ -31,8 +25,7 @@ class BaseMap:
         '''
         self.__name = name
         self.__items = []
-        self.__blocks = []
-        self.__estate_set = set()
+        self._blocks = []
         if items:
             self._add_items(items)
 
@@ -42,19 +35,14 @@ class BaseMap:
     @property
     def items(self):
         return self.__items
+    @property
+    def blocks(self):
+        return self._blocks
 
     def _add_items(self, items: list):
         if items and not isinstance(items, list):
             items = [items]
-        for item in items:
-            if isinstance(item, PlaceEstate):
-                if not item.name in self.__estate_set:
-                    self.__items.append(item)
-                    self.__estate_set.add(item.name)
-                else:
-                    raise PlaceAlreadyExistInMapException()
-            else:
-                self.__items.append(item)
+        self.__items.extend(items)
 
     def load(self, file_path: str):
         '''load map from pickle

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''map test
 '''
-from richman.map import BaseMap
+from richman.map import MapImplement
 
 
 from richman.place import (
@@ -26,7 +26,7 @@ from richman.event import (
     EventTax
 )
 
-class MapTest(BaseMap):
+class MapTest(MapImplement):
     '''for test
     '''
 
@@ -36,14 +36,14 @@ class MapTest(BaseMap):
 
     def _build(self):
         # block1 region
-        self.__blocks.append(PlaceEstateBlock('block1'))
+        self._blocks.append(PlaceEstateBlock('block1'))
         self._add_items(PlaceEstate(
             name='沈阳',
             fees=[400, 1000, 2500, 5500],
             buy_value=2400,
             pledge_value=1200,
             upgrade_value=600,
-            block=self.__blocks[0]
+            block=self._blocks[0]
             ))
         self._add_items(PlaceEstate(
             name='天津',
@@ -51,7 +51,7 @@ class MapTest(BaseMap):
             buy_value=2600,
             pledge_value=1300,
             upgrade_value=600,
-            block=self.__blocks[0]
+            block=self._blocks[0]
             ))
         self._add_items(PlaceEstate(
             name='北京',
@@ -59,7 +59,7 @@ class MapTest(BaseMap):
             buy_value=2300,
             pledge_value=1100,
             upgrade_value=600,
-            block=self.__blocks[0]
+            block=self._blocks[0]
             ))
         self._add_items(PlaceEstate(
             name='大连',
@@ -67,17 +67,17 @@ class MapTest(BaseMap):
             buy_value=1200,
             pledge_value=600,
             upgrade_value=300,
-            block=self.__blocks[0]
+            block=self._blocks[0]
             ))
         #block2 region
-        self.__blocks.append(PlaceEstateBlock('block2'))
+        self._blocks.append(PlaceEstateBlock('block2'))
         self._add_items(PlaceEstate(
             name='贵阳',
             fees=[200, 400, 1000, 2500],
             buy_value=1000,
             pledge_value=500,
             upgrade_value=300,
-            block=self.__blocks[1]
+            block=self._blocks[1]
             ))
         self._add_items(PlaceEstate(
             name='长沙',
@@ -85,7 +85,7 @@ class MapTest(BaseMap):
             buy_value=1500,
             pledge_value=700,
             upgrade_value=300,
-            block=self.__blocks[1]
+            block=self._blocks[1]
             ))
         self._add_items(PlaceEstate(
             name='银川',
@@ -93,7 +93,7 @@ class MapTest(BaseMap):
             buy_value=1800,
             pledge_value=900,
             upgrade_value=300,
-            block=self.__blocks[1]
+            block=self._blocks[1]
             ))
         self._add_items(PlaceEstate(
             name='兰州',
@@ -101,7 +101,7 @@ class MapTest(BaseMap):
             buy_value=2400,
             pledge_value=1200,
             upgrade_value=600,
-            block=self.__blocks[1]
+            block=self._blocks[1]
             ))
         self._add_items(PlaceEstate(
             name='拉萨',
@@ -109,17 +109,17 @@ class MapTest(BaseMap):
             buy_value=2000,
             pledge_value=1000,
             upgrade_value=600,
-            block=self.__blocks[1]
+            block=self._blocks[1]
             ))
         #block3 region
-        self.__blocks.append(PlaceEstateBlock('block3'))
+        self._blocks.append(PlaceEstateBlock('block3'))
         self._add_items(PlaceEstate(
             name='杭州',
             fees=[400, 1000, 2500, 5500],
             buy_value=2200,
             pledge_value=1100,
             upgrade_value=600,
-            block=self.__blocks[2]
+            block=self._blocks[2]
             ))
         self._add_items(PlaceEstate(
             name='南京',
@@ -127,7 +127,7 @@ class MapTest(BaseMap):
             buy_value=3800,
             pledge_value=1900,
             upgrade_value=900,
-            block=self.__blocks[2]
+            block=self._blocks[2]
             ))
         self._add_items(PlaceEstate(
             name='苏州',
@@ -135,7 +135,7 @@ class MapTest(BaseMap):
             buy_value=3500,
             pledge_value=1700,
             upgrade_value=900,
-            block=self.__blocks[2]
+            block=self._blocks[2]
             ))
         self._add_items(PlaceEstate(
             name='厦门',
@@ -143,7 +143,7 @@ class MapTest(BaseMap):
             buy_value=4000,
             pledge_value=2000,
             upgrade_value=1200,
-            block=self.__blocks[2]
+            block=self._blocks[2]
             ))
         self._add_items(PlaceEstate(
             name='台北',
@@ -151,5 +151,5 @@ class MapTest(BaseMap):
             buy_value=4000,
             pledge_value=2000,
             upgrade_value=1200,
-            block=self.__blocks[2]
+            block=self._blocks[2]
             ))

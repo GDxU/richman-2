@@ -4,8 +4,7 @@
 import random
 import datetime
 
-from richman.map import BaseMap
-from richman.place import BasePlace, PlaceEstate
+from richman.base import BasePlayer, BasePlace, BaseMap
 
 
 class PlayerBanckruptException(Exception):
@@ -13,7 +12,7 @@ class PlayerBanckruptException(Exception):
         super().__init__("玩家破产！")
 
 
-class BasePlayer:
+class PlayerImplement(BasePlayer):
 
     __name = ''
     __money = 0
@@ -112,7 +111,7 @@ class BasePlayer:
         '''decide whether to buy the place
 
         :param place: BasePlace
-        :returns: True if buy the place
+        :return: True if buy the place
         '''
         raise NotImplementedError('override is needed.')
 
@@ -125,7 +124,7 @@ class BasePlayer:
         return self.name == obj.name
 
 
-class PlayerSimple(BasePlayer):
+class PlayerSimple(PlayerImplement):
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -133,7 +132,7 @@ class PlayerSimple(BasePlayer):
         '''
         # pledge for money
         for place in self.places:
-            if isinstance(place, PlaceEstate):
+            if place.pledge_value is not None:
                 place.pledge()
                 if self.money > 0:
                     return None
@@ -149,7 +148,7 @@ class PlayerSimple(BasePlayer):
         '''decide whether to buy the place
 
         :param place: BasePlace
-        :returns: True if buy the place
+        :return: True if buy the place
         '''
         if self.money > place.buy_value:
             place.buy(self)
@@ -161,6 +160,7 @@ class PlayerSimple(BasePlayer):
         '''select which estate to go when jump is needed
         '''
         for index, item in enumerate(self.map.items):
-            if isinstance(item, PlaceEstate):
+            if (isinstance(item, BasePlace)
+                    and item.pledge_value is not None):
                 self.pos = index
                 break

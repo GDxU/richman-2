@@ -3,10 +3,10 @@
 '''
 import logging
 
-from richman.player import (BasePlayer, PlayerMoneyBelowZeroException)
+from richman.base import BaseEvent, BasePlayer
 
 
-class BaseEvent:
+class EventImplement(BaseEvent):
     
     def __init__(self, name):
         self.__name = name
@@ -15,39 +15,35 @@ class BaseEvent:
     def name(self):
         return self.__name
 
-    def trigger(self, player: BasePlayer):
-        '''take the effect of the place, triggered by the player
-        '''
-        raise NotImplementedError('override is needed.')
 
-class EventStart(BaseEvent):
+class EventStart(EventImplement):
     def __init__(self):
         super().__init__('起点')
 
-class EventNews(BaseEvent):
+class EventNews(EventImplement):
     def __init__(self):
         super().__init__('新闻')
 
-class EventPrison(BaseEvent):
+class EventPrison(EventImplement):
     def __init__(self):
         super().__init__('监狱')
 
-class EventLuck(BaseEvent):
+class EventLuck(EventImplement):
     def __init__(self):
         super().__init__('运气')
 
-class EventStock(BaseEvent):
+class EventStock(EventImplement):
     def __init__(self):
         super().__init__('证券中心')
 
-class EventGotoPrison(BaseEvent):
+class EventGotoPrison(EventImplement):
     def __init__(self):
         super().__init__('入狱')
 
-class EventPark(BaseEvent):
+class EventPark(EventImplement):
     def __init__(self):
         super().__init__('公园')
 
-class EventTax(BaseEvent):
+class EventTax(EventImplement):
     def __init__(self):
         super().__init__('税务中心')
