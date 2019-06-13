@@ -39,12 +39,6 @@ class IGamePlayer(abc.ABC):
         pass
 
 
-class IPlayerPlace(abc.ABC):
-    '''place of player interface
-    '''
-    pass
-
-
 class IPlayerMap(abc.ABC):
     '''map of player interface
     '''
@@ -57,76 +51,10 @@ class IPlayerMap(abc.ABC):
         pass
 
 
-class BasePlayer(IGamePlayer):
+class IPlayerPlace(abc.ABC):
+    '''player interface to place
+    '''
 
-    @property
-    @abc.abstractmethod
-    def name(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def money(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def map(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def pos(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def places(self):
-        pass
-
-    @abc.abstractmethod
-    def add_money(self, value_delta: int):
-        '''change the player's money
-
-        :param value_delta: amount of change, minus means subtraction
-        '''
-        pass
-
-    @abc.abstractmethod
-    def move_to(self, pos: int):
-        '''move player to pos
-
-        :param pos: position to move to
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_buy(self, place):
-        '''decide whether to buy the place
-
-        :param place: BasePlace
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_jump_to_estate(self):
-        '''select which estate to go when jump is needed
-        '''
-        pass
-
-    @abc.abstractmethod
-    def __eq__(self, obj):
-        '''check if two place is the same
-        '''
-        pass
-
-
-class BasePlace(abc.ABC):
-
-    @property
-    @abc.abstractmethod
-    def name(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def owner(self):
-        pass
     @property
     @abc.abstractmethod
     def is_pledged(self):
@@ -178,14 +106,8 @@ class BasePlace(abc.ABC):
         '''
         pass
 
-    @abc.abstractmethod
-    def __eq__(self, obj):
-        '''check if two place is the same
-        '''
-        pass
 
-
-class BaseEvent(abc.ABC):
+class IPlayerEvent(abc.ABC):
 
     @property
     @abc.abstractmethod
@@ -209,6 +131,7 @@ class IMapPlayer(abc.ABC):
     def map(self, value: IPlayerMap):
         pass
 
+
 class IPlacePlayer(abc.ABC):
     '''place interface to player
     '''
@@ -218,6 +141,28 @@ class IPlacePlayer(abc.ABC):
         '''change player money
 
         :param delta: minus means subtract
+        '''
+        pass
+
+    @abc.abstractmethod
+    def trigger_buy(self, place):
+        '''decide whether to buy the place
+
+        :param place: IPlayerPlace
+        '''
+        pass
+
+    @abc.abstractmethod
+    def trigger_jump_to_estate(self):
+        '''select which estate to go when jump is needed
+        '''
+        pass
+
+    @abc.abstractmethod
+    def move_to(self, pos: int):
+        '''move player to pos
+
+        :param pos: position to move to
         '''
         pass
 

@@ -4,7 +4,7 @@
 import random
 import datetime
 
-from richman.base import BasePlayer, BasePlace, BaseMap
+import richman.interface as itf
 
 
 class PlayerBanckruptException(Exception):
@@ -12,7 +12,8 @@ class PlayerBanckruptException(Exception):
         super().__init__("玩家破产！")
 
 
-class PlayerImplement(BasePlayer):
+class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
+                      itf.IPlacePlayer):
 
     __name = ''
     __money = 0
@@ -20,7 +21,8 @@ class PlayerImplement(BasePlayer):
     __places = []  # 购买的土地
     __pos = 0  # 当前所在地图的位置
 
-    def __init__(self, name: str, money: int, map: BaseMap):
+    def __init__(self, name: str, money: int,
+                 map:itf.IPlayerMap = None):
         '''init
 
         :param name: player name
@@ -39,11 +41,17 @@ class PlayerImplement(BasePlayer):
     def name(self):
         return self.__name
     @property
+    def is_banckrupted(self):
+        raise NotImplementedError('need override.')
+    @property
     def money(self):
         return self.__money
     @property
     def map(self):
         return self.__map
+    @map.setter
+    def map(self, value: itf.IPlayerMap):
+        self.__map = value
     @property
     def pos(self):
         return self.__pos
@@ -57,13 +65,20 @@ class PlayerImplement(BasePlayer):
     def _dice(self)->int:
         return random.randrange(1,7)
 
+    def add_to_map(self, map: itf.IPlayerMap):
+        '''add player to map
+
+        :param map: map
+        '''
+        self.__map = map
+
     __is_making_money = False  # 防止一个 make_money() 过程中多次调用该函数
-    def add_money(self, value_delta: int):
+    def add_money(self, delta: int):
         '''change the player's money
 
-        :param value_delta: amount of change, minus means subtraction
+        :param delta: amount of change, minus means subtraction
         '''
-        self.__money += value_delta
+        self.__money += delta
         if self.__money < 0 and not self.__is_making_money:
             self.__is_making_money = True
             self._make_money()
@@ -76,22 +91,20 @@ class PlayerImplement(BasePlayer):
         '''
         self.pos = pos
 
-    def play(self, step:int = None, reverse=False):
+    def play(self, reverse=False):
         '''进行下一步游戏
 
-        :param step: 下一步走的步数
         :param reverse: 是否后退标志
         '''
-        if step is None:
-            step = self._dice()
+        step = self._dice()
         if reverse:
             step = 0 - step
         self.pos += step
 
-    def trigger_buy(self, place: BasePlace):
+    def trigger_buy(self, place: itf.IPlayerPlace):
         '''decide whether to buy the place
 
-        :param place: BasePlace
+        :param place: IPlayerPlace
         '''
         if self._trigger_buy(place):
             self.__places.append(place)
@@ -107,7 +120,7 @@ class PlayerImplement(BasePlayer):
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_buy(self, place: BasePlace)->bool:
+    def _trigger_buy(self, place: itf.IPlayerPlace)->bool:
         '''decide whether to buy the place
 
         :param place: BasePlace
@@ -125,6 +138,10 @@ class PlayerImplement(BasePlayer):
 
 
 class PlayerSimple(PlayerImplement):
+
+    @property
+    def is_banckrupted(self):
+        raise NotImplementedError('need override.')
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -144,7 +161,7 @@ class PlayerSimple(PlayerImplement):
         # banckrupt
         raise PlayerBanckruptException()
 
-    def _trigger_buy(self, place: BasePlace)->bool:
+    def _trigger_buy(self, place: itf.IPlayerPlace)->bool:
         '''decide whether to buy the place
 
         :param place: BasePlace
@@ -160,7 +177,7 @@ class PlayerSimple(PlayerImplement):
         '''select which estate to go when jump is needed
         '''
         for index, item in enumerate(self.map.items):
-            if (isinstance(item, BasePlace)
+            if (isinstance(item, itf.IPlayerPlace)
                     and item.pledge_value is not None):
                 self.pos = index
                 break
