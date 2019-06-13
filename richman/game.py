@@ -1,33 +1,26 @@
 # -*- coding: utf-8 -*
 '''hold the whole game
 '''
-from richman.base import BasePlace, BaseMap
-from richman.player import PlayerImplement
-
-
-class PlayerNamesDuplicatedException(Exception):
-    def __init__(self, *args):
-        super().__init__("该玩家已经存在！")
+import richman.interface as itf 
 
 
 class GameImplement:
 
     __players = []
     __player_index = 0  # 当前 player index
-    
-    def __init__(self, map: BaseMap,
-                 player_names: list,
-                 money: int):
+    __players_banckrupted = []  # 结束游戏的玩家
+
+    def __init__(self, map: itf.BaseMap, players: list):
         '''init
 
         :param map: 
-        :param player_names: player names without duplicate
-        :param money: init money of players
+        :param player_names: list of BasePlayer
         '''
         self.__map = map
-        self.__players = []
+        self.__players = players
         self.__player_index = 0
-        self._build_players(player_names, money)
+        self.__players_banckrupted = []
+        self._add_players_into_map(map, players)
 
     @property
     def map(self):
@@ -36,17 +29,42 @@ class GameImplement:
     def players(self):
         return self.__players
     @property
-    def current_player(self):
-        return self.__players[self.__player_index]
+    def players_banckrupted(self):
+        return self.__players_banckrupted
 
-    def _build_players(self, player_names: list, money: int):
-        if len(set(player_names)) != len(player_names):
-            raise PlayerNamesDuplicatedException()
-        for name in player_names:
-            player = PlayerImplement(name=name, money=money, map=self.map)
-            self.__players.append(player)
+    def _add_players_into_map(self, map: itf.IGameMap,
+                              players: itf.IGamePlayer):
+        '''add players into map
 
-    def play(self):
-        '''进行游戏，下个人掷骰子，并按效果结算
+        :param map: map
+        :param players: players
         '''
-        self.current_player.play()
+        map.add_players(players)
+
+    def _remove_players_banckrupted(self, players_banckrupted: list):
+        '''remove current player from __players list
+
+        :param players_banckrupted: list of banckrupted player
+        '''
+        for player in players_banckrupted:
+            self.__players.remove(player)
+            self.__players_banckrupted.append(player)
+
+    def _run_one_step(self):
+        '''run one step of the game, which means every player run once
+
+        :note: banckrupted players is remove from players list
+        '''
+        players_banckrupted = []
+        for player in self.players:
+            player.play()
+            if player.is_banckrupted:
+                print('player {} is banckrupted.'.format(player.name))
+                players_banckrupted.append(player)
+        self._remove_players_banckrupted(players_banckrupted)
+
+    def run(self):
+        '''run the game and show results of each step
+        '''
+        while self.players:
+            self._run_one_step()

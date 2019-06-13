@@ -3,32 +3,37 @@
 import unittest
 from unittest.mock import MagicMock
 
-from richman.game import GameImplement, PlayerNamesDuplicatedException
+from richman.game import GameImplement
 
 
 class TestBaseGame(unittest.TestCase):
 
     def setUp(self):
-        pass
-    
+        map = MagicMock()
+        self.player1 = MagicMock()
+        self.player1.name = '邓哲'
+        self.player1.is_banckrupted = False
+        self.player1.play = MagicMock()
+        self.player2 = MagicMock()
+        self.player2.name = '戎萍'
+        self.player2.is_banckrupted = False
+        self.player2.play = MagicMock()
+        players = [self.player1, self.player2]
+        self.game = GameImplement(map, players)
+
     def tearDown(self):
         pass
 
-    def test_build_players_should_build_players_with_right_params(self):
-        game = GameImplement(None, ['戎萍', '邓哲', '邓彦修'], 20000)
+    def test_run_should_finish_when_all_players_banckrupted(self):
+        self.game._run_one_step()
+        self.player1.play.assert_called_once()
+        self.player2.play.assert_called_once()
 
-        self.assertEqual(len(game.players), 3)
-
-        self.assertEqual(game.players[0].name, '戎萍')
-        self.assertEqual(game.players[0].money, 20000)
-
-        self.assertEqual(game.players[1].name, '邓哲')
-        self.assertEqual(game.players[1].money, 20000)
-
-        self.assertEqual(game.players[2].name, '邓彦修')
-        self.assertEqual(game.players[2].money, 20000)
-
-        with self.assertRaises(PlayerNamesDuplicatedException):
-            game = GameImplement(None, ['戎萍', '戎萍'], 20000)
-
-    # def test_
+        self.player1.is_banckrupted = True
+        self.game._run_one_step()
+        self.assertEqual(len(self.game.players), 1)
+        self.assertEqual(self.game.players[0].name, '戎萍')
+        
+        self.player2.is_banckrupted = True
+        self.game._run_one_step()
+        self.assertFalse(self.game.players)

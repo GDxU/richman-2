@@ -4,7 +4,44 @@
 import abc
 
 
-class BasePlayer(abc.ABC):
+class IGamePlayer(abc.ABC):
+    '''player of game interface
+    '''
+
+    @abc.abstractproperty
+    def name(self)->str:
+        '''
+        :return: name of the player
+        '''
+        pass
+
+    @abc.abstractproperty
+    def is_banckrupted(self)->bool:
+        '''
+        :return: True if is banckrupted.
+        '''
+        pass
+
+    @abc.abstractmethod
+    def play(self):
+        '''play the game, like dice etc.
+        '''
+        pass
+
+class IGameMap(abc.ABC):
+    '''map of map interface
+    '''
+
+    @abc.abstractmethod
+    def add_players(self, players: list):
+        '''add players into map
+
+        :param players: list of IGamePlayers
+        '''
+        pass
+
+
+class BasePlayer(IGamePlayer):
 
     @property
     @abc.abstractmethod
