@@ -5,13 +5,15 @@ from unittest.mock import MagicMock
 
 
 from richman.player import PlayerImplement
-from richman.maps.map_test import MapTest
+# from richman.maps.map_test import MapTest
 
 
 class TestBasePlayer(unittest.TestCase):
 
     def setUp(self):
-        map = MapTest()
+        # map = MapTest()
+        map = MagicMock()
+        map.__len__.return_value = 10
         self.player = PlayerImplement(name='Hangzhou',
                                       money=10000,
                                       map=map)
@@ -34,10 +36,7 @@ class TestBasePlayer(unittest.TestCase):
 class TestPlayerSimple(unittest.TestCase):
 
     def setUp(self):
-        map = MapTest()
-        self.player = PlayerImplement(name='Hangzhou',
-                                      money=10000,
-                                      map=map)
+        pass
     
     def tearDown(self):
         pass
