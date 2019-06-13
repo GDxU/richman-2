@@ -12,8 +12,8 @@ from richman.place import (
     PledgeTwiceException,
     RebuyNotPledgedException
 )
-from richman.player import PlayerImplement
-from richman.map import MapImplement
+# from richman.player import PlayerImplement
+# from richman.map import MapImplement
 
 
 class TestBasePlace(unittest.TestCase):
@@ -22,8 +22,9 @@ class TestBasePlace(unittest.TestCase):
         self.estate = PlaceImplement(name='Hangzhou',
                                      buy_value=2200,
                                      pledge_value=1100)
-        map = MapImplement('china')
-        self.player = PlayerImplement('Dengzhe', 100, map)
+        self.player = MagicMock()
+        self.player.add_money = MagicMock()
+        self.player.trigger_buy = MagicMock()
     
     def tearDown(self):
         pass
@@ -34,14 +35,13 @@ class TestBasePlace(unittest.TestCase):
         self.assertEqual(self.estate.pledge_value, 1100)
 
     def test_buy_and_rebuy_should_raise_execption(self):
-        self.player.trigger_buy = MagicMock()
+        self.player.add_money = MagicMock()
         self.estate.buy(self.player)
-        self.player.trigger_buy.assert_called_once()
+        self.player.add_money.assert_called_once()
         with self.assertRaises(RebuyNotPledgedException):
             self.estate.rebuy()
 
     def test_base_place_pledge_should_execute_correctlly(self):
-        self.player.add_money = MagicMock()
         with self.assertRaises(PledgeWithNoOwnerException):
             self.estate.pledge()
         self.estate.buy(self.player)
@@ -67,8 +67,8 @@ class TestPlaceEstate(unittest.TestCase):
         self.fees = [100, 200, 300, 400]
         self.estate = PlaceEstate('杭州', self.fees,
                                   2000, 1000, 300, self.block)
-        map = MapImplement('china')
-        self.player = PlayerImplement('Dengzhe', 100, map)
+        self.player = MagicMock()
+        self.player.add_money = MagicMock()
         self.player.trigger_buy = MagicMock()
 
     def tearDown(self):
@@ -81,15 +81,11 @@ class TestPlaceEstate(unittest.TestCase):
                          2000, 1000, 300, self.block)
 
     def test_upgrade_should_run_correctly_and_raise_exception(self):
-        self.player.money = 10000
         self.estate.buy(self.player)
-        self.player.money = 10
-        self.player.add_money = MagicMock()
-        self.estate.upgrade()
-        self.player.add_money.assert_called_once()
-        self.player.money = 1000
+        self.player.add_money.assert_called()
         self.assertEqual(self.estate.fee, self.fees[0])
         self.estate.upgrade()
+        self.player.add_money.assert_called()
         self.assertEqual(self.estate.fee, self.fees[1])
 
 
@@ -109,8 +105,7 @@ class TestPlaceEstateBlock(unittest.TestCase):
                              3000, 2000, 300, block)
         place3 = PlaceEstate('苏州', [100, 200, 300, 400],
                              3000, 2000, 300, block)
-        map = MapImplement('china')
-        player = PlayerImplement('邓哲', 20000, map)
+        player = MagicMock()
         place1.buy(player)
         place1.upgrade()
         place2.buy(player)

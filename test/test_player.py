@@ -5,13 +5,11 @@ from unittest.mock import MagicMock
 
 
 from richman.player import PlayerImplement
-# from richman.maps.map_test import MapTest
 
 
 class TestBasePlayer(unittest.TestCase):
 
     def setUp(self):
-        # map = MapTest()
         map = MagicMock()
         map.__len__.return_value = 10
         self.player = PlayerImplement(name='Hangzhou',

@@ -164,3 +164,11 @@ class PlayerSimple(PlayerImplement):
                     and item.pledge_value is not None):
                 self.pos = index
                 break
+
+
+class PlayerPerson(PlayerImplement):
+    pass
+
+
+class PlayerCpu(PlayerImplement):
+    pass
