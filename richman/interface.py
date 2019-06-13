@@ -8,17 +8,27 @@ class IGamePlayer(abc.ABC):
     '''player of game interface
     '''
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self)->str:
         '''
         :return: name of the player
         '''
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def is_banckrupted(self)->bool:
         '''
         :return: True if is banckrupted.
+        '''
+        pass
+
+    @abc.abstractmethod
+    def add_to_map(self, map):
+        '''add player to map
+
+        :param map: map
         '''
         pass
 
@@ -28,17 +38,18 @@ class IGamePlayer(abc.ABC):
         '''
         pass
 
-class IGameMap(abc.ABC):
-    '''map of map interface
+
+class IPlayerPlace(abc.ABC):
+    '''place of player interface
+    '''
+    pass
+
+
+class IPlayerMap(abc.ABC):
+    '''map of player interface
     '''
 
-    @abc.abstractmethod
-    def add_players(self, players: list):
-        '''add players into map
-
-        :param players: list of IGamePlayers
-        '''
-        pass
+    pass
 
 
 class BasePlayer(IGamePlayer):
@@ -182,6 +193,16 @@ class BaseEvent(abc.ABC):
         '''
         pass
 
+
+class IMapPlayer(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def map(self):
+        pass
+    @map.setter
+    @abc.abstractmethod
+    def map(self, value: IPlayerMap):
+        pass
 
 class BaseMap(abc.ABC):
 

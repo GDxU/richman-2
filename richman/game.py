@@ -10,7 +10,7 @@ class GameImplement:
     __player_index = 0  # 当前 player index
     __players_banckrupted = []  # 结束游戏的玩家
 
-    def __init__(self, map: itf.BaseMap, players: list):
+    def __init__(self, map, players: list):
         '''init
 
         :param map: 
@@ -32,14 +32,14 @@ class GameImplement:
     def players_banckrupted(self):
         return self.__players_banckrupted
 
-    def _add_players_into_map(self, map: itf.IGameMap,
-                              players: itf.IGamePlayer):
+    def _add_players_into_map(self, map, players: itf.IGamePlayer):
         '''add players into map
 
         :param map: map
         :param players: players
         '''
-        map.add_players(players)
+        for player in players:
+            player.add_to_map(map)
 
     def _remove_players_banckrupted(self, players_banckrupted: list):
         '''remove current player from __players list
