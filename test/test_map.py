@@ -4,25 +4,23 @@ import unittest
 from unittest.mock import MagicMock
 
 from richman.map import MapImplement
-
-from richman.place import PlaceImplement, PlaceEstate, PlaceEstateBlock
+from richman.base import BasePlace
 
 
 class TestBaseMap(unittest.TestCase):
 
     def setUp(self):
-        place1 = PlaceImplement('Hangzhou', 2200, 1100)
-        place2 = PlaceImplement('Xiamen', 3300, 2200)
-        place3 = PlaceImplement('Shanxi', 4400, 2200)
+        place1 = MagicMock()
+        place2 = MagicMock()
+        place3 = MagicMock()
         self.map = MapImplement('China', [place1, place2, place3])
 
     def tearDown(self):
         pass
 
     def test_add_to_map_should_add_places_and_players_to_map(self):
-        block = PlaceEstateBlock('block1')
-        place1 = PlaceEstate('Hangzhou', [1,2,3,4], 2200, 1100, 1, block)
-        place2 = PlaceEstate('Xiamen', [1,2,3,4], 3300, 2200, 2, block)
+        place1 = MagicMock()
+        place2 = MagicMock()
         map = MapImplement('China', [place1, place2])
         self.assertListEqual(
             map.items,
