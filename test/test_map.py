@@ -26,12 +26,3 @@ class TestBaseMap(unittest.TestCase):
             [place1,
              place2]
         )
-
-    def test_save_and_load_map_should_operate_correctly(self):
-        self.map.save(r'./map_test.pickle')
-        map_new = MapImplement(name='China New')
-        map_new.load(r'./map_test.pickle')
-        self.assertEqual(self.map.name, map_new.name)
-        self.assertEqual(map_new.items[0].name, 'Hangzhou')
-        self.assertEqual(map_new.items[1].name, 'Xiamen')
-        self.assertEqual(map_new.items[2].name, 'Shanxi')

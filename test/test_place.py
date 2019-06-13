@@ -12,8 +12,6 @@ from richman.place import (
     PledgeTwiceException,
     RebuyNotPledgedException
 )
-# from richman.player import PlayerImplement
-# from richman.map import MapImplement
 
 
 class TestBasePlace(unittest.TestCase):

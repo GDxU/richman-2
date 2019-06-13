@@ -3,7 +3,7 @@
 '''
 import logging
 
-from richman.base import BasePlace, BasePlayer
+import richman.interface as itf
 
 
 class BuyPlaceWithOwnerException(Exception):
@@ -39,7 +39,7 @@ class RebuyNotPledgedException(Exception):
         super().__init__("该地当前未被抵押！")
 
 
-class PlaceImplement(BasePlace):
+class PlaceImplement(itf.IPlayerPlace):
 
     __owner = None
     __is_pledged = False
@@ -84,7 +84,7 @@ class PlaceImplement(BasePlace):
     def sell_value(self):
         return self.__sell_value
 
-    def buy(self, player: BasePlayer):
+    def buy(self, player: itf.IPlacePlayer):
         if self.__owner:
             raise BuyPlaceWithOwnerException()
         else:
@@ -118,7 +118,7 @@ class PlaceImplement(BasePlace):
             self.owner.add_money(-self.buy_value)
             self.__is_pledged = False
 
-    def trigger(self, player: BasePlayer):
+    def trigger(self, player: itf.IPlacePlayer):
         '''take the effect of the place, triggered by the player
         '''
         raise NotImplementedError('override is needed.')
@@ -186,7 +186,7 @@ class PlaceEstate(PlaceImplement):
         else:
             raise DegradeMinException()
 
-    def trigger(self, player: BasePlayer):
+    def trigger(self, player: itf.IPlacePlayer):
         '''if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
@@ -224,7 +224,7 @@ class PlaceEstateBlock:
         assert isinstance(estate, PlaceEstate)
         self.__estates.append(estate)
 
-    def block_fee_calc(self, owner: BasePlayer)->int:
+    def block_fee_calc(self, owner: itf.IPlacePlayer)->int:
         '''calculate block fee that belongs to the owner
 
         :param owner: the owner of the palces

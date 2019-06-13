@@ -49,7 +49,12 @@ class IPlayerMap(abc.ABC):
     '''map of player interface
     '''
 
-    pass
+    @abc.abstractmethod
+    def __len__(self):
+        '''
+        :return: length of map
+        '''
+        pass
 
 
 class BasePlayer(IGamePlayer):
@@ -204,29 +209,20 @@ class IMapPlayer(abc.ABC):
     def map(self, value: IPlayerMap):
         pass
 
-class BaseMap(abc.ABC):
+class IPlacePlayer(abc.ABC):
+    '''place interface to player
+    '''
 
-    @property
     @abc.abstractmethod
-    def name(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def items(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def blocks(self):
+    def add_money(self, delta: int):
+        '''change player money
+
+        :param delta: minus means subtract
+        '''
         pass
 
     @abc.abstractmethod
-    def __len__(self):
-        pass
-
-
-class BaseSpecial(abc.ABC):
-
-    @property
-    @abc.abstractmethod
-    def name(self):
+    def __eq__(self, obj):
+        '''check if two player equls
+        '''
         pass
