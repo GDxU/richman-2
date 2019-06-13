@@ -90,6 +90,7 @@ class PlaceImplement(itf.IPlayerPlace):
         else:
             player.add_money(-self.buy_value)
             self.__owner = player
+        logging.info('{} 购买地产 {}，花费 {} 元。'.format(player.name, self.name, self.buy_value))
 
     def pledge(self):
         if self.__owner is None:
@@ -99,6 +100,7 @@ class PlaceImplement(itf.IPlayerPlace):
         else:
             self.owner.add_money(self.pledge_value)
             self.__is_pledged = True
+        logging.info('{} 抵押地产 {}，获得 {} 元。'.format(self.owner.name, self.name, self.pledge_value))
 
     def sell(self):
         if not self.owner:
@@ -107,6 +109,7 @@ class PlaceImplement(itf.IPlayerPlace):
         if self.is_pledged:
             sell_value -= self.pledge_value
         self.owner.add_money(sell_value)
+        logging.info('{} 变卖地产 {}，获得 {} 元。'.format(self.owner.name, self.name, sell_value))
         self.__owner = None
 
     def rebuy(self):
@@ -117,6 +120,7 @@ class PlaceImplement(itf.IPlayerPlace):
         else:
             self.owner.add_money(-self.buy_value)
             self.__is_pledged = False
+        logging.info('{} 赎回地产 {}，获得 {} 元。'.format(self.owner.name, self.name, self.buy_value))
 
     def upgrade(self):
         pass
@@ -176,6 +180,10 @@ class PlaceEstate(PlaceImplement):
     def upgrade_value(self):
         return self.__upgrade_value
 
+    def sell(self):
+        super().sell()
+        self.__current_level = 0
+
     def upgrade(self):
         if self.__current_level < self.__kMaxLevel - 1:
             self.owner.add_money(-self.upgrade_value)
@@ -183,6 +191,10 @@ class PlaceEstate(PlaceImplement):
             self.value = self.__fees[self.__current_level]
         else:
             raise UpgradeMaxException()
+        logging.info('{} 升级地产 {} 到 {} 级，花费 {} 元。'.format(self.owner.name,
+                                                                  self.name,
+                                                                  self.__current_level,
+                                                                  self.upgrade_value))
 
     def degrade(self):
         if self.__current_level > 0:
@@ -190,6 +202,7 @@ class PlaceEstate(PlaceImplement):
             self.value = self.__fees[self.__current_level]
         else:
             raise DegradeMinException()
+        logging.info('{} 降低地产 {} 等级到 {} 级。'.format(self.owner.name, self.name, self.__current_level))
 
     def trigger(self, player: itf.IPlacePlayer):
         '''if owner is not None, take the fee from player
@@ -207,10 +220,8 @@ class PlaceEstate(PlaceImplement):
             # update
             else:
                 player.trigger_upgrade(self)
-                logging.info('{} 升级地产 {} 到 {} 级。'.format(player.name, self.name, self.__current_level))
         # ask whether to buy
         else:
-            logging.info('{} 购买地产 {}，花费 {}。'.format(player.name, self.name, self.buy_value))
             player.trigger_buy(self)
 
     def __str__(self):
@@ -224,14 +235,13 @@ class PlaceEstateBlock:
     '''a block that holds estates with same color
     '''
 
-    __estates = []
-
     def __init__(self, name: str):
         '''init
 
         :param name: block name
         '''
         self.__name = name
+        self.__estates = []
 
     @property
     def name(self):

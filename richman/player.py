@@ -94,6 +94,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         :param reverse: 是否后退标志
         '''
         step = self._dice()
+        logging.info('{} 掷出 {} 点。'.format(self.name, step))
         if reverse:
             step = 0 - step
         self.pos += step

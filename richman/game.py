@@ -11,7 +11,6 @@ class GameImplement:
     __player_index = 0  # 当前 player index
     __players_in_game = []
     __players_all = []  # 所有玩家
-    __players_banckrupted = []  # 结束游戏的玩家
 
     def __init__(self, map, players: list):
         '''init
@@ -21,23 +20,19 @@ class GameImplement:
         '''
         self.__map = map
         self.__player_index = 0
-        self.__players_in_game = players
-        self.__players_all = players
-        self.__players_banckrupted = []
+        self.__players_in_game = players.copy()
+        self.__players_all = players.copy()
         self._add_players_into_map(map, players)
 
     @property
     def map(self):
         return self.__map
     @property
-    def players(self):
+    def players_all(self):
         return self.__players_all
     @property
     def players_in_game(self):
         return self.__players_in_game
-    @property
-    def players_banckrupted(self):
-        return self.__players_banckrupted
 
     def _add_players_into_map(self, map, players: itf.IGamePlayer):
         '''add players into map
@@ -55,10 +50,9 @@ class GameImplement:
         '''
         for player in players_banckrupted:
             self.__players_in_game.remove(player)
-            self.__players_banckrupted.append(player)
 
     def _display_players_info(self):
-        for player in self.players:
+        for player in self.players_all:
             logging.info('参赛者信息：{}'.format(player))
 
     __step = 0
@@ -67,9 +61,9 @@ class GameImplement:
 
         :note: banckrupted players is remove from players list
         '''
-        logging.info('第 {} 回合开始：'.format(self.__step))
+        logging.info('\n第 {} 回合开始：'.format(self.__step))
         players_banckrupted = []
-        for player in self.players:
+        for player in self.players_in_game:
             player.play()
             if player.is_banckrupted:
                 logging.info('{} 破产。'.format(player.name))
@@ -81,6 +75,6 @@ class GameImplement:
     def run(self):
         '''run the game and show results of each step
         '''
-        while len(self.players) > 1:
+        while len(self.players_in_game) > 1:
             self._run_one_step()
         logging.info('{} 获得比赛胜利！'.format(self.players_in_game[0].name))
