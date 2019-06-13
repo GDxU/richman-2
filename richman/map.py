@@ -4,7 +4,7 @@
 import pickle
 import os
 
-from richman.base import BaseMap
+import richman.interface as itf
 
 
 class PlayerAlreadyExistException(Exception):
@@ -12,7 +12,7 @@ class PlayerAlreadyExistException(Exception):
         super().__init__("该玩家已经存在！")
 
 
-class MapImplement(BaseMap):
+class MapImplement(itf.IPlayerMap):
 
     __items = []
     _blocks = []

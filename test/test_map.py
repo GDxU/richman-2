@@ -4,7 +4,6 @@ import unittest
 from unittest.mock import MagicMock
 
 from richman.map import MapImplement
-from richman.base import BasePlace
 
 
 class TestBaseMap(unittest.TestCase):
