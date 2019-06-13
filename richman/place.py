@@ -118,6 +118,9 @@ class PlaceImplement(itf.IPlayerPlace):
             self.owner.add_money(-self.buy_value)
             self.__is_pledged = False
 
+    def upgrade(self):
+        pass
+
     def trigger(self, player: itf.IPlacePlayer):
         '''take the effect of the place, triggered by the player
         '''
@@ -125,6 +128,11 @@ class PlaceImplement(itf.IPlayerPlace):
 
     def __eq__(self, obj):
         return self.name == obj.name
+
+    def __str__(self):
+        '''display player info
+        '''
+        return self.name
 
 
 class PlaceEstate(PlaceImplement):
@@ -165,14 +173,11 @@ class PlaceEstate(PlaceImplement):
     def fee(self):
         return self.__fees[self.__current_level]
     @property
-    def block_fee(self):
-        return self.block.block_fee_calc(self.owner)
-    @property
     def upgrade_value(self):
         return self.__upgrade_value
 
     def upgrade(self):
-        if self.__current_level < self.__kMaxLevel:
+        if self.__current_level < self.__kMaxLevel - 1:
             self.owner.add_money(-self.upgrade_value)
             self.__current_level += 1
             self.value = self.__fees[self.__current_level]
@@ -190,13 +195,29 @@ class PlaceEstate(PlaceImplement):
         '''if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
-        # take the fee
-        if self.owner and self.owner != player:
-            self.owner.add_money(self.fee)
-            player.add_money(-self.fee)
+        logging.info('{} 走到 {}。'.format(player.name, self.name))
+        # has owner
+        if self.owner:
+            # take the fee
+            if self.owner != player:
+                block_fee = self.block.block_fee_calc(self.owner)
+                logging.info('{} 交给 {} 地租 {}。'.format(player.name, self.owner.name, block_fee))
+                self.owner.add_money(block_fee)
+                player.add_money(-block_fee)
+            # update
+            else:
+                player.trigger_upgrade(self)
+                logging.info('{} 升级地产 {} 到 {} 级。'.format(player.name, self.name, self.__current_level))
         # ask whether to buy
         else:
+            logging.info('{} 购买地产 {}，花费 {}。'.format(player.name, self.name, self.buy_value))
             player.trigger_buy(self)
+
+    def __str__(self):
+        '''display player info
+        '''
+        lines = '{}: {}'.format(self.name, self.__current_level)
+        return lines
 
 
 class PlaceEstateBlock:

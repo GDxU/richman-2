@@ -68,5 +68,10 @@ class MapImplement(itf.IPlayerMap):
         with open(file_path, 'wb') as f:
             pickle.dump(map, f)
 
+    def trigger(self, player: itf.IMapPlayer):
+        '''trigger player to 
+        '''
+        self.items[player.pos].trigger(player)
+
     def __len__(self):
         return len(self.items)

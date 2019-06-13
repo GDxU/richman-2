@@ -38,10 +38,22 @@ class IGamePlayer(abc.ABC):
         '''
         pass
 
+    @abc.abstractmethod
+    def __str__(self):
+        '''display player info
+        '''
+        pass
+
 
 class IPlayerMap(abc.ABC):
     '''map of player interface
     '''
+
+    @abc.abstractmethod
+    def trigger(self, player):
+        '''trigger player to 
+        '''
+        pass
 
     @abc.abstractmethod
     def __len__(self):
@@ -81,6 +93,12 @@ class IPlayerPlace(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def upgrade(self):
+        '''upgrade the place
+        '''
+        pass
+
+    @abc.abstractmethod
     def pledge(self):
         '''pledge the place to the bank
         '''
@@ -103,6 +121,12 @@ class IPlayerPlace(abc.ABC):
         '''take the effect of the place, triggered by the player
 
         :param player: BasePlayer
+        '''
+        pass
+
+    @abc.abstractmethod
+    def __str__(self):
+        '''display player info
         '''
         pass
 
@@ -130,6 +154,10 @@ class IMapPlayer(abc.ABC):
     @abc.abstractmethod
     def map(self, value: IPlayerMap):
         pass
+    @property
+    @abc.abstractmethod
+    def pos(self):
+        pass
 
 
 class IPlacePlayer(abc.ABC):
@@ -147,6 +175,14 @@ class IPlacePlayer(abc.ABC):
     @abc.abstractmethod
     def trigger_buy(self, place):
         '''decide whether to buy the place
+
+        :param place: IPlayerPlace
+        '''
+        pass
+
+    @abc.abstractmethod
+    def trigger_upgrade(self, place):
+        '''decide whether to upgrade the place
 
         :param place: IPlayerPlace
         '''

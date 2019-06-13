@@ -3,10 +3,10 @@
 '''
 import logging
 
-from richman.base import BaseEvent, BasePlayer
+import richman.interface as itf
 
 
-class EventImplement(BaseEvent):
+class EventImplement:
     
     def __init__(self, name):
         self.__name = name

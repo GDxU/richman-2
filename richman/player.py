@@ -3,13 +3,9 @@
 '''
 import random
 import datetime
+import logging
 
 import richman.interface as itf
-
-
-class PlayerBanckruptException(Exception):
-    def __init__(self, *args):
-        super().__init__("玩家破产！")
 
 
 class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
@@ -18,7 +14,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
     __name = ''
     __money = 0
     __map = None
-    __places = []  # 购买的土地
+    _places = []  # 购买的土地
     __pos = 0  # 当前所在地图的位置
 
     def __init__(self, name: str, money: int,
@@ -27,13 +23,14 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
 
         :param name: player name
         :param money: player's init money
+        :param map: default is None
         '''
         self.__name = name
         assert money > 0, '初始资金必须大于零。'
         self.__money = money
         self.__map = map
         # init others
-        self.__places = []
+        self._places = []
         self.__pos = 0
         random.seed(datetime.datetime.now())
 
@@ -60,7 +57,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         self.__pos = value % len(self.__map)
     @property
     def places(self):
-        return self.__places
+        return self._places
 
     def _dice(self)->int:
         return random.randrange(1,7)
@@ -100,6 +97,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         if reverse:
             step = 0 - step
         self.pos += step
+        self.map.trigger(self)
 
     def trigger_buy(self, place: itf.IPlayerPlace):
         '''decide whether to buy the place
@@ -107,7 +105,14 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         :param place: IPlayerPlace
         '''
         if self._trigger_buy(place):
-            self.__places.append(place)
+            self._places.append(place)
+
+    def trigger_upgrade(self, place: itf.IPlayerPlace):
+        '''decide whether to upgrade the place
+
+        :param place: IPlayerPlace
+        '''
+        self._trigger_upgrade(place)
 
     def trigger_jump_to_estate(self):
         '''select which estate to go when jump is needed
@@ -128,6 +133,13 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
+    def _trigger_upgrade(self, place: itf.IPlayerPlace):
+        '''decide whether to upgrade the place
+
+        :param place: IPlayerPlace
+        '''
+        raise NotImplementedError('override is needed.')
+
     def _trigger_jump_to_estate(self):
         '''select which estate to go when jump is needed
         '''
@@ -136,30 +148,45 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
     def __eq__(self, obj):
         return self.name == obj.name
 
+    def __str__(self):
+        '''display player info
+        '''
+        places_info = [str(place) for place in self.places]
+        lines = r'姓名: {}, 现金: {}, 地产: {}'.format(self.name, self.money, places_info)
+        return lines
+
 
 class PlayerSimple(PlayerImplement):
 
+    __is_banckrupted = False
     @property
     def is_banckrupted(self):
-        raise NotImplementedError('need override.')
+        return self.__is_banckrupted
 
     def _make_money(self):
         '''make money my pledging or selling,
         to make player's money more than zero
         '''
         # pledge for money
-        for place in self.places:
-            if place.pledge_value is not None:
+        for place in self._places:
+            if (place.pledge_value is not None
+                    and not place.is_pledged):
                 place.pledge()
                 if self.money > 0:
                     return None
         # sell for money
-        for place in self.places:
+        places_sold = []
+        for place in self._places:
             place.sell()
+            places_sold.append(place)
             if self.money > 0:
-                return None
+                break
+        for place in places_sold:
+            self._places.remove(place)
+        if self.money > 0:
+            return None
         # banckrupt
-        raise PlayerBanckruptException()
+        self.__is_banckrupted = True
 
     def _trigger_buy(self, place: itf.IPlayerPlace)->bool:
         '''decide whether to buy the place
@@ -172,6 +199,17 @@ class PlayerSimple(PlayerImplement):
             return True
         else:
             return False
+
+    def _trigger_upgrade(self, place: itf.IPlayerPlace):
+        '''decide whether to upgrade the place
+
+        :param place: IPlayerPlace
+        '''
+        if self.money > place.buy_value:
+            try:
+                place.upgrade()
+            except:
+                pass
 
     def _trigger_jump_to_estate(self):
         '''select which estate to go when jump is needed
