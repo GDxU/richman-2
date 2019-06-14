@@ -37,8 +37,9 @@ def _set_logger():
     logger.propagate = False
 
 
-def main():
-    _set_logger()
+def main(log_on:bool = False):
+    if log_on:
+        _set_logger()
     # player
     init_money = 50000
     players = []
