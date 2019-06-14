@@ -11,11 +11,9 @@ from richman.estate import (
 from richman.project import (
     ProjectNuclear,
     ProjectBuilder,
-    ProjectStation,
-    ProjectTv,
-    ProjectAirport,
-    ProjectSewerage,
-    ProjectSeaport
+    ProjectTransportation,
+    ProjectTvStation,
+    ProjectSewerage
 )
 from richman.event import (
     EventStart,

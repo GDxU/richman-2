@@ -3,9 +3,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from richman.game import GameImplement
+from richman.game import Game
 from richman.maps.map_test import MapTest
-from richman.place import PlaceEstate, PlaceEstateBlock
 from richman.player import PlayerSimple
 
 
@@ -19,7 +18,7 @@ class TestRichMan(unittest.TestCase):
         # map
         map = MapTest()
         # game
-        self.game = GameImplement(map, [player1, player2])
+        self.game = Game(map, [player1, player2])
 
     def tearDown(self):
         pass

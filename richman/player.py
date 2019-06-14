@@ -11,12 +11,6 @@ import richman.interface as itf
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                  itf.IEstateForPlayer, itf.IProjectForPlayer):
 
-    __name = ''
-    __money = 0
-    __map = None
-    _places = []  # 购买的土地
-    __pos = 0  # 当前所在地图的位置
-
     def __init__(self, name: str, money: int,
                  map:itf.IPlayerForMap = None):
         '''init
@@ -30,7 +24,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.__money = money
         self.__map = map
         # init others
-        self._places = []
+        self._estates = []
+        self._projects = []
         self.__pos = 0
         random.seed(datetime.datetime.now())
 
@@ -56,11 +51,33 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def pos(self, value: int):
         self.__pos = value % len(self.__map)
     @property
-    def places(self):
-        return self._places
+    def estates(self):
+        return self._estates
+    @property
+    def projects(self):
+        return self._projects
+    @property
+    def estate_max_level(self):
+        '''return the max level of all the estate the player has
+        '''
+        levels = (estate.current_level for estate in self.estates
+                    if isinstance(estate, itf.IPlayerForEstate))
+        return max(levels)
 
     def _dice(self)->int:
         return random.randrange(1,7)
+    
+    def _remove_place(self, place: itf.IPlayerForPlace):
+        '''remove the place from self._estates or self._projects
+
+        :param place: estate or project
+        '''
+        if isinstance(place, itf.IPlayerForEstate):
+            self._estates.remove(place)
+        elif isinstance(place, itf.IPlayerForProject):
+            self._projects.remove(place)
+        else:
+            raise RuntimeError('参数类型不正确。')
 
     def add_to_map(self, map: itf.IPlayerForMap):
         '''add player to map
@@ -100,25 +117,39 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.pos += step
         self.map.trigger(self)
 
-    def trigger_buy(self, place):
+    def trigger_buy(self, place: itf.IPlayerForPlace):
         '''decide whether to buy the place
 
-        :param place: estate or project
+        :param place: IPlayerForPlace
         '''
-        if self._trigger_buy(place):
-            self._places.append(place)
+        if self._make_decision_buy(place):
+            if isinstance(place, itf.IPlayerForProject):
+                self._projects.append(place)
+            elif isinstance(place, itf.IPlayerForEstate):
+                self._estates.append(place)
+            else:
+                raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
+            place.buy(self)
 
-    def trigger_upgrade(self, place):
+    def trigger_upgrade(self, place: itf.IPlayerForEstate):
         '''decide whether to upgrade the place
 
-        :param place: estate or project
+        :param place: estate
         '''
-        self._trigger_upgrade(place)
+        if self._make_decision_upgrade(place):
+            place.upgrade()
 
     def trigger_jump_to_estate(self):
         '''select which estate to go when jump is needed
         '''
-        self._trigger_jump_to_estate()
+        self.pos = self._make_decision_jump_to_estate()
+
+    def trigger_upgrade_any_estate(self):
+        '''upgrade and estate that belongs to the player
+        '''
+        estate = self._make_decision_upgrade_any_estate()
+        if estate:
+            estate.uprade()
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -126,7 +157,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_buy(self, place: itf.IPlayerForPlace)->bool:
+    def _make_decision_buy(self, place: itf.IPlayerForPlace)->bool:
         '''decide whether to buy the place
 
         :param place: IPlayerForPlace
@@ -134,15 +165,25 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_upgrade(self, place: itf.IPlayerForEstate):
+    def _make_decision_upgrade(self, place: itf.IPlayerForEstate):
         '''decide whether to upgrade the place
 
         :param place: IPlayerForEstate
+        :return: True if upgrade
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_jump_to_estate(self):
+    def _make_decision_jump_to_estate(self)->int:
         '''select which estate to go when jump is needed
+
+        :return: position of estate to jump
+        '''
+        raise NotImplementedError('override is needed.')
+
+    def _make_decision_upgrade_any_estate(self)->itf.IPlayerForEstate:
+        '''upgrade and estate that belongs to the player
+
+        :return: estate to upgrade, or None for not upgrade
         '''
         raise NotImplementedError('override is needed.')
 
@@ -152,8 +193,10 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def __str__(self):
         '''display player info
         '''
-        places_info = [str(place) for place in self.places]
-        lines = r'姓名: {}, 现金: {}, 地产: {}'.format(self.name, self.money, places_info)
+        projects_info = [str(project) for project in self.projects]
+        estates_info = [str(estate) for estate in self.estates]
+        lines = r'姓名: {}，现金: {}，地产: {}，项目：{}。'.format(self.name, self.money,
+                                                                 estates_info, projects_info)
         return lines
 
 
@@ -164,62 +207,103 @@ class PlayerSimple(BasePlayer):
     def is_banckrupted(self):
         return self.__is_banckrupted
 
+    def __pledge_for_money(self)->bool:
+        '''pledge for money
+        
+        :return: True if money is enough
+        '''
+        for estate in self.estates:
+            if not estate.is_pledged:
+                estate.pledge()
+                if self.money > 0:
+                    return True
+        else:
+            return False
+
+    def __sell_place(self, places: list)->int:
+        ''' self the places with generator
+
+        :param places: list of IPlayerForPlace
+        :return: the player's money after sold out
+        '''
+        for place in places:
+            place.sell()
+            self._remove_place(place)
+            yield self.money
+    
+    def __sell_for_money(self)->bool:
+        '''sell for money
+        
+        :return: True if money is enough
+        '''
+        # sell estate
+        for money in self.__sell_place(self._estates):
+            if money > 0:
+                return True
+        # sell project
+        for money in self.__sell_place(self._projects):
+            if money > 0:
+                return True
+        # all places is sold out, but still money is below zero
+        return False
+
     def _make_money(self):
         '''make money my pledging or selling,
         to make player's money more than zero
         '''
         # pledge for money
-        for place in self._places:
-            if (place.pledge_value is not None
-                    and not place.is_pledged):
-                place.pledge()
-                if self.money > 0:
-                    return None
+        if self.__pledge_for_money():
+            return None
         # sell for money
-        places_sold = []
-        for place in self._places:
-            place.sell()
-            places_sold.append(place)
-            if self.money > 0:
-                break
-        for place in places_sold:
-            self._places.remove(place)
-        if self.money > 0:
+        if self.__sell_for_money():
             return None
         # banckrupt
         self.__is_banckrupted = True
 
-    def _trigger_buy(self, place: itf.IPlayerForPlace)->bool:
+    def _make_decision_buy(self, place: itf.IPlayerForPlace)->bool:
         '''decide whether to buy the place
 
         :param place: IPlayerForPlace
         :return: True if buy the place
         '''
         if self.money > place.buy_value:
-            place.buy(self)
             return True
         else:
             return False
 
-    def _trigger_upgrade(self, place: itf.IPlayerForEstate):
-        '''decide whether to upgrade the place
+    def _make_decision_upgrade(self, estate: itf.IPlayerForEstate)->bool:
+        '''decide whether to upgrade the estate
 
-        :param place: IPlayerForPlace
+        :param estate: IPlayerForPlace
+        :return: True if upgrade
         '''
-        if self.money > place.buy_value:
-            try:
-                place.upgrade()
-            except:
-                pass
+        if (self.money > estate.upgrade_value
+                and not estate.is_level_max):
+            return True
+        else:
+            return False
 
-    def _trigger_jump_to_estate(self):
+    def _make_decision_jump_to_estate(self)->int:
         '''select which estate to go when jump is needed
+
+        :return: position of estate to jump
         '''
         for index, item in enumerate(self.map.items):
-            if (isinstance(item, itf.IPlayerForPlace)
+            if (isinstance(item, itf.IPlayerForEstate)
                     and item.pledge_value is not None):
-                self.pos = index
-                break
+                return index
+        else:
+            raise RuntimeError('map {} 中没有设置地产！'.format(self.map.name))
+
+    def _make_decision_upgrade_any_estate(self)->itf.IPlayerForEstate:
+        '''upgrade and estate that belongs to the player
+
+        :return: estate to upgrade, or None for not upgrade
+        '''
+        if self._estates:
+            return self._estates[0]
+        else:
+            return None
 
 
 class PlayerPerson(BasePlayer):
