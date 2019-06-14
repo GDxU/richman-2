@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*
 import logging
+from logging.handlers import RotatingFileHandler
 
 from richman.game import GameImplement
 from richman.maps.map_test import MapTest
@@ -23,9 +24,16 @@ def _set_logger():
     # add stream handler
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('[%(levelname)s %(asctime)s] [%(module)s %(lineno)d] %(message)s')
+    # formatter = logging.Formatter('[%(levelname)s %(asctime)s] [%(module)s %(lineno)d] %(message)s')
+    formatter = logging.Formatter('%(message)s')
     console.setFormatter(formatter)
     logger.addHandler(console)
+    # add txt log
+    rt_handler = RotatingFileHandler(r"log.txt", maxBytes=1*1024*1024, backupCount=5)
+    rt_handler.setLevel(logging.INFO)
+    rt_handler.setFormatter(formatter)
+    logger.addHandler(rt_handler)
+    logger.propagate = False
     # set progate
     logger.propagate = False
 
@@ -33,13 +41,15 @@ def _set_logger():
 def main():
     _set_logger()
     # player
-    init_money = 20000
-    player1 = PlayerSimple(name='邓哲', money=init_money)
-    player2 = PlayerSimple(name='戎萍', money=init_money)
+    init_money = 50000
+    players = []
+    players.append(PlayerSimple(name='邓彦修', money=init_money))
+    players.append(PlayerSimple(name='邓哲', money=init_money))
+    players.append(PlayerSimple(name='戎萍', money=init_money))
     # map
     map = MapTest()
     # game
-    game = GameImplement(map, [player1, player2])
+    game = GameImplement(map, players)
     # start
     game.run()
 
