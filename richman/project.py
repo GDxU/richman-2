@@ -48,6 +48,18 @@ class BaseProject(itf.IPlayerForProject):
 
     def trigger(self, player: itf.IProjectForPlayer):
         '''take the effect of the place, triggered by the player
+
+        :param player: IProjectForPlayer
+        '''
+        if self.owner:
+            self._take_effect(player)
+        else:
+            player.trigger_buy(self)
+    
+    def _take_effect(self, player: itf.IProjectForPlayer):
+        '''take the effect of the place, triggered by the player
+
+        :param player: IProjectForPlayer
         '''
         raise NotImplementedError('override is needed.')
 
@@ -62,40 +74,51 @@ class BaseProject(itf.IPlayerForProject):
 
 class ProjectNuclear(BaseProject):
 
-    def trigger(self, player: itf.IProjectForPlayer):
+    def _take_effect(self, player: itf.IProjectForPlayer):
         '''收取500元，若对方拥有1级/2级/3级地产，额外收取500/1000/1500元。
+
+        :param player: IProjectForPlayer
         '''
-        raise NotImplementedError('override is needed.')
+        fine = 500 + 500 * player.estate_max_level
+        player.add_money(fine)
 
 class ProjectBuilder(BaseProject):
 
-    def trigger(self, player: itf.IProjectForPlayer):
+    def _take_effect(self, player: itf.IProjectForPlayer):
         '''当你拥有1/2/3项运输项目时，收取500/1000/2000元。
         下回合开始时，你可以放弃投骰子，改为给本项目拥有着500元（无人拥有则给银行），
         立即到任意一个地产处。
+
+        :param player: IProjectForPlayer
         '''
         raise NotImplementedError('override is needed.')
 
 class ProjectTransportation(BaseProject):
 
-    def trigger(self, player: itf.IProjectForPlayer):
+    def _take_effect(self, player: itf.IProjectForPlayer):
         '''当你拥有1/2/3项运输项目时，收取500/1000/2000元。
         下回合开始时，你可以放弃投骰子，改为给本项目拥有着500元（无人拥有则给银行），
         立即到任意一个地产处。
+
+        :param player: IProjectForPlayer
         '''
         raise NotImplementedError('override is needed.')
 
 class ProjectTvStation(BaseProject):
 
-    def trigger(self, player: itf.IProjectForPlayer):
+    def _take_effect(self, player: itf.IProjectForPlayer):
         '''当任何人走到运气和新闻时，你获得500元奖励。
+
+        :param player: IProjectForPlayer
         '''
         raise NotImplementedError('override is needed.')
 
 class ProjectSewerage(BaseProject):
 
-    def trigger(self, player: itf.IProjectForPlayer):
+    def _take_effect(self, player: itf.IProjectForPlayer):
         '''收取500元，若对方每拥有3块地产，额外收取500元。
+
+        :param player: IProjectForPlayer
         '''
         raise NotImplementedError('override is needed.')
 

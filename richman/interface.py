@@ -221,6 +221,13 @@ class IEstateForPlayer(abc.ABC):
 
 class IProjectForPlayer(abc.ABC):
 
+    @property
+    @abc.abstractmethod
+    def estate_max_level(self):
+        '''return the max level of all the estate the player has
+        '''
+        pass
+
     @abc.abstractmethod
     def add_money(self, delta: int):
         '''change player money
