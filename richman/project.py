@@ -34,7 +34,7 @@ class BaseProject(itf.IPlayerForProject):
     def sell_value(self):
         return self.__sell_value
 
-    def buy(self, player: itf.IPlaceForPlayer):
+    def buy(self, player: itf.IProjectForPlayer):
         assert not self.__owner, '该项目已经卖出，无法购买！'
         player.add_money(-self.buy_value)
         self.__owner = player
