@@ -8,7 +8,7 @@ class IGameForPlayer(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def name(self)->str:
+    def name(self):
         '''
         :return: name of the player
         '''
@@ -59,15 +59,23 @@ class IPlayerForMap(abc.ABC):
         pass
 
 
-class IPlayerForPlace(abc.ABC):
+class IPlayerForEstate(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def is_pledged(self):
+    def buy_value(self):
         pass
     @property
     @abc.abstractmethod
-    def buy_value(self):
+    def upgrade_value(self):
+        pass
+    @property
+    @abc.abstractmethod
+    def sell_value(self):
+        pass
+    @property
+    @abc.abstractmethod
+    def is_pledged(self):
         pass
     @property
     @abc.abstractmethod
@@ -75,7 +83,15 @@ class IPlayerForPlace(abc.ABC):
         pass
     @property
     @abc.abstractmethod
-    def sell_value(self):
+    def is_available(self):
+        pass
+    @property
+    @abc.abstractmethod
+    def is_level_max(self):
+        pass
+    @property
+    @abc.abstractmethod
+    def current_level(self):
         pass
 
     @abc.abstractmethod
@@ -93,14 +109,14 @@ class IPlayerForPlace(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def pledge(self):
-        '''pledge the place to the bank
+    def sell(self):
+        '''sell the place, remove the owner mark of the place
         '''
         pass
 
     @abc.abstractmethod
-    def sell(self):
-        '''sell the place, remove the owner mark of the place
+    def pledge(self):
+        '''pledge the place to the bank
         '''
         pass
 
@@ -120,7 +136,47 @@ class IPlayerForPlace(abc.ABC):
 
     @abc.abstractmethod
     def __str__(self):
-        '''display player info
+        '''display place info
+        '''
+        pass
+
+
+class IPlayerForProject(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def buy_value(self):
+        pass
+    @property
+    @abc.abstractmethod
+    def sell_value(self):
+        pass
+
+    @abc.abstractmethod
+    def buy(self, player):
+        '''player buy the place
+
+        :param player: the player to buy the place
+        '''
+        pass
+
+    @abc.abstractmethod
+    def sell(self):
+        '''sell the place, remove the owner mark of the place
+        '''
+        pass
+
+    @abc.abstractmethod
+    def trigger(self, player):
+        '''take the effect of the place, triggered by the player
+
+        :param player: BasePlayer
+        '''
+        pass
+
+    @abc.abstractmethod
+    def __str__(self):
+        '''display place info
         '''
         pass
 
@@ -153,8 +209,22 @@ class IMapForPlayer(abc.ABC):
     def pos(self):
         pass
 
+class IMapForEstate(abc.ABC):
 
-class IPlaceForPlayer(abc.ABC):
+    @abc.abstractmethod
+    def __eq__(self, obj):
+        pass
+
+
+class IEstateForPlayer(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        '''
+        :return: name of the player
+        '''
+        pass
 
     @abc.abstractmethod
     def add_money(self, delta: int):
@@ -181,16 +251,31 @@ class IPlaceForPlayer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def trigger_jump_to_estate(self):
-        '''select which estate to go when jump is needed
+    def __eq__(self, obj):
+        pass
+
+
+class IProjectForPlayer(abc.ABC):
+
+    @abc.abstractmethod
+    def add_money(self, delta: int):
+        '''change player money
+
+        :param delta: minus means subtract
         '''
         pass
 
     @abc.abstractmethod
-    def move_to(self, pos: int):
-        '''move player to pos
+    def trigger_buy(self, place):
+        '''decide whether to buy the place
 
-        :param pos: position to move to
+        :param place: IPlayerForPlace
+        '''
+        pass
+
+    @abc.abstractmethod
+    def trigger_jump_to_estate(self):
+        '''select which estate to go when jump is needed
         '''
         pass
 
