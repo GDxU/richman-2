@@ -64,7 +64,7 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate):
         return self.current_level >= (self.__kMaxLevel - 1)
     @property
     def current_level(self):
-        pass
+        return self.__current_level
 
     @property
     def name(self):
