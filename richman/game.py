@@ -6,7 +6,7 @@ import logging
 import richman.interface as itf 
 
 
-class GameImplement:
+class BaseGame:
 
     def __init__(self, map, players: list):
         '''init
@@ -74,3 +74,6 @@ class GameImplement:
         while len(self.players_in_game) > 1:
             self._run_one_step()
         logging.info('{} 获得比赛胜利！'.format(self.players_in_game[0].name))
+
+class Game(BaseGame):
+    pass

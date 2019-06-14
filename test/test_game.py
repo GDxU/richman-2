@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from richman.game import GameImplement
+from richman.game import Game
 
 
 class TestBaseGame(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestBaseGame(unittest.TestCase):
         self.player2.is_banckrupted = False
         self.player2.play = MagicMock()
         players = [self.player1, self.player2]
-        self.game = GameImplement(map, players)
+        self.game = Game(map, players)
 
     def tearDown(self):
         pass
