@@ -53,10 +53,7 @@ class MapTest(BaseMap):
             upgrade_value=600,
             block=self._blocks[0]
             ))
-        self._add_items(ProjectNuclear(
-            buy_value=3500,
-            sell_value=3000
-        ))
+        self._add_items(ProjectNuclear())
         self._add_items(Estate(
             name='北京',
             fees=[400, 1000, 2500, 5500],
@@ -83,6 +80,7 @@ class MapTest(BaseMap):
             upgrade_value=300,
             block=self._blocks[1]
             ))
+        self._add_items(ProjectBuilder())
         self._add_items(Estate(
             name='长沙',
             fees=[300, 600, 1500, 3500],

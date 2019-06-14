@@ -151,7 +151,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         estate = self._make_decision_upgrade_any_estate()
         if estate:
-            estate.uprade()
+            estate.upgrade()
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -302,8 +302,10 @@ class PlayerSimple(BasePlayer):
 
         :return: estate to upgrade, or None for not upgrade
         '''
-        if self._estates:
-            return self._estates[0]
+        estates_need_upgrade = [estate for estate in self.estates
+                                    if not estate.is_level_max]
+        if estates_need_upgrade:
+            return estates_need_upgrade[0]
         else:
             return None
 

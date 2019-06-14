@@ -74,10 +74,10 @@ class BaseProject(itf.IPlayerForProject):
 
 class ProjectNuclear(BaseProject):
 
-    def __init__(self, buy_value: int, sell_value: int):
+    def __init__(self):
         super().__init__(name='核能发电站',
-                         buy_value=buy_value,
-                         sell_value=sell_value)
+                         buy_value=3500,
+                         sell_value=3000)
 
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''收取500元，若对方拥有1级/2级/3级地产，额外收取500/1000/1500元。
@@ -85,9 +85,16 @@ class ProjectNuclear(BaseProject):
         :param player: IProjectForPlayer
         '''
         fine = 500 + 500 * player.estate_max_level
+        logging.info('{} 走到 {}，缴付 {} 元。'.format(player.name, self.name, fine))
         player.add_money(fine)
 
+
 class ProjectBuilder(BaseProject):
+
+    def __init__(self):
+        super().__init__(name='建筑公司',
+                         buy_value=4000,
+                         sell_value=3000)
 
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''每当玩家升级地产时，获得500元。
@@ -96,8 +103,10 @@ class ProjectBuilder(BaseProject):
         :param player: IProjectForPlayer
         '''
         fine = 500
+        logging.info('{} 走到 {}，缴付 {} 元。'.format(player.name, self.name, fine))
         player.add_money(fine)
         player.trigger_upgrade_any_estate()
+
 
 class ProjectTransportation(BaseProject):
 
@@ -110,6 +119,7 @@ class ProjectTransportation(BaseProject):
         '''
         raise NotImplementedError('override is needed.')
 
+
 class ProjectTvStation(BaseProject):
 
     def _take_effect(self, player: itf.IProjectForPlayer):
@@ -118,6 +128,7 @@ class ProjectTvStation(BaseProject):
         :param player: IProjectForPlayer
         '''
         raise NotImplementedError('override is needed.')
+
 
 class ProjectSewerage(BaseProject):
 
