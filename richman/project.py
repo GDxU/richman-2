@@ -60,24 +60,24 @@ class BaseProject(itf.IPlayerForProject):
         return self.name
 
 
-class PlaceProjectNuclear(BaseProject):
+class ProjectNuclear(BaseProject):
     pass
 
-class PlaceProjectBuilder(BaseProject):
+class ProjectBuilder(BaseProject):
     pass
 
-class PlaceProjectStation(BaseProject):
+class ProjectStation(BaseProject):
     pass
 
-class PlaceProjectTv(BaseProject):
+class ProjectTv(BaseProject):
     pass
 
-class PlaceProjectAirport(BaseProject):
+class ProjectAirport(BaseProject):
     pass
 
-class PlaceProjectSewerage(BaseProject):
+class ProjectSewerage(BaseProject):
     pass
 
-class PlaceProjectSeaport(BaseProject):
+class ProjectSeaport(BaseProject):
     pass
 
