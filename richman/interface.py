@@ -238,9 +238,15 @@ class IProjectForPlayer(abc.ABC):
 
     @abc.abstractmethod
     def trigger_buy(self, place):
-        '''decide whether to buy the place
+        '''decide whether to buy the project
 
         :param place: IPlayerForPlace
+        '''
+        pass
+
+    @abc.abstractmethod
+    def trigger_upgrade_any_estate(self):
+        '''decide whether to upgrade any estate that belongs to the player
         '''
         pass
 

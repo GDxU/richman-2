@@ -85,13 +85,14 @@ class ProjectNuclear(BaseProject):
 class ProjectBuilder(BaseProject):
 
     def _take_effect(self, player: itf.IProjectForPlayer):
-        '''当你拥有1/2/3项运输项目时，收取500/1000/2000元。
-        下回合开始时，你可以放弃投骰子，改为给本项目拥有着500元（无人拥有则给银行），
-        立即到任意一个地产处。
+        '''每当玩家升级地产时，获得500元。
+        当任意玩家到建筑公司时，可将一处地产升一级（需支付升级费用）。
 
         :param player: IProjectForPlayer
         '''
-        raise NotImplementedError('override is needed.')
+        fine = 500
+        player.add_money(fine)
+        player.trigger_upgrade_any_estate()
 
 class ProjectTransportation(BaseProject):
 
