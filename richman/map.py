@@ -9,9 +9,6 @@ import richman.interface as itf
 
 class BaseMap(itf.IPlayerForMap):
 
-    __items = []
-    _blocks = []
-
     def __init__(self, name: str, items:list = None):
         '''init
 
