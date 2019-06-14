@@ -39,7 +39,7 @@ class RebuyNotPledgedException(Exception):
         super().__init__("该地当前未被抵押！")
 
 
-class PlaceImplement(itf.IPlayerPlace):
+class PlaceImplement(itf.IPlayerForPlace):
 
     __owner = None
     __is_pledged = False
@@ -84,7 +84,7 @@ class PlaceImplement(itf.IPlayerPlace):
     def sell_value(self):
         return self.__sell_value
 
-    def buy(self, player: itf.IPlacePlayer):
+    def buy(self, player: itf.IPlaceForPlayer):
         if self.__owner:
             raise BuyPlaceWithOwnerException()
         else:
@@ -125,7 +125,7 @@ class PlaceImplement(itf.IPlayerPlace):
     def upgrade(self):
         pass
 
-    def trigger(self, player: itf.IPlacePlayer):
+    def trigger(self, player: itf.IPlaceForPlayer):
         '''take the effect of the place, triggered by the player
         '''
         raise NotImplementedError('override is needed.')
@@ -204,7 +204,7 @@ class PlaceEstate(PlaceImplement):
             raise DegradeMinException()
         logging.info('{} 降低地产 {} 等级到 {} 级。'.format(self.owner.name, self.name, self.__current_level))
 
-    def trigger(self, player: itf.IPlacePlayer):
+    def trigger(self, player: itf.IPlaceForPlayer):
         '''if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
@@ -255,7 +255,7 @@ class PlaceEstateBlock:
         assert isinstance(estate, PlaceEstate)
         self.__estates.append(estate)
 
-    def block_fee_calc(self, owner: itf.IPlacePlayer)->int:
+    def block_fee_calc(self, owner: itf.IPlaceForPlayer)->int:
         '''calculate block fee that belongs to the owner
 
         :param owner: the owner of the palces

@@ -34,7 +34,7 @@ class GameImplement:
     def players_in_game(self):
         return self.__players_in_game
 
-    def _add_players_into_map(self, map, players: itf.IGamePlayer):
+    def _add_players_into_map(self, map, players: itf.IGameForPlayer):
         '''add players into map
 
         :param map: map

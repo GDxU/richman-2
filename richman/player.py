@@ -8,8 +8,8 @@ import logging
 import richman.interface as itf
 
 
-class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
-                      itf.IPlacePlayer):
+class PlayerImplement(itf.IGameForPlayer, itf.IMapForPlayer,
+                      itf.IPlaceForPlayer):
 
     __name = ''
     __money = 0
@@ -18,7 +18,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
     __pos = 0  # 当前所在地图的位置
 
     def __init__(self, name: str, money: int,
-                 map:itf.IPlayerMap = None):
+                 map:itf.IPlayerForMap = None):
         '''init
 
         :param name: player name
@@ -47,7 +47,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
     def map(self):
         return self.__map
     @map.setter
-    def map(self, value: itf.IPlayerMap):
+    def map(self, value: itf.IPlayerForMap):
         self.__map = value
     @property
     def pos(self):
@@ -62,7 +62,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
     def _dice(self)->int:
         return random.randrange(1,7)
 
-    def add_to_map(self, map: itf.IPlayerMap):
+    def add_to_map(self, map: itf.IPlayerForMap):
         '''add player to map
 
         :param map: map
@@ -100,18 +100,18 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         self.pos += step
         self.map.trigger(self)
 
-    def trigger_buy(self, place: itf.IPlayerPlace):
+    def trigger_buy(self, place: itf.IPlayerForPlace):
         '''decide whether to buy the place
 
-        :param place: IPlayerPlace
+        :param place: IPlayerForPlace
         '''
         if self._trigger_buy(place):
             self._places.append(place)
 
-    def trigger_upgrade(self, place: itf.IPlayerPlace):
+    def trigger_upgrade(self, place: itf.IPlayerForPlace):
         '''decide whether to upgrade the place
 
-        :param place: IPlayerPlace
+        :param place: IPlayerForPlace
         '''
         self._trigger_upgrade(place)
 
@@ -126,7 +126,7 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_buy(self, place: itf.IPlayerPlace)->bool:
+    def _trigger_buy(self, place: itf.IPlayerForPlace)->bool:
         '''decide whether to buy the place
 
         :param place: BasePlace
@@ -134,10 +134,10 @@ class PlayerImplement(itf.IGamePlayer, itf.IMapPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_upgrade(self, place: itf.IPlayerPlace):
+    def _trigger_upgrade(self, place: itf.IPlayerForPlace):
         '''decide whether to upgrade the place
 
-        :param place: IPlayerPlace
+        :param place: IPlayerForPlace
         '''
         raise NotImplementedError('override is needed.')
 
@@ -189,7 +189,7 @@ class PlayerSimple(PlayerImplement):
         # banckrupt
         self.__is_banckrupted = True
 
-    def _trigger_buy(self, place: itf.IPlayerPlace)->bool:
+    def _trigger_buy(self, place: itf.IPlayerForPlace)->bool:
         '''decide whether to buy the place
 
         :param place: BasePlace
@@ -201,10 +201,10 @@ class PlayerSimple(PlayerImplement):
         else:
             return False
 
-    def _trigger_upgrade(self, place: itf.IPlayerPlace):
+    def _trigger_upgrade(self, place: itf.IPlayerForPlace):
         '''decide whether to upgrade the place
 
-        :param place: IPlayerPlace
+        :param place: IPlayerForPlace
         '''
         if self.money > place.buy_value:
             try:
@@ -216,7 +216,7 @@ class PlayerSimple(PlayerImplement):
         '''select which estate to go when jump is needed
         '''
         for index, item in enumerate(self.map.items):
-            if (isinstance(item, itf.IPlayerPlace)
+            if (isinstance(item, itf.IPlayerForPlace)
                     and item.pledge_value is not None):
                 self.pos = index
                 break

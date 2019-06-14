@@ -4,9 +4,7 @@
 import abc
 
 
-class IGamePlayer(abc.ABC):
-    '''player of game interface
-    '''
+class IGameForPlayer(abc.ABC):
 
     @property
     @abc.abstractmethod
@@ -45,9 +43,7 @@ class IGamePlayer(abc.ABC):
         pass
 
 
-class IPlayerMap(abc.ABC):
-    '''map of player interface
-    '''
+class IPlayerForMap(abc.ABC):
 
     @abc.abstractmethod
     def trigger(self, player):
@@ -63,9 +59,7 @@ class IPlayerMap(abc.ABC):
         pass
 
 
-class IPlayerPlace(abc.ABC):
-    '''player interface to place
-    '''
+class IPlayerForPlace(abc.ABC):
 
     @property
     @abc.abstractmethod
@@ -131,7 +125,7 @@ class IPlayerPlace(abc.ABC):
         pass
 
 
-class IPlayerEvent(abc.ABC):
+class IPlayerForEvent(abc.ABC):
 
     @property
     @abc.abstractmethod
@@ -145,14 +139,14 @@ class IPlayerEvent(abc.ABC):
         pass
 
 
-class IMapPlayer(abc.ABC):
+class IMapForPlayer(abc.ABC):
     @property
     @abc.abstractmethod
     def map(self):
         pass
     @map.setter
     @abc.abstractmethod
-    def map(self, value: IPlayerMap):
+    def map(self, value: IPlayerForMap):
         pass
     @property
     @abc.abstractmethod
@@ -160,9 +154,7 @@ class IMapPlayer(abc.ABC):
         pass
 
 
-class IPlacePlayer(abc.ABC):
-    '''place interface to player
-    '''
+class IPlaceForPlayer(abc.ABC):
 
     @abc.abstractmethod
     def add_money(self, delta: int):
@@ -176,7 +168,7 @@ class IPlacePlayer(abc.ABC):
     def trigger_buy(self, place):
         '''decide whether to buy the place
 
-        :param place: IPlayerPlace
+        :param place: IPlayerForPlace
         '''
         pass
 
@@ -184,7 +176,7 @@ class IPlacePlayer(abc.ABC):
     def trigger_upgrade(self, place):
         '''decide whether to upgrade the place
 
-        :param place: IPlayerPlace
+        :param place: IPlayerForPlace
         '''
         pass
 

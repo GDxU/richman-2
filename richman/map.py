@@ -12,7 +12,7 @@ class PlayerAlreadyExistException(Exception):
         super().__init__("该玩家已经存在！")
 
 
-class MapImplement(itf.IPlayerMap):
+class MapImplement(itf.IPlayerForMap):
 
     __items = []
     _blocks = []
@@ -68,7 +68,7 @@ class MapImplement(itf.IPlayerMap):
         with open(file_path, 'wb') as f:
             pickle.dump(map, f)
 
-    def trigger(self, player: itf.IMapPlayer):
+    def trigger(self, player: itf.IMapForPlayer):
         '''trigger player to 
         '''
         self.items[player.pos].trigger(player)
