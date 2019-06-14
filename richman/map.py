@@ -7,12 +7,7 @@ import os
 import richman.interface as itf
 
 
-class PlayerAlreadyExistException(Exception):
-    def __init__(self, *args):
-        super().__init__("该玩家已经存在！")
-
-
-class MapImplement(itf.IPlayerForMap):
+class BaseMap(itf.IPlayerForMap):
 
     __items = []
     _blocks = []
@@ -42,6 +37,11 @@ class MapImplement(itf.IPlayerForMap):
     def _add_items(self, items: list):
         if items and not isinstance(items, list):
             items = [items]
+        # check duplicated estate names
+        estate_names = [estate.name for estate in items
+                            if isinstance(estate, itf.IMapForEstate)]
+        if len(estate_names) != len(set(estate_names)):
+            raise ValueError('estate names should not be duplicated.')
         self.__items.extend(items)
 
     def load(self, file_path: str):

@@ -8,8 +8,8 @@ import logging
 import richman.interface as itf
 
 
-class PlayerImplement(itf.IGameForPlayer, itf.IMapForPlayer,
-                      itf.IPlaceForPlayer):
+class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
+                 itf.IEstateForPlayer, itf.IProjectForPlayer):
 
     __name = ''
     __money = 0
@@ -100,18 +100,18 @@ class PlayerImplement(itf.IGameForPlayer, itf.IMapForPlayer,
         self.pos += step
         self.map.trigger(self)
 
-    def trigger_buy(self, place: itf.IPlayerForPlace):
+    def trigger_buy(self, place):
         '''decide whether to buy the place
 
-        :param place: IPlayerForPlace
+        :param place: estate or project
         '''
         if self._trigger_buy(place):
             self._places.append(place)
 
-    def trigger_upgrade(self, place: itf.IPlayerForPlace):
+    def trigger_upgrade(self, place):
         '''decide whether to upgrade the place
 
-        :param place: IPlayerForPlace
+        :param place: estate or project
         '''
         self._trigger_upgrade(place)
 
@@ -129,15 +129,15 @@ class PlayerImplement(itf.IGameForPlayer, itf.IMapForPlayer,
     def _trigger_buy(self, place: itf.IPlayerForPlace)->bool:
         '''decide whether to buy the place
 
-        :param place: BasePlace
+        :param place: IPlayerForPlace
         :return: True if buy the place
         '''
         raise NotImplementedError('override is needed.')
 
-    def _trigger_upgrade(self, place: itf.IPlayerForPlace):
+    def _trigger_upgrade(self, place: itf.IPlayerForEstate):
         '''decide whether to upgrade the place
 
-        :param place: IPlayerForPlace
+        :param place: IPlayerForEstate
         '''
         raise NotImplementedError('override is needed.')
 
@@ -157,7 +157,7 @@ class PlayerImplement(itf.IGameForPlayer, itf.IMapForPlayer,
         return lines
 
 
-class PlayerSimple(PlayerImplement):
+class PlayerSimple(BasePlayer):
 
     __is_banckrupted = False
     @property
@@ -192,7 +192,7 @@ class PlayerSimple(PlayerImplement):
     def _trigger_buy(self, place: itf.IPlayerForPlace)->bool:
         '''decide whether to buy the place
 
-        :param place: BasePlace
+        :param place: IPlayerForPlace
         :return: True if buy the place
         '''
         if self.money > place.buy_value:
@@ -201,7 +201,7 @@ class PlayerSimple(PlayerImplement):
         else:
             return False
 
-    def _trigger_upgrade(self, place: itf.IPlayerForPlace):
+    def _trigger_upgrade(self, place: itf.IPlayerForEstate):
         '''decide whether to upgrade the place
 
         :param place: IPlayerForPlace
@@ -222,9 +222,9 @@ class PlayerSimple(PlayerImplement):
                 break
 
 
-class PlayerPerson(PlayerImplement):
+class PlayerPerson(BasePlayer):
     pass
 
 
-class PlayerCpu(PlayerImplement):
+class PlayerCpu(BasePlayer):
     pass

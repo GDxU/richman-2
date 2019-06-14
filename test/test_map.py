@@ -3,26 +3,38 @@
 import unittest
 from unittest.mock import MagicMock
 
-from richman.map import MapImplement
+from richman.map import BaseMap
+import richman.interface as itf
 
 
 class TestBaseMap(unittest.TestCase):
 
     def setUp(self):
-        place1 = MagicMock()
-        place2 = MagicMock()
-        place3 = MagicMock()
-        self.map = MapImplement('China', [place1, place2, place3])
+        estate1 = MagicMock(spec=itf.IMapForEstate)
+        estate1.name = 'p1'
+        estate2 = MagicMock(spec=itf.IMapForEstate)
+        estate2.name = 'p2'
+        estate3 = MagicMock(spec=itf.IMapForEstate)
+        estate3.name = 'p3'
+        self.map = BaseMap('China', [estate1, estate2, estate3])
 
     def tearDown(self):
         pass
 
-    def test_add_to_map_should_add_places_and_players_to_map(self):
-        place1 = MagicMock()
-        place2 = MagicMock()
-        map = MapImplement('China', [place1, place2])
+    def test_add_to_map_should_add_estates_and_players_to_map(self):
+        estate1 = MagicMock(spec=itf.IMapForEstate)
+        estate1.name = 'p1'
+        estate2 = MagicMock(spec=itf.IMapForEstate)
+        estate2.name = 'p2'
+        estate3 = MagicMock(spec=itf.IMapForEstate)
+        estate3.name = 'p2'
+        # init correctly
+        map = BaseMap('China', [estate1, estate2])
         self.assertListEqual(
             map.items,
-            [place1,
-             place2]
+            [estate1,
+             estate2]
         )
+        # init with duplicated estates
+        with self.assertRaises(ValueError):
+            map = BaseMap('China', [estate1, estate2, estate3])

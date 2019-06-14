@@ -4,6 +4,8 @@
 import abc
 
 
+# game interface
+
 class IGameForPlayer(abc.ABC):
 
     @property
@@ -43,13 +45,23 @@ class IGameForPlayer(abc.ABC):
         pass
 
 
-class IPlayerForMap(abc.ABC):
+# player interface
+
+class IPlayerBase(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        pass
 
     @abc.abstractmethod
     def trigger(self, player):
         '''trigger player to 
         '''
         pass
+
+
+class IPlayerForMap(IPlayerBase):
 
     @abc.abstractmethod
     def __len__(self):
@@ -59,7 +71,7 @@ class IPlayerForMap(abc.ABC):
         pass
 
 
-class IPlayerForEstate(abc.ABC):
+class IPlayerForPlace(IPlayerBase):
 
     @property
     @abc.abstractmethod
@@ -67,11 +79,35 @@ class IPlayerForEstate(abc.ABC):
         pass
     @property
     @abc.abstractmethod
-    def upgrade_value(self):
+    def sell_value(self):
         pass
+
+    @abc.abstractmethod
+    def buy(self, player):
+        '''player buy the place
+
+        :param player: the player to buy the place
+        '''
+        pass
+
+    @abc.abstractmethod
+    def sell(self):
+        '''sell the place, remove the owner mark of the place
+        '''
+        pass
+
+    @abc.abstractmethod
+    def __str__(self):
+        '''display place info
+        '''
+        pass
+
+
+class IPlayerForEstate(IPlayerForPlace):
+
     @property
     @abc.abstractmethod
-    def sell_value(self):
+    def upgrade_value(self):
         pass
     @property
     @abc.abstractmethod
@@ -95,22 +131,8 @@ class IPlayerForEstate(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def buy(self, player):
-        '''player buy the place
-
-        :param player: the player to buy the place
-        '''
-        pass
-
-    @abc.abstractmethod
     def upgrade(self):
         '''upgrade the place
-        '''
-        pass
-
-    @abc.abstractmethod
-    def sell(self):
-        '''sell the place, remove the owner mark of the place
         '''
         pass
 
@@ -126,88 +148,26 @@ class IPlayerForEstate(abc.ABC):
         '''
         pass
 
-    @abc.abstractmethod
-    def trigger(self, player):
-        '''take the effect of the place, triggered by the player
 
-        :param player: BasePlayer
-        '''
-        pass
+class IPlayerForProject(IPlayerForPlace):
 
-    @abc.abstractmethod
-    def __str__(self):
-        '''display place info
-        '''
-        pass
+    pass
 
 
-class IPlayerForProject(abc.ABC):
+class IPlayerForEvent(IPlayerBase):
 
-    @property
-    @abc.abstractmethod
-    def buy_value(self):
-        pass
-    @property
-    @abc.abstractmethod
-    def sell_value(self):
-        pass
-
-    @abc.abstractmethod
-    def buy(self, player):
-        '''player buy the place
-
-        :param player: the player to buy the place
-        '''
-        pass
-
-    @abc.abstractmethod
-    def sell(self):
-        '''sell the place, remove the owner mark of the place
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger(self, player):
-        '''take the effect of the place, triggered by the player
-
-        :param player: BasePlayer
-        '''
-        pass
-
-    @abc.abstractmethod
-    def __str__(self):
-        '''display place info
-        '''
-        pass
+    pass
 
 
-class IPlayerForEvent(abc.ABC):
-
-    @property
-    @abc.abstractmethod
-    def name(self):
-        pass
-
-    @abc.abstractmethod
-    def trigger(self, player):
-        '''take the effect of the place, triggered by the player
-        '''
-        pass
-
+# map interface
 
 class IMapForPlayer(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def map(self):
-        pass
-    @map.setter
-    @abc.abstractmethod
-    def map(self, value: IPlayerForMap):
-        pass
+    
     @property
     @abc.abstractmethod
     def pos(self):
         pass
+
 
 class IMapForEstate(abc.ABC):
 
@@ -215,6 +175,8 @@ class IMapForEstate(abc.ABC):
     def __eq__(self, obj):
         pass
 
+
+# estate interface
 
 class IEstateForPlayer(abc.ABC):
 
@@ -254,6 +216,8 @@ class IEstateForPlayer(abc.ABC):
     def __eq__(self, obj):
         pass
 
+
+# project interface
 
 class IProjectForPlayer(abc.ABC):
 
