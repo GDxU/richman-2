@@ -8,10 +8,6 @@ import richman.interface as itf
 
 class GameImplement:
 
-    __player_index = 0  # 当前 player index
-    __players_in_game = []
-    __players_all = []  # 所有玩家
-
     def __init__(self, map, players: list):
         '''init
 

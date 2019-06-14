@@ -31,9 +31,5 @@ class TestBaseGame(unittest.TestCase):
 
         self.player1.is_banckrupted = True
         self.game._run_one_step()
-        self.assertEqual(len(self.game.players), 1)
-        self.assertEqual(self.game.players[0].name, '戎萍')
-        
-        self.player2.is_banckrupted = True
-        self.game._run_one_step()
-        self.assertFalse(self.game.players)
+        self.assertEqual(len(self.game.players_in_game), 1)
+        self.assertEqual(self.game.players_in_game[0].name, '戎萍')
