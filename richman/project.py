@@ -74,6 +74,11 @@ class BaseProject(itf.IPlayerForProject):
 
 class ProjectNuclear(BaseProject):
 
+    def __init__(self, buy_value: int, sell_value: int):
+        super().__init__(name='核能发电站',
+                         buy_value=buy_value,
+                         sell_value=sell_value)
+
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''收取500元，若对方拥有1级/2级/3级地产，额外收取500/1000/1500元。
 

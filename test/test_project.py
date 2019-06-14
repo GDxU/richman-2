@@ -27,8 +27,7 @@ class TestBaseProject(unittest.TestCase):
 class TestOtherPoject(unittest.TestCase):
 
     def test_nuclear_project_should_take_effect_to_player(self):
-        p = project.ProjectNuclear(name='核能发电站',
-                                   buy_value=3500,
+        p = project.ProjectNuclear(buy_value=3500,
                                    sell_value=3000)
         player = MagicMock()
         player.add_money = MagicMock()

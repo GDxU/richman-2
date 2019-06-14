@@ -55,4 +55,4 @@ def main(log_on:bool = False):
 
 
 if __name__ == "__main__":
-    main()
+    main(log_on=True)

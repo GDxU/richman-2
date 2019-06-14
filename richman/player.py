@@ -60,6 +60,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def estate_max_level(self):
         '''return the max level of all the estate the player has
         '''
+        if not self.estates:
+            return 0
         levels = (estate.current_level for estate in self.estates
                     if isinstance(estate, itf.IPlayerForEstate))
         return max(levels)
