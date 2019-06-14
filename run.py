@@ -2,9 +2,8 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
-from richman.game import GameImplement
+from richman.game import Game
 from richman.maps.map_test import MapTest
-from richman.place import PlaceEstate, PlaceEstateBlock
 from richman.player import PlayerSimple
 
 
@@ -49,7 +48,7 @@ def main():
     # map
     map = MapTest()
     # game
-    game = GameImplement(map, players)
+    game = Game(map, players)
     # start
     game.run()
 
