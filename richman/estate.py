@@ -6,7 +6,8 @@ import logging
 import richman.interface as itf
 
 
-class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate):
+class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate,
+                 itf.IProjectForEstate):
 
     def __init__(self, name: str, fees: list,
                  buy_value: int, pledge_value: int,
@@ -65,7 +66,6 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate):
     @property
     def current_level(self):
         return self.__current_level
-
     @property
     def name(self):
         return self.__name
@@ -78,6 +78,16 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate):
     @property
     def fee(self):
         return self.__fees[self.__current_level]
+
+    __static_callbacks_upgrade = []  # 发生 buy 时调用
+    @staticmethod
+    def add_to_static_callbacks_upgrade(callback):
+        '''add to
+
+        :param callback: callback(estate)
+        '''
+        assert callable(callback)
+        BaseEstate.__static_callbacks_upgrade.append(callback)
 
     def buy(self, player: itf.IEstateForPlayer):
         assert self.__owner is None, '该地已经卖出，无法购买！'
@@ -94,6 +104,8 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate):
                                                                   self.name,
                                                                   self.__current_level,
                                                                   self.upgrade_value))
+        for callback in BaseEstate.__static_callbacks_upgrade:
+            callback(self)
 
     def degrade(self):
         assert self.current_level > 0, '最低级，无法降级！'

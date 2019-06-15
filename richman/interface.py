@@ -261,3 +261,15 @@ class IProjectForPlayer(abc.ABC):
         '''check if two player equls
         '''
         pass
+
+
+class IProjectForEstate(abc.ABC):
+
+    @staticmethod
+    @abc.abstractmethod
+    def add_to_static_callbacks_upgrade(callback):
+        '''add to
+
+        :param callback: callback(estate)
+        '''
+        pass
