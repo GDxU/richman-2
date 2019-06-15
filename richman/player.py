@@ -28,6 +28,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self._projects = []
         self.__pos = 0
         random.seed(datetime.datetime.now())
+        self.__is_making_money = False  # 防止一个 make_money() 过程中多次调用该函数
+                                        # add_money() 中使用
 
     @property
     def name(self):
@@ -88,7 +90,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         self.__map = map
 
-    __is_making_money = False  # 防止一个 make_money() 过程中多次调用该函数
     def add_money(self, delta: int):
         '''change the player's money
 
