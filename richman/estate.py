@@ -168,7 +168,8 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate,
     def __str__(self):
         '''display place info
         '''
-        lines = '{}: {}'.format(self.name, self.__current_level)
+        lines = '{}: {}, {}'.format(self.name, self.__current_level,
+                                    'x' if self.is_pledged else 'o')
         return lines
 
 
