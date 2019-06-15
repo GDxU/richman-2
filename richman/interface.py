@@ -268,8 +268,17 @@ class IProjectForEstate(abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def add_to_static_callbacks_upgrade(callback):
-        '''add to
+        '''add callback to the static callbacks of upgrade
 
-        :param callback: callback(estate)
+        :param callback: callback(estate, player)
+        '''
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def remove_from_static_callbacks_upgrade(callback):
+        '''remove callback from the static callbacks of upgrade
+
+        :param callback: callback(estate, player)
         '''
         pass

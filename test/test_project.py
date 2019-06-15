@@ -40,7 +40,6 @@ class TestOtherPoject(unittest.TestCase):
         player.add_money = MagicMock()
         player.trigger_upgrade_any_estate = MagicMock()
         p._take_effect(player)
-        player.add_money.assert_called_once()
         player.trigger_upgrade_any_estate.assert_called_once()
 
     

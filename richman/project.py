@@ -96,15 +96,42 @@ class ProjectBuilder(BaseProject):
                          buy_value=4000,
                          sell_value=3000)
 
+    def buy(self, player: itf.IProjectForPlayer):
+        '''override
+        '''
+        super().buy(player)
+        # 注册 upgrade callback
+        import richman.estate as est
+        est.BaseEstate.add_to_static_callbacks_upgrade(self.__someone_upgraded_estate)
+
+    def sell(self):
+        '''override
+        '''
+        super().sell()
+        # 注销 upgrade callback
+        import richman.estate as est
+        est.BaseEstate.add_to_static_callbacks_upgrade(self.__someone_upgraded_estate)
+
+    def __someone_upgraded_estate(self, estate: itf.IProjectForEstate,
+                                  player: itf.IProjectForPlayer):
+        '''有人升级房屋，该人需要支付 500 元给 owner of builder
+        '''
+        if player == self.owner:
+            return None
+        fine = 500
+        logging.info('{} 升级地产，需向 {} 支付 {} 元升级费。'.format(player.name,
+                                                                   self.owner.name,
+                                                                   fine))
+        player.add_money(-fine)
+
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''每当玩家升级地产时，获得500元。
         当任意玩家到建筑公司时，可将一处地产升一级（需支付升级费用）。
 
         :param player: IProjectForPlayer
         '''
-        fine = 500
-        logging.info('{} 走到 {}，缴付 {} 元。'.format(player.name, self.name, fine))
-        player.add_money(fine)
+        # add upgrade_callback to estate staticlly
+        logging.info('{} 走到 {}，可选择升级地产一处。'.format(player.name, self.name))
         player.trigger_upgrade_any_estate()
 
 

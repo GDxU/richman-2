@@ -82,12 +82,20 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate,
     __static_callbacks_upgrade = []  # 发生 buy 时调用
     @staticmethod
     def add_to_static_callbacks_upgrade(callback):
-        '''add to
+        '''add callback to the static callbacks of upgrade
 
         :param callback: callback(estate)
         '''
         assert callable(callback)
         BaseEstate.__static_callbacks_upgrade.append(callback)
+
+    @staticmethod
+    def remove_from_static_callbacks_upgrade(callback):
+        '''remove callback from the static callbacks of upgrade
+
+        :param callback: callback(estate)
+        '''
+        BaseEstate.__static_callbacks_upgrade.remove(callback)
 
     def buy(self, player: itf.IEstateForPlayer):
         assert self.__owner is None, '该地已经卖出，无法购买！'
@@ -105,7 +113,7 @@ class BaseEstate(itf.IPlayerForEstate, itf.IMapForEstate,
                                                                   self.__current_level,
                                                                   self.upgrade_value))
         for callback in BaseEstate.__static_callbacks_upgrade:
-            callback(self)
+            callback(self, self.owner)
 
     def degrade(self):
         assert self.current_level > 0, '最低级，无法降级！'
