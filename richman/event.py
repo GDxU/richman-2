@@ -3,58 +3,62 @@
 '''
 import logging
 
-import richman.interface as itf
 
+class BaseEvent:
 
-class BaseEvent(itf.IForEvent):
-
-    def __init__(self, name):
-        self.__name = name
-        self.__receivers = []
+    def __init__(self, event_type: str):
+        '''init
+        
+        :param event_type: type of event, str
+        '''
+        self.__event_type = event_type
 
     @property
-    def name(self):
-        return self.__name
-    @property
-    def receivers(self):
-        return self.__receivers
-
-    def attach(self, receiver):
-        '''attach receiver into event
-
-        :param receiver: receiver to trigger when event occurs
-        '''
-        if receiver not in self.__receivers:
-            self.__receivers.append(receiver)
-
-    def detach(self, receiver):
-        '''detach receiver from event
-
-        :param receiver: receiver to trigger when event occurs
-        '''
-        assert receiver in self.receivers
-        self.__receivers.remove(receiver)
-
-    def trigger(self, sender=None):
-        '''trigger each receiver for event
-
-        :param sender: the obj that send the event
-        '''
-        for receiver in self.__receivers:
-            if sender != receiver:
-                receiver.update(self)
+    def event_type(self):
+        return self.__event_type
 
 
-class EventEstateUpgrade(BaseEvent):
+class EventManager:
 
     def __init__(self):
-        super().__init__(name='estate upgrade occurs')
+        self.__handlers = {}  # struct: {event_type: [handler1, handler2, ...], ...}
 
-    @property
-    def data(self):
-        return self._data
+    def __event_process(self, event: BaseEvent):
+        '''process event
+        
+        :param event: the event to process
+        '''
+        if event.event_type in self.__handlers:
+            for handler in self.__handlers[event.event_type]:
+                handler(event)
 
-    @data.setter
-    def data(self, value):
-        self._data = value
-        self.trigger()
+    def add_listener(self, event_type: str, handler):
+        '''add handler to the event_type list
+
+        :param event_type: type of event, str
+        :param handler: handle to process the event
+        '''
+        if event_type not in self.__handlers:
+            self.__handlers[event_type] = []
+        if handler not in self.__handlers[event_type]:
+            self.__handlers[event_type].append(handler)
+            logging.debug('add {} of {} into event manager.'.format(event_type, handler))
+
+    def remove_listener(self, event_type: str, handler):
+        '''remove handler from the event_type list
+
+        :param event_type: type of event, str
+        :param handler: handle to process the event
+        '''
+        assert event_type in self.__handlers, '没有类型为 {} 的事件。'.format(event_type)
+        self.__handlers[event_type].remove(handler)
+        if not self.__handlers[event_type]:
+            del self.__handlers[event_type]
+
+    def send(self, event: BaseEvent):
+        '''send the event to handlers
+
+        :param event: the event to send
+        '''
+        self.__event_process(event)
+

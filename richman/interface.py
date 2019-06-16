@@ -4,9 +4,6 @@
 import abc
 
 
-# event interface
-
-
 # game interface
 
 class IGameForPlayer(abc.ABC):
@@ -18,7 +15,6 @@ class IGameForPlayer(abc.ABC):
         :return: name of the player
         '''
         pass
-
     @property
     @abc.abstractmethod
     def is_banckrupted(self)->bool:
