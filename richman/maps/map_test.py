@@ -15,15 +15,15 @@ from richman.project import (
     ProjectTvStation,
     ProjectSewerage
 )
-from richman.event import (
-    EventStart,
-    EventNews,
-    EventPrison,
-    EventLuck,
-    EventStock,
-    EventGotoPrison,
-    EventPark,
-    EventTax
+from richman.public import (
+    PublicStart,
+    PublicNews,
+    PublicPrison,
+    PublicLuck,
+    PublicStock,
+    PublicGotoPrison,
+    PublicPark,
+    PublicTax
 )
 
 class MapTest(BaseMap):
