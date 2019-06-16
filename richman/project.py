@@ -35,7 +35,7 @@ class BaseProject(itf.IPlayerForProject):
         return self.__sell_value
 
     def buy(self, player: itf.IProjectForPlayer):
-        assert not self.__owner, '该项目已经卖出，无法购买！'
+        assert not self.owner, '该项目已经卖出，无法购买！'
         player.add_money(-self.buy_value)
         self.__owner = player
         logging.info('{} 购买项目 {}，花费 {} 元。'.format(player.name, self.name, self.buy_value))
@@ -96,33 +96,37 @@ class ProjectBuilder(BaseProject):
                          buy_value=4000,
                          sell_value=3000)
 
-    def buy(self, player: itf.IProjectForPlayer):
-        '''override
-        '''
-        super().buy(player)
-        # 注册 upgrade callback
-        import richman.estate as est
-        est.BaseEstate.add_to_static_callbacks_upgrade(self.__someone_upgraded_estate)
+    # def buy(self, player: itf.IProjectForPlayer):
+    #     '''override
+    #     '''
+    #     super().buy(player)
+    #     # 注册 upgrade callback
+    #     import richman.estate as est
+    #     est.BaseEstate.add_to_static_callbacks_upgrade(self.__someone_upgraded_estate)
 
-    def sell(self):
-        '''override
-        '''
-        super().sell()
-        # 注销 upgrade callback
-        import richman.estate as est
-        est.BaseEstate.add_to_static_callbacks_upgrade(self.__someone_upgraded_estate)
+    # def sell(self):
+    #     '''override
+    #     '''
+    #     super().sell()
+    #     # 注销 upgrade callback
+    #     import richman.estate as est
+    #     est.BaseEstate.remove_from_static_callbacks_upgrade(self.__someone_upgraded_estate)
 
-    def __someone_upgraded_estate(self, estate: itf.IProjectForEstate,
-                                  player: itf.IProjectForPlayer):
-        '''有人升级房屋，该人需要支付 500 元给 owner of builder
-        '''
-        if player == self.owner:
-            return None
-        fine = 500
-        logging.info('{} 升级地产，需向 {} 支付 {} 元升级费。'.format(player.name,
-                                                                   self.owner.name,
-                                                                   fine))
-        player.add_money(-fine)
+    # def __someone_upgraded_estate(self, estate: itf.IProjectForEstate,
+    #                               player: itf.IProjectForPlayer):
+    #     '''有人升级房屋，该人需要支付 500 元给 owner of builder
+    #     '''
+    #     if not player:
+    #         print('player is None!!!!!!!!!')
+    #     if not self.owner:
+    #         print('owner is None!!!!!!!!!')
+    #     if player == self.owner:
+    #         return None
+    #     fine = 500
+    #     logging.info('{} 升级地产，需向 {} 支付 {} 元升级费。'.format(player.name,
+    #                                                                self.owner.name,
+    #                                                                fine))
+    #     player.add_money(-fine)
 
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''每当玩家升级地产时，获得500元。

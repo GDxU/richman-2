@@ -4,6 +4,9 @@
 import abc
 
 
+# event interface
+
+
 # game interface
 
 class IGameForPlayer(abc.ABC):

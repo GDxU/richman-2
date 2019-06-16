@@ -75,15 +75,6 @@ class TestEstate(unittest.TestCase):
         self.player.add_money.assert_called()
         self.assertEqual(self.estate.fee, self.fees[1])
 
-    def test_add_to_static_callbacks_upgrade_should_add_callbacks_staticlly(self):
-        callbacks = [MagicMock(), MagicMock(), MagicMock()]
-        for callback in callbacks:
-            estate.Estate.add_to_static_callbacks_upgrade(callback)
-        self.estate.buy(self.player)
-        self.estate.upgrade()
-        for callback in callbacks:
-            callback.assert_called_once()
-
 
 class TestEstateBlock(unittest.TestCase):
     
