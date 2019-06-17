@@ -15,6 +15,7 @@ class EventManager:
         self.__events = []  # use list to perform as a queue
         self.__handlers_dict = {}  # struct: {event_name1: [handler1, handler2, ...],
                                    #          event_name2: [handler1, handler2, ...], ...}
+        self.__is_processing = False
 
     @property
     def handlers_dict(self):
@@ -33,19 +34,23 @@ class EventManager:
         '''pop up the lastest event
 
         :return: itf.IEventManagerForEvent or IteratorStop Exception
+        :note: mock as a stack
         '''
         while self.__events:
-            yield self.__events.pop(0)
+            yield self.__events.pop(-1)
 
     def __process_event(self):
         '''process event
         
         :param event: the event to process
         '''
+        self.__is_processing = True
         for event in self.__pop_event():
+            logging.debug('to process event: %s' % event.name)
             if event.name in self.__handlers_dict:
                 for handler in self.__handlers_dict[event.name]:
                     handler(event)
+        self.__is_processing = False
 
     def _add_listener(self, name: str, handler):
         '''add handler to the name list
@@ -99,5 +104,6 @@ class EventManager:
         '''
         logging.debug('send event of {}'.format(event.name))
         self.__insert_event(event)
-        self.__process_event()
+        if not self.__is_processing:
+            self.__process_event()
 
