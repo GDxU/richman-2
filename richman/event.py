@@ -6,15 +6,15 @@ import logging
 
 class BaseEvent:
 
-    def __init__(self, event_name: str):
+    def __init__(self, name: str):
         '''init
         
-        :param event_name: name of event, str
+        :param name: name of event, str
         '''
-        self.__event_name = event_name
+        self.__event_name = name
 
     @property
-    def event_name(self):
+    def name(self):
         return self.__event_name
 
 
@@ -33,54 +33,54 @@ class EventManager:
         
         :param event: the event to process
         '''
-        if event.event_name in self.__handlers_dict:
-            for handler in self.__handlers_dict[event.event_name]:
+        if event.name in self.__handlers_dict:
+            for handler in self.__handlers_dict[event.name]:
                 handler(event)
 
-    def _add_listener(self, event_name: str, handler):
-        '''add handler to the event_name list
+    def _add_listener(self, name: str, handler):
+        '''add handler to the name list
 
-        :param event_name: type of event, str
+        :param name: type of event, str
         :param handler: handler to process the event
         '''
-        if event_name not in self.__handlers_dict:
-            self.__handlers_dict[event_name] = []
-        if handler not in self.__handlers_dict[event_name]:
-            self.__handlers_dict[event_name].append(handler)
-            logging.debug('add {} of {} into event manager.'.format(event_name, handler))
+        if name not in self.__handlers_dict:
+            self.__handlers_dict[name] = []
+        if handler not in self.__handlers_dict[name]:
+            self.__handlers_dict[name].append(handler)
+            logging.debug('add {} of {} into event manager.'.format(name, handler))
 
-    def add_listeners(self, event_name: str, handlers: list):
-        '''add handler to the event_name list
+    def add_listeners(self, name: str, handlers: list):
+        '''add handler to the name list
 
-        :param event_name: type of event, str
+        :param name: type of event, str
         :param handlers: handlers to process the event
         '''
         if not isinstance(handlers, list):
             handlers = [handlers]
         for handler in handlers:
-            self._add_listener(event_name, handler)
+            self._add_listener(name, handler)
 
-    def _remove_listener(self, event_name: str, handler):
-        '''remove handler from the event_name list
+    def _remove_listener(self, name: str, handler):
+        '''remove handler from the name list
 
-        :param event_name: type of event, str
+        :param name: type of event, str
         :param handler: handler to process the event
         '''
-        assert event_name in self.__handlers_dict, '没有类型为 {} 的事件。'.format(event_name)
-        self.__handlers_dict[event_name].remove(handler)
-        if not self.__handlers_dict[event_name]:
-            del self.__handlers_dict[event_name]
+        assert name in self.__handlers_dict, '没有类型为 {} 的事件。'.format(name)
+        self.__handlers_dict[name].remove(handler)
+        if not self.__handlers_dict[name]:
+            del self.__handlers_dict[name]
 
-    def remove_listeners(self, event_name: str, handlers: list):
-        '''remove handler from the event_name list
+    def remove_listeners(self, name: str, handlers: list):
+        '''remove handler from the name list
 
-        :param event_name: type of event, str
+        :param name: type of event, str
         :param handlers: handlers to process the event
         '''
         if not isinstance(handlers, list):
             handlers = [handlers]
         for handler in handlers:
-            self._remove_listener(event_name, handler)
+            self._remove_listener(name, handler)
 
     def send(self, event: BaseEvent):
         '''send the event to handlers

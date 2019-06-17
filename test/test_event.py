@@ -16,10 +16,10 @@ class TestEventManaer(unittest.TestCase):
 
     def test_event_manager_should_add_and_remove_listeners_correctly(self):
         handlers = [MagicMock(), MagicMock(), MagicMock()]
-        event_name = 'Event Test'
-        self.event_manager.add_listeners(event_name, handlers)
-        self.assertDictEqual({event_name: handlers}, self.event_manager.handlers_dict)
-        self.event_manager.remove_listeners(event_name, handlers)
+        name = 'Event Test'
+        self.event_manager.add_listeners(name, handlers)
+        self.assertDictEqual({name: handlers}, self.event_manager.handlers_dict)
+        self.event_manager.remove_listeners(name, handlers)
         self.assertFalse(self.event_manager.handlers_dict)
 
     def test_event_manager_sould_send_event_correctly(self):
@@ -31,7 +31,7 @@ class TestEventManaer(unittest.TestCase):
         self.event_manager.add_listeners(event_name2, handlers2)
 
         event1 = MagicMock()
-        event1.event_name = event_name1
+        event1.name = event_name1
         self.event_manager.send(event1)
         for handler1 in handlers1:
             handler1.assert_called_once()
@@ -39,7 +39,7 @@ class TestEventManaer(unittest.TestCase):
             handler2.assert_not_called()
 
         event2 = MagicMock()
-        event2.event_name = event_name2
+        event2.name = event_name2
         self.event_manager.send(event2)
         for handler1 in handlers1:
             handler1.assert_not_called()
