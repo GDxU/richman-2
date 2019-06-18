@@ -46,10 +46,11 @@ class EventManager:
         '''
         self.__is_processing = True
         for event in self.__pop_event():
+            assert event.name in self.__handlers_dict,\
+                '待处理的事件 {} 未注册处理函数！'.format(event.name)
             logging.debug('to process event: %s' % event.name)
-            if event.name in self.__handlers_dict:
-                for handler in self.__handlers_dict[event.name]:
-                    handler(event)
+            for handler in self.__handlers_dict[event.name]:
+                handler(event)
         self.__is_processing = False
 
     def _add_listener(self, name: str, handler):
