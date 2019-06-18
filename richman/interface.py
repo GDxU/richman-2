@@ -109,6 +109,11 @@ class IPlayerForPlace(IPlayerBase):
 
     @property
     @abc.abstractmethod
+    def is_available(self):
+        '''是否可以购买'''
+        pass
+    @property
+    @abc.abstractmethod
     def buy_value(self):
         pass
     @property
@@ -139,15 +144,16 @@ class IPlayerForEstate(IPlayerForPlace):
         pass
     @property
     @abc.abstractmethod
-    def is_available(self):
-        pass
-    @property
-    @abc.abstractmethod
     def is_level_max(self):
         pass
     @property
     @abc.abstractmethod
     def current_level(self):
+        pass
+    @property
+    @abc.abstractmethod
+    def fees(self):
+        '''所有的过路费用'''
         pass
 
 

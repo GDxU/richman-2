@@ -237,7 +237,8 @@ class PlayerSimple(BasePlayer):
         '''
         for estate in self.estates:
             if not estate.is_pledged:
-                estate.pledge()
+                self.__event_manager.send(ev.EventToEstatePledge(estate.name, self))
+                self._add_money(estate.pledge_value)
                 if self.money > 0:
                     return True
         else:
@@ -250,7 +251,8 @@ class PlayerSimple(BasePlayer):
         :return: the player's money after sold out
         '''
         for place in places:
-            place.sell()
+            self.__event_manager.send(ev.EventToPlaceSell(place.name, self))
+            self._add_money(place.sell_value)
             self._remove_place(place)
             yield self.money
     

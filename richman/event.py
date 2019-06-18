@@ -95,7 +95,7 @@ class EventToPlayerUpgradeAnyEstate(BaseEvent):
 
 class EventToPlaceBuy(BaseEvent):
 
-    def __init__(self, place_name: str, player: itf.IPlayerForPlace):
+    def __init__(self, place_name: str, player: itf.IPlaceForPlayer):
         event_name = self._build_name(place_name)
         super().__init__(name=event_name)
         self.__player = player
@@ -107,7 +107,7 @@ class EventToPlaceBuy(BaseEvent):
 
 class EventToPlaceSell(BaseEvent):
 
-    def __init__(self, place_name: str, player):
+    def __init__(self, place_name: str, player: itf.IPlaceForPlayer):
         event_name = self._build_name(place_name)
         super().__init__(name=event_name)
         self.__player = player
@@ -121,7 +121,40 @@ class EventToPlaceSell(BaseEvent):
 
 class EventToEstateUpgrade(BaseEvent):
 
-    def __init__(self, estate_name: str, player):
+    def __init__(self, estate_name: str, player: itf.IEstateForPlayer):
+        event_name = self._build_name(estate_name)
+        super().__init__(name=event_name)
+        self.__player = player
+
+    @property
+    def player(self):
+        return self.__player
+
+class EventToEstateDegrade(BaseEvent):
+
+    def __init__(self, estate_name: str, player: itf.IEstateForPlayer):
+        event_name = self._build_name(estate_name)
+        super().__init__(name=event_name)
+        self.__player = player
+
+    @property
+    def player(self):
+        return self.__player
+
+class EventToEstatePledge(BaseEvent):
+
+    def __init__(self, estate_name: str, player: itf.IEstateForPlayer):
+        event_name = self._build_name(estate_name)
+        super().__init__(name=event_name)
+        self.__player = player
+
+    @property
+    def player(self):
+        return self.__player
+
+class EventToEstateRebuy(BaseEvent):
+
+    def __init__(self, estate_name: str, player: itf.IEstateForPlayer):
         event_name = self._build_name(estate_name)
         super().__init__(name=event_name)
         self.__player = player
