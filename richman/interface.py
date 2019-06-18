@@ -4,6 +4,47 @@
 import abc
 
 
+# event manager
+
+class IEventManagerForEvent(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        '''
+        :return: name of the event
+        '''
+        pass
+
+class IForEventManager(abc.ABC):
+
+    @abc.abstractmethod
+    def add_listeners(self, name: str, handlers: list):
+        '''add handler to the name list
+
+        :param name: type of event, str
+        :param handlers: handlers to process the event
+        '''
+        pass
+
+    @abc.abstractmethod
+    def remove_listeners(self, name: str, handlers: list):
+        '''remove handler from the name list
+
+        :param name: type of event, str
+        :param handlers: handlers to process the event
+        '''
+        pass
+
+    @abc.abstractmethod
+    def send(self, event: IEventManagerForEvent):
+        '''send the event to handlers
+
+        :param event: the event to send
+        '''
+        pass
+
+
 # game interface
 
 class IGameForPlayer(abc.ABC):
@@ -53,12 +94,6 @@ class IPlayerBase(abc.ABC):
     def name(self):
         pass
 
-    @abc.abstractmethod
-    def trigger(self, player):
-        '''trigger player to 
-        '''
-        pass
-
 
 class IPlayerForMap(IPlayerBase):
 
@@ -79,20 +114,6 @@ class IPlayerForPlace(IPlayerBase):
     @property
     @abc.abstractmethod
     def sell_value(self):
-        pass
-
-    @abc.abstractmethod
-    def buy(self, player):
-        '''player buy the place
-
-        :param player: the player to buy the place
-        '''
-        pass
-
-    @abc.abstractmethod
-    def sell(self):
-        '''sell the place, remove the owner mark of the place
-        '''
         pass
 
     @abc.abstractmethod
@@ -129,31 +150,8 @@ class IPlayerForEstate(IPlayerForPlace):
     def current_level(self):
         pass
 
-    @abc.abstractmethod
-    def upgrade(self):
-        '''upgrade the place
-        '''
-        pass
-
-    @abc.abstractmethod
-    def pledge(self):
-        '''pledge the place to the bank
-        '''
-        pass
-
-    @abc.abstractmethod
-    def rebuy(self):
-        '''re-buy the place when it is pledged
-        '''
-        pass
-
 
 class IPlayerForProject(IPlayerForPlace):
-
-    pass
-
-
-class IPlayerForEvent(IPlayerBase):
 
     pass
 
@@ -175,9 +173,9 @@ class IMapForEstate(abc.ABC):
         pass
 
 
-# estate interface
+# place interface
 
-class IEstateForPlayer(abc.ABC):
+class IPlaceForPlayer(abc.ABC):
 
     @property
     @abc.abstractmethod
@@ -187,29 +185,9 @@ class IEstateForPlayer(abc.ABC):
         '''
         pass
 
-    @abc.abstractmethod
-    def add_money(self, delta: int):
-        '''change player money
+# estate interface
 
-        :param delta: minus means subtract
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_buy(self, place):
-        '''decide whether to buy the place
-
-        :param place: IPlayerForPlace
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_upgrade(self, place):
-        '''decide whether to upgrade the place
-
-        :param place: IPlayerForPlace
-        '''
-        pass
+class IEstateForPlayer(IPlaceForPlayer):
 
     @abc.abstractmethod
     def __eq__(self, obj):
@@ -218,40 +196,12 @@ class IEstateForPlayer(abc.ABC):
 
 # project interface
 
-class IProjectForPlayer(abc.ABC):
+class IProjectForPlayer(IPlaceForPlayer):
 
     @property
     @abc.abstractmethod
     def estate_max_level(self):
         '''return the max level of all the estate the player has
-        '''
-        pass
-
-    @abc.abstractmethod
-    def add_money(self, delta: int):
-        '''change player money
-
-        :param delta: minus means subtract
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_buy(self, place):
-        '''decide whether to buy the project
-
-        :param place: IPlayerForPlace
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_upgrade_any_estate(self):
-        '''decide whether to upgrade any estate that belongs to the player
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_jump_to_estate(self):
-        '''select which estate to go when jump is needed
         '''
         pass
 

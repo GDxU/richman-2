@@ -12,17 +12,22 @@ class TestBasePlayer(unittest.TestCase):
     def setUp(self):
         map = MagicMock()
         map.__len__.return_value = 10
-        self.player = BasePlayer(name='Hangzhou',
+        self.event_manager = MagicMock()
+        self.player = BasePlayer(event_manager=self.event_manager,
+                                 name='Hangzhou',
                                  money=10000,
                                  map=map)
-    
+
     def tearDown(self):
         pass
 
     def test_add_money_should_execute_correctlly(self):
-        self.player.add_money(-10000)
+        event = MagicMock()
+        event.delta = -10000
+        self.player.event_handler_add_money(event)
         self.player._make_money = MagicMock()
-        self.player.add_money(-1)
+        event.delta = -1
+        self.player.event_handler_add_money(event)
         self.assertTrue(self.player._make_money.called)
 
     def test_pos_should_set_right_value(self):

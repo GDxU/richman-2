@@ -6,19 +6,23 @@ import datetime
 import logging
 
 import richman.interface as itf
+import richman.event as ev
 
 
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                  itf.IEstateForPlayer, itf.IProjectForPlayer):
 
-    def __init__(self, name: str, money: int,
+    def __init__(self, event_manager: itf.IForEventManager,
+                 name: str, money: int,
                  map:itf.IPlayerForMap = None):
         '''init
 
+        :param event_manager: event manager interface
         :param name: player name
         :param money: player's init money
         :param map: default is None
         '''
+        self.__event_manager = event_manager
         self.__name = name
         assert money > 0, '初始资金必须大于零。'
         self.__money = money
@@ -29,7 +33,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.__pos = 0
         random.seed(datetime.datetime.now())
         self.__is_making_money = False  # 防止一个 make_money() 过程中多次调用该函数
-                                        # add_money() 中使用
+                                        # event_handler_add_money() 中使用
 
     @property
     def name(self):
@@ -90,24 +94,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         self.__map = map
 
-    def add_money(self, delta: int):
-        '''change the player's money
-
-        :param delta: amount of change, minus means subtraction
-        '''
-        self.__money += delta
-        if self.__money < 0 and not self.__is_making_money:
-            self.__is_making_money = True
-            self._make_money()
-            self.__is_making_money = False
-
-    def move_to(self, pos: int):
-        '''move player to pos
-
-        :param pos: position to move to
-        '''
-        self.pos = pos
-
     def play(self, reverse=False):
         '''进行下一步游戏
 
@@ -120,11 +106,37 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.pos += step
         self.map.trigger(self)
 
-    def trigger_buy(self, place: itf.IPlayerForPlace):
+    def _add_money(self, delta: int):
+        '''change the player's money
+
+        :param delta: amount of change, minus means subtraction
+        '''
+        self.__money += delta
+        if self.__money < 0 and not self.__is_making_money:
+            self.__is_making_money = True
+            self._make_money()
+            self.__is_making_money = False
+
+    def event_handler_add_money(self, event: ev.EventToPlayerAddMoney):
+        '''change the player's money
+
+        :param event: EventToPlayerAddMoney with delta of money
+        '''
+        self._add_money(event.delta)
+
+    def event_handler_move_to(self, event: ev.EventToPlayerMoveTo):
+        '''move player to pos
+
+        :param event: EventToPlayerMoveTo with pos to move
+        '''
+        self.pos = event.pos
+
+    def event_handler_buy_decision(self, event: ev.EventToPlayerBuyPlace):
         '''decide whether to buy the place
 
-        :param place: IPlayerForPlace
+        :param event: EventToPlayerBuyPlace with place to buy
         '''
+        place = event.place
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
                 self._projects.append(place)
@@ -132,27 +144,35 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                 self._estates.append(place)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
-            place.buy(self)
+            self._add_money(-place.buy_value)
+            self.__event_manager.send(ev.EventToPlaceBuy(place.name, self))
 
-    def trigger_upgrade(self, place: itf.IPlayerForEstate):
+    def event_handler_upgrade_decision(self, event: ev.EventToPlayerUpgradeEstate):
         '''decide whether to upgrade the place
 
-        :param place: estate
+        :param event: IPlayerForEstate with place to buy
         '''
-        if self._make_decision_upgrade(place):
-            place.upgrade()
+        estate = event.estate
+        if self._make_decision_upgrade(estate):
+            self._add_money(-estate.upgrade_value)
+            self.__event_manager.send(ev.EventToEstateUpgrade(estate.name, self))
 
-    def trigger_jump_to_estate(self):
+    def event_handler_jump_to_estate_decision(self, event: ev.EventToPlayerJumpToEstate):
         '''select which estate to go when jump is needed
+
+        :param event: event with no other info
         '''
         self.pos = self._make_decision_jump_to_estate()
 
-    def trigger_upgrade_any_estate(self):
+    def event_handler_upgrade_any_estate(self, event: ev.EventToPlayerUpgradeAnyEstate):
         '''upgrade and estate that belongs to the player
+
+        :param event: event with no other info
         '''
         estate = self._make_decision_upgrade_any_estate()
         if estate:
-            estate.upgrade()
+            self._add_money(-estate.upgrade_value)
+            self.__event_manager.send(ev.EventToEstateUpgrade(estate.name, self))
 
     def _make_money(self):
         '''make money my pledging or selling,
