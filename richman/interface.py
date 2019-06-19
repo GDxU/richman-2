@@ -29,6 +29,32 @@ class IGameForPlayer(abc.ABC):
         '''
         pass
 
+class IGameForMap(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        '''
+        :return: name of the player
+        '''
+        pass
+
+    @abc.abstractmethod
+    def add_players(self, players: list):
+        '''add players to map
+
+        :param players: list of players
+        '''
+        pass
+
+    @abc.abstractmethod
+    def run_one_round(self):
+        '''run one round of the map, which means every player run once
+
+        :return: False if only one player is left
+        '''
+        pass
+
 
 # player interface
 

@@ -8,7 +8,7 @@ import os
 import richman.interface as itf
 
 
-class BaseMap(itf.IPlayerForMap):
+class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
 
     def __init__(self, name: str):
         '''init
@@ -56,6 +56,10 @@ class BaseMap(itf.IPlayerForMap):
             self.__items.append(item)
 
     def add_players(self, players: list):
+        '''add players to map
+
+        :param players: list of players
+        '''
         if not isinstance(players, list):
             players = [players]
         for player in players:
