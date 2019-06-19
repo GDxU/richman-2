@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 '''player
 '''
+import typing
 import random
 import datetime
 import logging
@@ -34,34 +35,34 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                                         # event_handler_add_money() 中使用
 
     @property
-    def name(self):
+    def name(self)->str:
         return self.__name
     @property
-    def is_banckrupted(self):
+    def is_banckrupted(self)->bool:
         raise NotImplementedError('need override.')
     @property
-    def money(self):
+    def money(self)->int:
         return self.__money
     @property
-    def map(self):
+    def map(self)->itf.IPlayerForMap:
         return self.__map
     @map.setter
     def map(self, value: itf.IPlayerForMap):
         self.__map = value
     @property
-    def pos(self):
+    def pos(self)->int:
         return self.__pos
     @pos.setter
     def pos(self, value: int):
         self.__pos = value % len(self.__map)
     @property
-    def estates(self):
+    def estates(self)->typing.List[itf.IPlayerForEstate]:
         return self._estates
     @property
-    def projects(self):
+    def projects(self)->typing.List[itf.IPlayerForProject]:
         return self._projects
     @property
-    def estate_max_level(self):
+    def estate_max_level(self)->int:
         '''return the max level of all the estate the player has
         '''
         if not self.estates:
@@ -83,28 +84,33 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.pos += step
         return self.pos
 
-    def _remove_place(self, place: itf.IPlayerForPlace):
+    def _remove_place(self, places: typing.List[itf.IPlayerForPlace]):
         '''remove the place from self._estates or self._projects
 
-        :param place: estate or project
+        :param places: list of estate or project
         '''
-        if isinstance(place, itf.IPlayerForEstate):
-            self._estates.remove(place)
-        elif isinstance(place, itf.IPlayerForProject):
-            self._projects.remove(place)
-        else:
-            raise RuntimeError('参数类型不正确。')
+        if not isinstance(places, list):
+            places = [places]
+        for place in places:
+            if isinstance(place, itf.IPlayerForEstate):
+                self._estates.remove(place)
+            elif isinstance(place, itf.IPlayerForProject):
+                self._projects.remove(place)
+            else:
+                raise RuntimeError('参数类型不正确。')
 
-    def _add_money(self, delta: int):
+    def _add_money(self, delta: int)->int:
         '''change the player's money
 
         :param delta: amount of change, minus means subtraction
+        :return: current money after add action
         '''
         self.__money += delta
-        if self.__money < 0 and not self.__is_making_money:
+        if self.money < 0 and not self.__is_making_money:
             self.__is_making_money = True
             self._make_money()
             self.__is_making_money = False
+        return self.money
 
     @staticmethod
     @ev.event_to_player_add_money.connect
@@ -114,7 +120,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds receiver of player and money_delta
         '''
-        self = kwargs['receiver']
+        self:BasePlayer = kwargs['receiver']
         self._add_money(kwargs['money_delta'])
 
     @staticmethod
@@ -125,7 +131,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds receiver of player and pos
         '''
-        self = kwargs['receiver']
+        self:BasePlayer = kwargs['receiver']
         self.pos = kwargs['pos']
 
     @staticmethod
@@ -136,7 +142,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: place to decide to buy
         :param kwargs: holds receiver of player
         '''
-        self = kwargs['receiver']
+        self:BasePlayer = kwargs['receiver']
         place = sender
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
@@ -156,7 +162,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: estate to upgrade
         :param kwargs: holds receiver of player
         '''
-        self = kwargs['receiver']
+        self:BasePlayer = kwargs['receiver']
         estate = sender
         if self._make_decision_upgrade(estate):
             self._add_money(-estate.upgrade_value)
@@ -170,7 +176,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds receiver of player
         '''
-        self = kwargs['receiver']
+        self:BasePlayer = kwargs['receiver']
         self.pos = self._make_decision_jump_to_estate()
 
     @staticmethod
@@ -181,9 +187,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds receiver of player
         '''
-        self = kwargs['receiver']
+        self:BasePlayer = kwargs['receiver']
         estate = self._make_decision_upgrade_any_estate()
-        if estate:
+        if estate and self.money > estate.upgrade_value:
             self._add_money(-estate.upgrade_value)
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
@@ -201,7 +207,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _make_decision_upgrade(self, place: itf.IPlayerForEstate):
+    def _make_decision_upgrade(self, place: itf.IPlayerForEstate)->bool:
         '''decide whether to upgrade the place
 
         :param place: IPlayerForEstate
@@ -240,7 +246,7 @@ class PlayerSimple(BasePlayer):
 
     __is_banckrupted = False
     @property
-    def is_banckrupted(self):
+    def is_banckrupted(self)->bool:
         return self.__is_banckrupted
 
     def __pledge_for_money(self)->bool:
@@ -251,39 +257,48 @@ class PlayerSimple(BasePlayer):
         for estate in self.estates:
             if not estate.is_pledged:
                 ev.event_to_estate_pledge.send(self, receiver=estate)
-                self._add_money(estate.pledge_value)
-                if self.money > 0:
+                if self._add_money(estate.pledge_value) > 0:
                     return True
         else:
             return False
 
-    def __sell_place(self, places: list)->int:
-        ''' self the places with generator
+    def __sell_place(self, places: typing.List[itf.IPlayerForPlace])->int:
+        ''' sell the places
 
         :param places: list of IPlayerForPlace
-        :return: the player's money after sold out
+        :return: True if money is enough
         '''
-        for place in places:
-            ev.event_to_place_sell.send(self, receiver=place)
-            self._add_money(place.sell_value)
-            self._remove_place(place)
-            yield self.money
-    
+        def sell_place_iteration(cls: BasePlayer, places_to_sell):
+            for place in places_to_sell:
+                ev.event_to_place_sell.send(cls, receiver=place)
+                yield (place, cls._add_money(place.sell_value))
+        place_to_remove = []
+        is_money_enough = False
+        for place, money in sell_place_iteration(self, places):
+            place_to_remove.append(place)
+            if money >= 0:
+                is_money_enough = True
+                break
+        self._remove_place(place_to_remove)
+        if is_money_enough:
+            return True
+        else:
+            return False
+
     def __sell_for_money(self)->bool:
         '''sell for money
-        
+
         :return: True if money is enough
         '''
         # sell estate
-        for money in self.__sell_place(self._estates):
-            if money > 0:
-                return True
+        if self.__sell_place(self._estates):
+            return True
         # sell project
-        for money in self.__sell_place(self._projects):
-            if money > 0:
-                return True
+        elif self.__sell_place(self._projects):
+            return True
         # all places is sold out, but still money is below zero
-        return False
+        else:
+            return False
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -296,6 +311,9 @@ class PlayerSimple(BasePlayer):
         if self.__sell_for_money():
             return None
         # banckrupt
+        assert self.money < 0
+        assert not self.estates
+        assert not self.projects
         self.__is_banckrupted = True
 
     def _make_decision_buy(self, place: itf.IPlayerForPlace)->bool:
@@ -341,7 +359,10 @@ class PlayerSimple(BasePlayer):
         estates_need_upgrade = [estate for estate in self.estates
                                     if not estate.is_level_max]
         if estates_need_upgrade:
-            return estates_need_upgrade[0]
+            for estate in estates_need_upgrade:
+                if self.money > estate.upgrade_value:
+                    return estate
+            return None
         else:
             return None
 

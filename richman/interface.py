@@ -137,6 +137,11 @@ class IPlayerForProject(IPlayerForPlace):
 # map interface
 
 class IMapForPlayer(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        pass
     
     @property
     @abc.abstractmethod
@@ -174,7 +179,17 @@ class IMapForPlayer(abc.ABC):
     def __eq__(self, obj):
         pass
 
-class IMapForPlace(abc.ABC):
+class IMapForItem(abc.ABC):
+
+    @abc.abstractmethod
+    def trigger(self, player):
+        '''trigger the effect of the item in the map
+
+        :param player: the player that trigger the effect
+        '''
+        pass
+
+class IMapForPlace(IMapForItem):
 
     @abc.abstractmethod
     def __eq__(self, obj):
@@ -185,6 +200,10 @@ class IMapForEstate(IMapForPlace):
     pass
 
 class IMapForProject(IMapForPlace):
+
+    pass
+
+class IMapForPublic(IMapForItem):
 
     pass
 

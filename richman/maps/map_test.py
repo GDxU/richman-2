@@ -34,14 +34,14 @@ class MapTest(BaseMap):
 
     def _build(self):
         # block1 region
-        self._blocks.append(EstateBlock('block1'))
+        block = EstateBlock('block1')
         self.add_items(Estate(
             name='沈阳',
             fees=[400, 1000, 2500, 5500],
             buy_value=2400,
             pledge_value=1200,
             upgrade_value=600,
-            block=self._blocks[0]
+            block=block
         ))
         self.add_items(Estate(
             name='天津',
@@ -49,7 +49,7 @@ class MapTest(BaseMap):
             buy_value=2600,
             pledge_value=1300,
             upgrade_value=600,
-            block=self._blocks[0]
+            block=block
         ))
         self.add_items(ProjectNuclear())
         self.add_items(Estate(
@@ -58,7 +58,7 @@ class MapTest(BaseMap):
             buy_value=2300,
             pledge_value=1100,
             upgrade_value=600,
-            block=self._blocks[0]
+            block=block
         ))
         self.add_items(Estate(
             name='大连',
@@ -66,17 +66,17 @@ class MapTest(BaseMap):
             buy_value=1200,
             pledge_value=600,
             upgrade_value=300,
-            block=self._blocks[0]
+            block=block
         ))
         #block2 region
-        self._blocks.append(EstateBlock('block2'))
+        block = EstateBlock('block2')
         self.add_items(Estate(
             name='贵阳',
             fees=[200, 400, 1000, 2500],
             buy_value=1000,
             pledge_value=500,
             upgrade_value=300,
-            block=self._blocks[1]
+            block=block
         ))
         self.add_items(ProjectBuilder())
         self.add_items(Estate(
@@ -85,7 +85,7 @@ class MapTest(BaseMap):
             buy_value=1500,
             pledge_value=700,
             upgrade_value=300,
-            block=self._blocks[1]
+            block=block
         ))
         self.add_items(Estate(
             name='银川',
@@ -93,7 +93,7 @@ class MapTest(BaseMap):
             buy_value=1800,
             pledge_value=900,
             upgrade_value=300,
-            block=self._blocks[1]
+            block=block
         ))
         self.add_items(Estate(
             name='兰州',
@@ -101,7 +101,7 @@ class MapTest(BaseMap):
             buy_value=2400,
             pledge_value=1200,
             upgrade_value=600,
-            block=self._blocks[1]
+            block=block
         ))
         self.add_items(Estate(
             name='拉萨',
@@ -109,17 +109,17 @@ class MapTest(BaseMap):
             buy_value=2000,
             pledge_value=1000,
             upgrade_value=600,
-            block=self._blocks[1]
+            block=block
         ))
         #block3 region
-        self._blocks.append(EstateBlock('block3'))
+        block = EstateBlock('block3')
         self.add_items(Estate(
             name='杭州',
             fees=[400, 1000, 2500, 5500],
             buy_value=2200,
             pledge_value=1100,
             upgrade_value=600,
-            block=self._blocks[2]
+            block=block
         ))
         self.add_items(Estate(
             name='南京',
@@ -127,7 +127,7 @@ class MapTest(BaseMap):
             buy_value=3800,
             pledge_value=1900,
             upgrade_value=900,
-            block=self._blocks[2]
+            block=block
         ))
         self.add_items(Estate(
             name='苏州',
@@ -135,7 +135,7 @@ class MapTest(BaseMap):
             buy_value=3500,
             pledge_value=1700,
             upgrade_value=900,
-            block=self._blocks[2]
+            block=block
         ))
         self.add_items(Estate(
             name='厦门',
@@ -143,7 +143,7 @@ class MapTest(BaseMap):
             buy_value=4000,
             pledge_value=2000,
             upgrade_value=1200,
-            block=self._blocks[2]
+            block=block
         ))
         self.add_items(Estate(
             name='台北',
@@ -151,5 +151,5 @@ class MapTest(BaseMap):
             buy_value=4000,
             pledge_value=2000,
             upgrade_value=1200,
-            block=self._blocks[2]
+            block=block
         ))

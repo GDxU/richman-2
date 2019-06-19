@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 '''map
 '''
+import typing
 import logging
 import pickle
 import os
@@ -17,37 +18,33 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         '''
         self.__name = name
         # init others
-        self.__items = []
-        self._blocks = []
-        self.__players = []
-        self.__players_in_game = []
-        self.__players_banckrupted = []
+        self.__items:typing.List[itf.IMapForItem] = []
+        self.__players:typing.List[itf.IMapForPlayer] = []
+        self.__players_in_game:typing.List[itf.IMapForPlayer] = []
+        self.__players_banckrupted:typing.List[itf.IMapForPlayer] = []
         self.__current_player_index = 0
         self.__round_cnt = 0
 
     @property
-    def name(self):
+    def name(self)->str:
         return self.__name
     @property
-    def items(self):
+    def items(self)->typing.List[itf.IMapForItem]:
         return self.__items
     @property
-    def blocks(self):
-        return self._blocks
-    @property
-    def players(self):
+    def players(self)->typing.List[itf.IMapForPlayer]:
         return self.__players
     @property
-    def players_in_game(self):
+    def players_in_game(self)->typing.List[itf.IMapForPlayer]:
         return self.__players_in_game
     @property
-    def players_banckrupted(self):
+    def players_banckrupted(self)->typing.List[itf.IMapForPlayer]:
         return self.__players_banckrupted
     @property
-    def round(self):
+    def round(self)->int:
         return self.__round_cnt
 
-    def add_items(self, items: list):
+    def add_items(self, items: typing.List[itf.IMapForItem]):
         if not isinstance(items, list):
             items = [items]
         for item in items:
@@ -55,7 +52,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
                 'estate names should not be duplicated.'
             self.__items.append(item)
 
-    def add_players(self, players: list):
+    def add_players(self, players: typing.List[itf.IMapForPlayer]):
         '''add players to map
 
         :param players: list of players
@@ -97,7 +94,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         for player in self.players:
             logging.info('参赛者信息：{}'.format(player))
 
-    def _remove_players_banckrupted(self, players_banckrupted: list):
+    def _remove_players_banckrupted(self, players_banckrupted: typing.List[itf.IMapForPlayer]):
         '''remove current player from __players_in_game list
 
         :param players_banckrupted: list of banckrupted player

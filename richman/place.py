@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 '''房产类
 '''
+import typing
 import logging
 
 import richman.interface as itf
@@ -22,23 +23,22 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         self.__buy_value = buy_value
         self.__sell_value = sell_value
         # init others
-        self.__owner = None
-        self.__is_pledged = None
+        self.__owner:itf.IPlaceForPlayer = None
 
     @property
-    def buy_value(self):
+    def buy_value(self)->int:
         return self.__buy_value
     @property
-    def sell_value(self):
+    def sell_value(self)->int:
         return self.__sell_value
     @property
-    def is_available(self):
+    def is_available(self)->bool:
         return self.owner is None
     @property
-    def name(self):
+    def name(self)->str:
         return self.__name
     @property
-    def owner(self):
+    def owner(self)->itf.IPlaceForPlayer:
         return self.__owner
 
     def _exchange_money(self,
@@ -65,7 +65,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         :param sender: player to buy the place
         :param kwargs: holds receiver of place to buy
         '''
-        self = kwargs['receiver']
+        self:BasePlace = kwargs['receiver']
         buyer = sender
         assert self.__owner is None, '该地已经卖出，无法购买！'
         self.__owner = buyer
@@ -79,7 +79,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         :param sender: player to sell the place
         :param kwargs: holds receiver of place to sell
         '''
-        self = kwargs['receiver']
+        self:BasePlace = kwargs['receiver']
         seller = sender
         assert seller == self.owner, '该地产（项目）不归 {} 所有，无法变卖！'.format(seller.name)
         assert self.owner is not None, '该地无主，不能卖！'
@@ -136,33 +136,33 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert self.sell_value > self.pledge_value
 
     @property
-    def upgrade_value(self):
+    def upgrade_value(self)->int:
         return self.__upgrade_value
     @property
-    def sell_value(self):
+    def sell_value(self)->int:
         if self.is_pledged:
             return self.buy_value - self.pledge_value
         return self.buy_value
     @property
-    def is_pledged(self):
+    def is_pledged(self)->bool:
         return self.__is_pledged
     @property
-    def pledge_value(self):
+    def pledge_value(self)->int:
         return self.__pledge_value
     @property
-    def is_level_max(self):
+    def is_level_max(self)->int:
         return self.current_level >= (self.__kMaxLevel - 1)
     @property
-    def current_level(self):
+    def current_level(self)->int:
         return self.__current_level
     @property
     def block(self):
         return self.__block
     @property
-    def fee(self):
-        return self.__fees[self.__current_level]
+    def fee(self)->int:
+        return self.__fees[self.current_level]
     @property
-    def fees(self):
+    def fees(self)->int:
         return self.__fees
 
     @staticmethod
@@ -173,14 +173,19 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         :param sender: player to upgrade
         :param kwargs: holds receiver of estate
         '''
-        self = kwargs['receiver']
+        self:Estate = kwargs['receiver']
         player = sender
+        if player is None:
+            print('player is none.')
+        if self.owner is None:
+            print('owner is none.')
+            print(self)
         assert player == self.owner, '该地产不归 {} 所有，无法升级！'.format(player.name)
         assert not self.is_level_max, '已经满级，无法升级！'
         self.__current_level += 1
         logging.info('{} 升级地产 {} 到 {} 级，花费 {} 元。'.format(self.owner.name,
                                                                   self.name,
-                                                                  self.__current_level,
+                                                                  self.current_level,
                                                                   self.upgrade_value))
 
     @staticmethod
@@ -191,12 +196,12 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         :param sender: player to degrade
         :param kwargs: holds receiver of estate
         '''
-        self = kwargs['receiver']
+        self:Estate = kwargs['receiver']
         player = sender
         assert player == self.owner, '该地产不归 {} 所有，无法降级！'.format(player.name)
         assert self.current_level > 0, '最低级，无法降级！'
         self.__current_level -= 1
-        logging.info('{} 降低地产 {} 等级到 {} 级。'.format(self.owner.name, self.name, self.__current_level))
+        logging.info('{} 降低地产 {} 等级到 {} 级。'.format(self.owner.name, self.name, self.current_level))
 
     @staticmethod
     @ev.event_to_estate_pledge.connect
@@ -206,7 +211,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         :param sender: player to pledge
         :param kwargs: holds receiver of estate
         '''
-        self = kwargs['receiver']
+        self:Estate = kwargs['receiver']
         player = sender
         assert player == self.owner, '该地产不归 {} 所有，无法抵押！'.format(player.name)
         assert self.owner is not None, '该地当前无主，无法抵押！'
@@ -222,7 +227,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         :param sender: player to rebuy
         :param kwargs: holds receiver of estate
         '''
-        self = kwargs['receiver']
+        self:Estate = kwargs['receiver']
         player = sender
         assert player == self.owner, '该地产不归 {} 所有，无法赎回！'.format(player.name)
         assert self.owner is not None, '该地当前无主，赎回无效！'
@@ -255,8 +260,10 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
     def __str__(self):
         '''override display place info
         '''
-        lines = '{}: {}, {}'.format(self.name, self.__current_level,
-                                    'x' if self.is_pledged else 'o')
+        lines = '{}: {}, {}, {}'.format(self.name,
+                                        self.owner.name,
+                                        self.current_level,
+                                        'x' if self.is_pledged else 'o')
         return lines
 
 
@@ -270,10 +277,10 @@ class EstateBlock:
         :param name: block name
         '''
         self.__name = name
-        self.__estates = []
+        self.__estates:typing.List[Estate] = []
 
     @property
-    def name(self):
+    def name(self)->str:
         return self.__name
 
     def add_to_block(self, estate: Estate):
@@ -331,7 +338,7 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
     def __str__(self):
         '''override display project info
         '''
-        return self.name
+        return '{}: {}'.format(self.name, self.owner.name)
 
 
 class ProjectNuclear(Project):
