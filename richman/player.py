@@ -12,17 +12,14 @@ import richman.event as ev
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                  itf.IEstateForPlayer, itf.IProjectForPlayer):
 
-    def __init__(self, event_manager: itf.IForEventManager,
-                 name: str, money: int,
+    def __init__(self, name: str, money: int,
                  map:itf.IPlayerForMap = None):
         '''init
 
-        :param event_manager: event manager interface
         :param name: player name
         :param money: player's init money
         :param map: default is None
         '''
-        self.__event_manager = event_manager
         self.__name = name
         assert money > 0, '初始资金必须大于零。'
         self.__money = money
@@ -72,6 +69,22 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                     if isinstance(estate, itf.IPlayerForEstate))
         return max(levels)
 
+    # def _register_events(self):
+    #     ev.event_to_player_add_money.connect(self.event_handler_add_money)
+    #     ev.event_to_player_move_to.connect(self.event_handler_move_to)
+    #     ev.event_to_player_buy_place.connect(self.event_handler_buy_decision)
+    #     ev.event_to_player_upgrade_estate.connect(self.event_handler_upgrade_decision)
+    #     ev.event_to_player_jump_to_estate.connect(self.event_handler_jump_to_estate_decision)
+    #     ev.event_to_player_upgrade_any_estate.connect(self.event_handler_upgrade_any_estate)
+
+    # def _unregister_events(self):
+    #     ev.event_to_player_add_money.disconnect(self.event_handler_add_money)
+    #     ev.event_to_player_move_to.disconnect(self.event_handler_move_to)
+    #     ev.event_to_player_buy_place.disconnect(self.event_handler_buy_decision)
+    #     ev.event_to_player_upgrade_estate.disconnect(self.event_handler_upgrade_decision)
+    #     ev.event_to_player_jump_to_estate.disconnect(self.event_handler_jump_to_estate_decision)
+    #     ev.event_to_player_upgrade_any_estate.disconnect(self.event_handler_upgrade_any_estate)
+
     def _dice(self)->int:
         return random.randrange(1,7)
     
@@ -117,26 +130,35 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self._make_money()
             self.__is_making_money = False
 
-    def event_handler_add_money(self, event: ev.EventToPlayerAddMoney):
+    def event_handler_add_money(self, sender, **kwargs):
         '''change the player's money
 
-        :param event: EventToPlayerAddMoney with delta of money
+        :param sender: not used
+        :param kwargs: holds player and money_delta
         '''
-        self._add_money(event.delta)
+        if self != kwargs['player']:
+            return None
+        self._add_money(kwargs['money_delta'])
 
-    def event_handler_move_to(self, event: ev.EventToPlayerMoveTo):
+    def event_handler_move_to(self, sender, **kwargs):
         '''move player to pos
 
-        :param event: EventToPlayerMoveTo with pos to move
+        :param sender: not used
+        :param kwargs: holds player and pos
         '''
-        self.pos = event.pos
+        if self != kwargs['player']:
+            return None
+        self.pos = kwargs['pos']
 
-    def event_handler_buy_decision(self, event: ev.EventToPlayerBuyPlace):
+    def event_handler_buy_decision(self, sender: itf.IPlayerForPlace, **kwargs):
         '''decide whether to buy the place
 
-        :param event: EventToPlayerBuyPlace with place to buy
+        :param sender: place to decide to buy
+        :param kwargs: holds player
         '''
-        place = event.place
+        if self != kwargs['player']:
+            return None
+        place = sender
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
                 self._projects.append(place)
@@ -145,34 +167,43 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
             self._add_money(-place.buy_value)
-            self.__event_manager.send(ev.EventToPlaceBuy(place.name, self))
+            ev.event_to_place_buy.send(self, place=place)
 
-    def event_handler_upgrade_decision(self, event: ev.EventToPlayerUpgradeEstate):
+    def event_handler_upgrade_decision(self, sender: itf.IPlayerForEstate, **kwargs):
         '''decide whether to upgrade the place
 
-        :param event: IPlayerForEstate with place to buy
+        :param sender: estate to upgrade
+        :param kwargs: holds player
         '''
-        estate = event.estate
+        if self != kwargs['player']:
+            return None
+        estate = sender
         if self._make_decision_upgrade(estate):
             self._add_money(-estate.upgrade_value)
-            self.__event_manager.send(ev.EventToEstateUpgrade(estate.name, self))
+            ev.event_to_estate_upgrade.send(self, estate=estate)
 
-    def event_handler_jump_to_estate_decision(self, event: ev.EventToPlayerJumpToEstate):
+    def event_handler_jump_to_estate_decision(self, sender, **kwargs):
         '''select which estate to go when jump is needed
 
-        :param event: event with no other info
+        :param sender: not used
+        :param kwargs: holds player
         '''
+        if self != kwargs['player']:
+            return None
         self.pos = self._make_decision_jump_to_estate()
 
-    def event_handler_upgrade_any_estate(self, event: ev.EventToPlayerUpgradeAnyEstate):
+    def event_handler_upgrade_any_estate(self, sender, **kwargs):
         '''upgrade and estate that belongs to the player
 
-        :param event: event with no other info
+        :param sender: not used
+        :param kwargs: holds player
         '''
+        if self != kwargs['player']:
+            return None
         estate = self._make_decision_upgrade_any_estate()
         if estate:
             self._add_money(-estate.upgrade_value)
-            self.__event_manager.send(ev.EventToEstateUpgrade(estate.name, self))
+            ev.event_to_estate_upgrade.send(self, estate=estate)
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -237,7 +268,7 @@ class PlayerSimple(BasePlayer):
         '''
         for estate in self.estates:
             if not estate.is_pledged:
-                self.__event_manager.send(ev.EventToEstatePledge(estate.name, self))
+                ev.event_to_estate_pledge.send(self, estate=estate)
                 self._add_money(estate.pledge_value)
                 if self.money > 0:
                     return True
@@ -251,7 +282,7 @@ class PlayerSimple(BasePlayer):
         :return: the player's money after sold out
         '''
         for place in places:
-            self.__event_manager.send(ev.EventToPlaceSell(place.name, self))
+            ev.event_to_place_sell.send(self, place=place)
             self._add_money(place.sell_value)
             self._remove_place(place)
             yield self.money
