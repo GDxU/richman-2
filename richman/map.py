@@ -43,6 +43,12 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
     @property
     def round(self)->int:
         return self.__round_cnt
+    @property
+    def winner(self)->itf.IMapForPlayer:
+        if len(self.players_in_game) > 1:
+            return None
+        else:
+            return self.players_in_game[0]
 
     def add_items(self, items: typing.List[itf.IMapForItem]):
         if not isinstance(items, list):
@@ -128,7 +134,11 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         :return: False if only one player is left
         '''
         self._run_one_round()
-        return len(self.players_in_game) > 1
+        if self.winner:
+            logging.info('{} 获得比赛胜利！'.format(self.winner.name))
+            return False
+        else:
+            return True
 
     def __len__(self):
         return len(self.items)

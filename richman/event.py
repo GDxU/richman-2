@@ -23,12 +23,3 @@ event_to_estate_upgrade = _events.signal("event-to-estate-upgrade")
 event_to_estate_degrade = _events.signal("event-to-estate-degrade")
 event_to_estate_pledge = _events.signal("event-to-estate-pledge")
 event_to_estate_rebuy = _events.signal("event-to-estate-rebuy")
-
-
-# # event to map
-
-# class EventToMapTrigger(BaseEvent):
-
-#     def __init__(self, player_name: str, player_pos: int):
-#         event_name = self._build_name(player_name)
-#         super().__init__(name=event_name)

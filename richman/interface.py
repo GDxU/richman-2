@@ -48,7 +48,7 @@ class IGameForMap(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def run_one_round(self):
+    def run_one_round(self)->bool:
         '''run one round of the map, which means every player run once
 
         :return: False if only one player is left
