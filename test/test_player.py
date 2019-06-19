@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-
+import richman.event as ev
 from richman.player import BasePlayer
 
 
@@ -12,9 +12,7 @@ class TestBasePlayer(unittest.TestCase):
     def setUp(self):
         map = MagicMock()
         map.__len__.return_value = 10
-        self.event_manager = MagicMock()
-        self.player = BasePlayer(event_manager=self.event_manager,
-                                 name='Hangzhou',
+        self.player = BasePlayer(name='Hangzhou',
                                  money=10000,
                                  map=map)
 
@@ -22,17 +20,17 @@ class TestBasePlayer(unittest.TestCase):
         pass
 
     def test_add_money_should_execute_correctlly(self):
-        event = MagicMock()
-        event.delta = -10000
-        self.player.event_handler_add_money(event)
+        ev.event_to_player_add_money.send(None, player=self.player,
+                                          money_delta=-10000)
         self.player._make_money = MagicMock()
-        event.delta = -1
-        self.player.event_handler_add_money(event)
+        ev.event_to_player_add_money.send(None, player=self.player,
+                                          money_delta=-1)
         self.assertTrue(self.player._make_money.called)
 
     def test_pos_should_set_right_value(self):
         pos_max = len(self.player.map)
-        self.player.pos = pos_max + 3
+        ev.event_to_player_move_to.send(None, player=self.player,
+                                        pos=pos_max+3)
         self.assertEqual(self.player.pos, 3)
 
 

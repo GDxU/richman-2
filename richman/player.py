@@ -130,80 +130,86 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self._make_money()
             self.__is_making_money = False
 
-    def event_handler_add_money(self, sender, **kwargs):
+    @staticmethod
+    @ev.event_to_player_add_money.connect
+    def event_handler_add_money(sender, **kwargs):
         '''change the player's money
 
         :param sender: not used
         :param kwargs: holds player and money_delta
         '''
-        if self != kwargs['player']:
-            return None
-        self._add_money(kwargs['money_delta'])
+        player = kwargs['player']
+        player._add_money(kwargs['money_delta'])
 
-    def event_handler_move_to(self, sender, **kwargs):
+    @staticmethod
+    @ev.event_to_player_move_to.connect
+    def event_handler_move_to(sender, **kwargs):
         '''move player to pos
 
         :param sender: not used
         :param kwargs: holds player and pos
         '''
-        if self != kwargs['player']:
-            return None
-        self.pos = kwargs['pos']
+        player = kwargs['player']
+        player.pos = kwargs['pos']
 
-    def event_handler_buy_decision(self, sender: itf.IPlayerForPlace, **kwargs):
+    @staticmethod
+    @ev.event_to_player_buy_place.connect
+    def event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs):
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
         :param kwargs: holds player
         '''
-        if self != kwargs['player']:
-            return None
+        player = kwargs['player']
         place = sender
-        if self._make_decision_buy(place):
+        if player._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
-                self._projects.append(place)
+                player._projects.append(place)
             elif isinstance(place, itf.IPlayerForEstate):
-                self._estates.append(place)
+                player._estates.append(place)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
-            self._add_money(-place.buy_value)
-            ev.event_to_place_buy.send(self, place=place)
+            player._add_money(-place.buy_value)
+            ev.event_to_place_buy.send(player, place=place)
 
-    def event_handler_upgrade_decision(self, sender: itf.IPlayerForEstate, **kwargs):
+    @staticmethod
+    @ev.event_to_player_upgrade_estate.connect
+    def event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs):
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
         :param kwargs: holds player
         '''
-        if self != kwargs['player']:
-            return None
+        player = kwargs['player']
         estate = sender
-        if self._make_decision_upgrade(estate):
-            self._add_money(-estate.upgrade_value)
-            ev.event_to_estate_upgrade.send(self, estate=estate)
+        if player._make_decision_upgrade(estate):
+            player._add_money(-estate.upgrade_value)
+            ev.event_to_estate_upgrade.send(player, estate=estate)
 
-    def event_handler_jump_to_estate_decision(self, sender, **kwargs):
+    @staticmethod
+    @ev.event_to_player_jump_to_estate.connect
+    def event_handler_jump_to_estate_decision(sender, **kwargs):
         '''select which estate to go when jump is needed
 
         :param sender: not used
         :param kwargs: holds player
         '''
-        if self != kwargs['player']:
-            return None
-        self.pos = self._make_decision_jump_to_estate()
+        player = kwargs['player']
+        player.pos = player._make_decision_jump_to_estate()
 
-    def event_handler_upgrade_any_estate(self, sender, **kwargs):
+    @staticmethod
+    @ev.event_to_player_upgrade_any_estate.connect
+    def event_handler_upgrade_any_estate(sender, **kwargs):
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
         :param kwargs: holds player
         '''
-        if self != kwargs['player']:
-            return None
-        estate = self._make_decision_upgrade_any_estate()
+        player = kwargs['player']
+        estate = player._make_decision_upgrade_any_estate()
         if estate:
-            self._add_money(-estate.upgrade_value)
-            ev.event_to_estate_upgrade.send(self, estate=estate)
+            player._add_money(-estate.upgrade_value)
+            ev.event_to_estate_upgrade.send(player, estate=estate)
 
     def _make_money(self):
         '''make money my pledging or selling,
