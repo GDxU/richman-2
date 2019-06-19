@@ -111,9 +111,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''change the player's money
 
         :param sender: not used
-        :param kwargs: holds player and money_delta
+        :param kwargs: holds receiver of player and money_delta
         '''
-        self = kwargs['player']
+        self = kwargs['receiver']
         self._add_money(kwargs['money_delta'])
 
     @staticmethod
@@ -122,9 +122,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''move player to pos
 
         :param sender: not used
-        :param kwargs: holds player and pos
+        :param kwargs: holds receiver of player and pos
         '''
-        self = kwargs['player']
+        self = kwargs['receiver']
         self.pos = kwargs['pos']
 
     @staticmethod
@@ -133,9 +133,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
-        :param kwargs: holds player
+        :param kwargs: holds receiver of player
         '''
-        self = kwargs['player']
+        self = kwargs['receiver']
         place = sender
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
@@ -145,7 +145,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
             self._add_money(-place.buy_value)
-            ev.event_to_place_buy.send(self, place=place)
+            ev.event_to_place_buy.send(self, receiver=place)
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
@@ -153,13 +153,13 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
-        :param kwargs: holds player
+        :param kwargs: holds receiver of player
         '''
-        self = kwargs['player']
+        self = kwargs['receiver']
         estate = sender
         if self._make_decision_upgrade(estate):
             self._add_money(-estate.upgrade_value)
-            ev.event_to_estate_upgrade.send(self, estate=estate)
+            ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
@@ -167,9 +167,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''select which estate to go when jump is needed
 
         :param sender: not used
-        :param kwargs: holds player
+        :param kwargs: holds receiver of player
         '''
-        self = kwargs['player']
+        self = kwargs['receiver']
         self.pos = self._make_decision_jump_to_estate()
 
     @staticmethod
@@ -178,13 +178,13 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
-        :param kwargs: holds player
+        :param kwargs: holds receiver of player
         '''
-        self = kwargs['player']
+        self = kwargs['receiver']
         estate = self._make_decision_upgrade_any_estate()
         if estate:
             self._add_money(-estate.upgrade_value)
-            ev.event_to_estate_upgrade.send(self, estate=estate)
+            ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     def _make_money(self):
         '''make money my pledging or selling,
@@ -249,7 +249,7 @@ class PlayerSimple(BasePlayer):
         '''
         for estate in self.estates:
             if not estate.is_pledged:
-                ev.event_to_estate_pledge.send(self, estate=estate)
+                ev.event_to_estate_pledge.send(self, receiver=estate)
                 self._add_money(estate.pledge_value)
                 if self.money > 0:
                     return True
@@ -263,7 +263,7 @@ class PlayerSimple(BasePlayer):
         :return: the player's money after sold out
         '''
         for place in places:
-            ev.event_to_place_sell.send(self, place=place)
+            ev.event_to_place_sell.send(self, receiver=place)
             self._add_money(place.sell_value)
             self._remove_place(place)
             yield self.money

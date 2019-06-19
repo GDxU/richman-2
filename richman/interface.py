@@ -148,13 +148,13 @@ class IMapForPlayer(abc.ABC):
     def __eq__(self, obj):
         pass
 
-class IMapForEPlace(abc.ABC):
+class IMapForPlace(abc.ABC):
 
     @abc.abstractmethod
     def __eq__(self, obj):
         pass
 
-class IMapForEstate(IMapForEPlace):
+class IMapForEstate(IMapForPlace):
 
     pass
 
