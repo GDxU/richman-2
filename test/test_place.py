@@ -32,7 +32,7 @@ class TestEstate(unittest.TestCase):
         player = MagicMock()
         with self.assertRaises(AssertionError):
             ev.event_to_estate_pledge.send(player, receiver=self.estate)
-        ev.event_to_place_buy.send(player, self.estate)
+        ev.event_to_place_buy.send(player, receiver=self.estate)
         ev.event_to_estate_pledge.send(player, receiver=self.estate)
         with self.assertRaises(AssertionError):
             ev.event_to_estate_pledge.send(player, receiver=self.estate)

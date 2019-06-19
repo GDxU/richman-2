@@ -12,10 +12,13 @@ class TestBaseMap(unittest.TestCase):
     def setUp(self):
         estate1 = MagicMock(spec=itf.IMapForEstate)
         estate1.name = 'p1'
+        estate1.trigger = MagicMock()
         estate2 = MagicMock(spec=itf.IMapForEstate)
         estate2.name = 'p2'
+        estate2.trigger = MagicMock()
         estate3 = MagicMock(spec=itf.IMapForEstate)
         estate3.name = 'p3'
+        estate3.trigger = MagicMock()
         self.player1 = MagicMock()
         self.player1.name = '邓哲'
         self.player1.is_banckrupted = False
@@ -35,10 +38,13 @@ class TestBaseMap(unittest.TestCase):
     def test_add_to_map_should_add_estates_and_players_to_map(self):
         estate1 = MagicMock(spec=itf.IMapForEstate)
         estate1.name = 'p1'
+        estate1.trigger = MagicMock()
         estate2 = MagicMock(spec=itf.IMapForEstate)
         estate2.name = 'p2'
+        estate2.trigger = MagicMock()
         estate3 = MagicMock(spec=itf.IMapForEstate)
         estate3.name = 'p3'
+        estate3.trigger = MagicMock()
         # init correctly
         map = BaseMap('China')
         map.add_items([estate1, estate2, estate3])

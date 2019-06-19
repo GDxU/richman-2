@@ -13,17 +13,19 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                  itf.IEstateForPlayer, itf.IProjectForPlayer,
                  itf.IPlaceForPlayer):
 
-    def __init__(self, name: str, money: int):
+    def __init__(self, name: str, money: int,
+                 map:itf.IPlayerForMap = None):
         '''init
 
         :param name: player name
         :param money: player's init money
+        :param map: map for player to add to, default is None
         '''
         self.__name = name
         assert money > 0, '初始资金必须大于零。'
         self.__money = money
+        self.__map = map
         # init others
-        self.__map = None
         self._estates = []
         self._projects = []
         self.__pos = 0
