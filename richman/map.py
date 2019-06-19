@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 '''map
 '''
+import logging
 import pickle
 import os
 
@@ -15,8 +16,14 @@ class BaseMap(itf.IPlayerForMap):
         :param name: map name
         '''
         self.__name = name
+        # init others
         self.__items = []
         self._blocks = []
+        self.__players = []
+        self.__players_in_game = []
+        self.__players_banckrupted = []
+        self.__current_player_index = 0
+        self.__round_cnt = []
 
     @property
     def name(self):
@@ -27,16 +34,36 @@ class BaseMap(itf.IPlayerForMap):
     @property
     def blocks(self):
         return self._blocks
+    @property
+    def players(self):
+        return self.__players
+    @property
+    def players_in_game(self):
+        return self.__players_in_game
+    @property
+    def players_banckrupted(self):
+        return self.__players_banckrupted
+    @property
+    def round(self):
+        return self.__round_cnt
 
-    def _add_items(self, items: list):
-        if items and not isinstance(items, list):
+    def add_items(self, items: list):
+        if not isinstance(items, list):
             items = [items]
-        # check duplicated estate names
-        estate_names = [estate.name for estate in items
-                            if isinstance(estate, itf.IMapForEstate)]
-        if len(estate_names) != len(set(estate_names)):
-            raise ValueError('estate names should not be duplicated.')
-        self.__items.extend(items)
+        for item in items:
+            assert item not in self.items,\
+                'estate names should not be duplicated.'
+            self.__items.append(item)
+
+    def add_players(self, players: list):
+        if not isinstance(players, list):
+            players = [players]
+        for player in players:
+            assert player not in self.players,\
+                '{} has been existed already.'.format(player.name)
+            self.__players.append(player)
+            player.map = self
+        self.__players_in_game = self.players.copy()
 
     def load(self, file_path: str):
         '''load map from pickle
@@ -62,10 +89,45 @@ class BaseMap(itf.IPlayerForMap):
         with open(file_path, 'wb') as f:
             pickle.dump(map, f)
 
-    def trigger(self, player: itf.IMapForPlayer):
-        '''trigger player to 
+    def _display_players_info(self):
+        for player in self.players:
+            logging.info('参赛者信息：{}'.format(player))
+
+    def _remove_players_banckrupted(self, players_banckrupted: list):
+        '''remove current player from __players_in_game list
+
+        :param players_banckrupted: list of banckrupted player
         '''
-        self.items[player.pos].trigger(player)
+        for player in players_banckrupted:
+            self.__players_in_game.remove(player)
+
+    def _player_action(self, player: itf.IMapForPlayer):
+        pos = player.dice()
+        self.items[pos].trigger(player)
+
+    def _run_one_round(self):
+        '''run one round of the map, which means every player run once
+
+        :note: banckrupted players is remove from players list
+        '''
+        logging.info('\n第 {} 回合开始：'.format(self.round))
+        players_banckrupted = []
+        for player in self.players_in_game:
+            self._player_action(player)
+            if player.is_banckrupted:
+                logging.info('{} 破产。'.format(player.name))
+                players_banckrupted.append(player)
+        self._remove_players_banckrupted(players_banckrupted)
+        self._display_players_info()
+        self.__round_cnt += 1
+
+    def run_one_round(self):
+        '''run one round of the map, which means every player run once
+
+        :return: False if only one player is left
+        '''
+        self._run_one_round()
+        return len(self.players_in_game) > 1
 
     def __len__(self):
         return len(self.items)

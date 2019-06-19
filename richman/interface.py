@@ -4,47 +4,6 @@
 import abc
 
 
-# event manager
-
-class IEventManagerForEvent(abc.ABC):
-
-    @property
-    @abc.abstractmethod
-    def name(self):
-        '''
-        :return: name of the event
-        '''
-        pass
-
-class IForEventManager(abc.ABC):
-
-    @abc.abstractmethod
-    def add_listeners(self, name: str, handlers: list):
-        '''add handler to the name list
-
-        :param name: type of event, str
-        :param handlers: handlers to process the event
-        '''
-        pass
-
-    @abc.abstractmethod
-    def remove_listeners(self, name: str, handlers: list):
-        '''remove handler from the name list
-
-        :param name: type of event, str
-        :param handlers: handlers to process the event
-        '''
-        pass
-
-    @abc.abstractmethod
-    def send(self, event: IEventManagerForEvent):
-        '''send the event to handlers
-
-        :param event: the event to send
-        '''
-        pass
-
-
 # game interface
 
 class IGameForPlayer(abc.ABC):
@@ -65,20 +24,6 @@ class IGameForPlayer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add_to_map(self, map):
-        '''add player to map
-
-        :param map: map
-        '''
-        pass
-
-    @abc.abstractmethod
-    def play(self):
-        '''play the game, like dice etc.
-        '''
-        pass
-
-    @abc.abstractmethod
     def __str__(self):
         '''display player info
         '''
@@ -95,6 +40,11 @@ class IPlayerBase(abc.ABC):
         pass
 
 class IPlayerForMap(IPlayerBase):
+
+    @property
+    @abc.abstractmethod
+    def players_in_game(self):
+        pass
 
     @abc.abstractmethod
     def __len__(self):
@@ -164,14 +114,49 @@ class IMapForPlayer(abc.ABC):
     
     @property
     @abc.abstractmethod
+    def map(self):
+        pass
+    @map.setter
+    @abc.abstractmethod
+    def map(self, value):
+        '''set player's map
+
+        :param value: map
+        '''
+        pass
+    @property
+    @abc.abstractmethod
     def pos(self):
         pass
+    @property
+    @abc.abstractmethod
+    def is_banckrupted(self)->bool:
+        '''
+        :return: True if is banckrupted.
+        '''
+        pass
 
-class IMapForEstate(abc.ABC):
+    @abc.abstractmethod
+    def dice(self)->int:
+        '''dice
+
+        :return: current pos of player 
+        '''
+        pass
 
     @abc.abstractmethod
     def __eq__(self, obj):
         pass
+
+class IMapForEPlace(abc.ABC):
+
+    @abc.abstractmethod
+    def __eq__(self, obj):
+        pass
+
+class IMapForEstate(IMapForEPlace):
+
+    pass
 
 
 # place interface
