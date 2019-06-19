@@ -23,7 +23,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         self.__players_in_game = []
         self.__players_banckrupted = []
         self.__current_player_index = 0
-        self.__round_cnt = []
+        self.__round_cnt = 0
 
     @property
     def name(self):

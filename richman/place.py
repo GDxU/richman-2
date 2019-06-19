@@ -83,9 +83,9 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         seller = sender
         assert seller == self.owner, '该地产（项目）不归 {} 所有，无法变卖！'.format(seller.name)
         assert self.owner is not None, '该地无主，不能卖！'
+        logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(self.owner.name, self.name, self.sell_value))
         self.__owner = None
         self.reset()
-        logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(self.owner.name, self.name, self.sell_value))
 
     def trigger(self, player: itf.IPlaceForPlayer):
         raise NotImplementedError('need override')
@@ -135,6 +135,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
             'fees of estate should go up with level up'
         assert self.sell_value > self.pledge_value
 
+    @property
     def upgrade_value(self):
         return self.__upgrade_value
     @property
@@ -310,7 +311,7 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
         if self.owner:
             self._take_effect(player)
         else:
-            ev.event_to_place_buy.send(self, receiver=player)
+            ev.event_to_player_buy_place.send(self, receiver=player)
 
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''take the effect of the place, triggered by the player
