@@ -158,6 +158,10 @@ class IMapForEstate(IMapForPlace):
 
     pass
 
+class IMapForProject(IMapForPlace):
+
+    pass
+
 
 # place interface
 

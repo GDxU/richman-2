@@ -9,7 +9,7 @@ import richman.event as ev
 
 # base place
 
-class BasePlace(itf.IPlayerForPlace):
+class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
 
     def __init__(self, name: str, buy_value: int, sell_value: int):
         '''init
@@ -300,7 +300,7 @@ class EstateBlock:
 
 # project
 
-class Project(BasePlace, itf.IPlayerForProject):
+class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
     def trigger(self, player: itf.IProjectForPlayer):
         '''override take the effect of the place, triggered by the player
@@ -321,6 +321,11 @@ class Project(BasePlace, itf.IPlayerForProject):
 
     def reset(self):
         pass
+
+    def __eq__(self, obj):
+        '''override project is always not equal
+        '''
+        return False
 
     def __str__(self):
         '''override display project info

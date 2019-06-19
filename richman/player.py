@@ -10,7 +10,8 @@ import richman.event as ev
 
 
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
-                 itf.IEstateForPlayer, itf.IProjectForPlayer):
+                 itf.IEstateForPlayer, itf.IProjectForPlayer,
+                 itf.IPlaceForPlayer):
 
     def __init__(self, name: str, money: int,
                  map:itf.IPlayerForMap = None):
