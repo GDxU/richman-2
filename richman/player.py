@@ -69,25 +69,19 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                     if isinstance(estate, itf.IPlayerForEstate))
         return max(levels)
 
-    # def _register_events(self):
-    #     ev.event_to_player_add_money.connect(self.event_handler_add_money)
-    #     ev.event_to_player_move_to.connect(self.event_handler_move_to)
-    #     ev.event_to_player_buy_place.connect(self.event_handler_buy_decision)
-    #     ev.event_to_player_upgrade_estate.connect(self.event_handler_upgrade_decision)
-    #     ev.event_to_player_jump_to_estate.connect(self.event_handler_jump_to_estate_decision)
-    #     ev.event_to_player_upgrade_any_estate.connect(self.event_handler_upgrade_any_estate)
-
-    # def _unregister_events(self):
-    #     ev.event_to_player_add_money.disconnect(self.event_handler_add_money)
-    #     ev.event_to_player_move_to.disconnect(self.event_handler_move_to)
-    #     ev.event_to_player_buy_place.disconnect(self.event_handler_buy_decision)
-    #     ev.event_to_player_upgrade_estate.disconnect(self.event_handler_upgrade_decision)
-    #     ev.event_to_player_jump_to_estate.disconnect(self.event_handler_jump_to_estate_decision)
-    #     ev.event_to_player_upgrade_any_estate.disconnect(self.event_handler_upgrade_any_estate)
-
     def _dice(self)->int:
         return random.randrange(1,7)
-    
+
+    def dice(self)->int:
+        '''dice
+
+        :return: current pos of player
+        '''
+        step = self._dice()
+        logging.info('{} 掷出 {} 点。'.format(self.name, step))
+        self.pos += step
+        return self.pos
+
     def _remove_place(self, place: itf.IPlayerForPlace):
         '''remove the place from self._estates or self._projects
 
@@ -99,25 +93,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self._projects.remove(place)
         else:
             raise RuntimeError('参数类型不正确。')
-
-    def add_to_map(self, map: itf.IPlayerForMap):
-        '''add player to map
-
-        :param map: map
-        '''
-        self.__map = map
-
-    def play(self, reverse=False):
-        '''进行下一步游戏
-
-        :param reverse: 是否后退标志
-        '''
-        step = self._dice()
-        logging.info('{} 掷出 {} 点。'.format(self.name, step))
-        if reverse:
-            step = 0 - step
-        self.pos += step
-        self.map.trigger(self)
 
     def _add_money(self, delta: int):
         '''change the player's money
@@ -138,8 +113,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds player and money_delta
         '''
-        player = kwargs['player']
-        player._add_money(kwargs['money_delta'])
+        self = kwargs['player']
+        self._add_money(kwargs['money_delta'])
 
     @staticmethod
     @ev.event_to_player_move_to.connect
@@ -149,8 +124,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds player and pos
         '''
-        player = kwargs['player']
-        player.pos = kwargs['pos']
+        self = kwargs['player']
+        self.pos = kwargs['pos']
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
@@ -160,17 +135,17 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: place to decide to buy
         :param kwargs: holds player
         '''
-        player = kwargs['player']
+        self = kwargs['player']
         place = sender
-        if player._make_decision_buy(place):
+        if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
-                player._projects.append(place)
+                self._projects.append(place)
             elif isinstance(place, itf.IPlayerForEstate):
-                player._estates.append(place)
+                self._estates.append(place)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
-            player._add_money(-place.buy_value)
-            ev.event_to_place_buy.send(player, place=place)
+            self._add_money(-place.buy_value)
+            ev.event_to_place_buy.send(self, place=place)
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
@@ -180,11 +155,11 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: estate to upgrade
         :param kwargs: holds player
         '''
-        player = kwargs['player']
+        self = kwargs['player']
         estate = sender
-        if player._make_decision_upgrade(estate):
-            player._add_money(-estate.upgrade_value)
-            ev.event_to_estate_upgrade.send(player, estate=estate)
+        if self._make_decision_upgrade(estate):
+            self._add_money(-estate.upgrade_value)
+            ev.event_to_estate_upgrade.send(self, estate=estate)
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
@@ -194,8 +169,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds player
         '''
-        player = kwargs['player']
-        player.pos = player._make_decision_jump_to_estate()
+        self = kwargs['player']
+        self.pos = self._make_decision_jump_to_estate()
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
@@ -205,11 +180,11 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param sender: not used
         :param kwargs: holds player
         '''
-        player = kwargs['player']
-        estate = player._make_decision_upgrade_any_estate()
+        self = kwargs['player']
+        estate = self._make_decision_upgrade_any_estate()
         if estate:
-            player._add_money(-estate.upgrade_value)
-            ev.event_to_estate_upgrade.send(player, estate=estate)
+            self._add_money(-estate.upgrade_value)
+            ev.event_to_estate_upgrade.send(self, estate=estate)
 
     def _make_money(self):
         '''make money my pledging or selling,
