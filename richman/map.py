@@ -9,17 +9,14 @@ import richman.interface as itf
 
 class BaseMap(itf.IPlayerForMap):
 
-    def __init__(self, name: str, items:list = None):
+    def __init__(self, name: str):
         '''init
 
         :param name: map name
-        :param items: items in the map
         '''
         self.__name = name
         self.__items = []
         self._blocks = []
-        if items:
-            self._add_items(items)
 
     @property
     def name(self):
@@ -51,8 +48,8 @@ class BaseMap(itf.IPlayerForMap):
         with open(file_path, 'rb') as f:
             map = pickle.load(f)
         assert map, '读取或解析失败：{}。'
-        self.__items = map['items']
         self.__name = map['name']
+        self.__items = map['items']
 
     def save(self, file_path: str):
         '''save map into pickle
@@ -60,8 +57,8 @@ class BaseMap(itf.IPlayerForMap):
         :param file_path: file_path to save
         '''
         map = {}
-        map['items'] = self.items
         map['name'] = self.name
+        map['items'] = self.items
         with open(file_path, 'wb') as f:
             pickle.dump(map, f)
 

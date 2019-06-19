@@ -3,7 +3,8 @@
 '''
 import logging
 
-import richman.interface as itf 
+import richman.interface as itf
+import richman.event as ev
 
 
 class BaseGame:

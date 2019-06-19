@@ -94,7 +94,6 @@ class IPlayerBase(abc.ABC):
     def name(self):
         pass
 
-
 class IPlayerForMap(IPlayerBase):
 
     @abc.abstractmethod
@@ -103,7 +102,6 @@ class IPlayerForMap(IPlayerBase):
         :return: length of map
         '''
         pass
-
 
 class IPlayerForPlace(IPlayerBase):
 
@@ -126,7 +124,6 @@ class IPlayerForPlace(IPlayerBase):
         '''display place info
         '''
         pass
-
 
 class IPlayerForEstate(IPlayerForPlace):
 
@@ -156,7 +153,6 @@ class IPlayerForEstate(IPlayerForPlace):
         '''所有的过路费用'''
         pass
 
-
 class IPlayerForProject(IPlayerForPlace):
 
     pass
@@ -170,7 +166,6 @@ class IMapForPlayer(abc.ABC):
     @abc.abstractmethod
     def pos(self):
         pass
-
 
 class IMapForEstate(abc.ABC):
 
@@ -191,13 +186,17 @@ class IPlaceForPlayer(abc.ABC):
         '''
         pass
 
+    @abc.abstractmethod
+    def __eq__(self, obj):
+        '''check if two player equls
+        '''
+        pass
+
 # estate interface
 
 class IEstateForPlayer(IPlaceForPlayer):
-
-    @abc.abstractmethod
-    def __eq__(self, obj):
-        pass
+    
+    pass
 
 
 # project interface
@@ -208,32 +207,5 @@ class IProjectForPlayer(IPlaceForPlayer):
     @abc.abstractmethod
     def estate_max_level(self):
         '''return the max level of all the estate the player has
-        '''
-        pass
-
-    @abc.abstractmethod
-    def __eq__(self, obj):
-        '''check if two player equls
-        '''
-        pass
-
-
-class IProjectForEstate(abc.ABC):
-
-    @staticmethod
-    @abc.abstractmethod
-    def add_to_static_callbacks_upgrade(callback):
-        '''add callback to the static callbacks of upgrade
-
-        :param callback: callback(estate, player)
-        '''
-        pass
-
-    @staticmethod
-    @abc.abstractmethod
-    def remove_from_static_callbacks_upgrade(callback):
-        '''remove callback from the static callbacks of upgrade
-
-        :param callback: callback(estate, player)
         '''
         pass

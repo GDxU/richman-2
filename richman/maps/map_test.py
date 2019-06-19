@@ -31,7 +31,7 @@ class MapTest(BaseMap):
     '''
 
     def __init__(self):
-        super().__init__(name='map test', items=[])
+        super().__init__(name='map test')
         self._build()
 
     def _build(self):

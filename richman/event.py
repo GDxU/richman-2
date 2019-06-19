@@ -91,6 +91,15 @@ class EventToPlayerUpgradeAnyEstate(BaseEvent):
         super().__init__(name=event_name)
 
 
+# event to map
+
+class EventToMapTrigger(BaseEvent):
+
+    def __init__(self, player_name: str, player_pos: int):
+        event_name = self._build_name(player_name)
+        super().__init__(name=event_name)
+
+
 # event to place
 
 class EventToPlaceBuy(BaseEvent):
