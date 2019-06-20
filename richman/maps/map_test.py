@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''map test
 '''
-from richman.map import BaseMap
+from richman.map import BaseMap  # type: ignore
 
 
 from richman.place import (
