@@ -24,22 +24,34 @@ class IGameForPlayer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add_to_map(self, map):
-        '''add player to map
-
-        :param map: map
-        '''
-        pass
-
-    @abc.abstractmethod
-    def play(self):
-        '''play the game, like dice etc.
-        '''
-        pass
-
-    @abc.abstractmethod
     def __str__(self):
         '''display player info
+        '''
+        pass
+
+class IGameForMap(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        '''
+        :return: name of the player
+        '''
+        pass
+
+    @abc.abstractmethod
+    def add_players(self, players: list):
+        '''add players to map
+
+        :param players: list of players
+        '''
+        pass
+
+    @abc.abstractmethod
+    def run_one_round(self)->bool:
+        '''run one round of the map, which means every player run once
+
+        :return: False if only one player is left
         '''
         pass
 
@@ -53,14 +65,15 @@ class IPlayerBase(abc.ABC):
     def name(self):
         pass
 
-    @abc.abstractmethod
-    def trigger(self, player):
-        '''trigger player to 
-        '''
-        pass
-
-
 class IPlayerForMap(IPlayerBase):
+
+    @property
+    def items(self)->list:
+        pass
+    @property
+    @abc.abstractmethod
+    def players_in_game(self):
+        pass
 
     @abc.abstractmethod
     def __len__(self):
@@ -69,9 +82,13 @@ class IPlayerForMap(IPlayerBase):
         '''
         pass
 
-
 class IPlayerForPlace(IPlayerBase):
 
+    @property
+    @abc.abstractmethod
+    def is_available(self):
+        '''是否可以购买'''
+        pass
     @property
     @abc.abstractmethod
     def buy_value(self):
@@ -82,25 +99,10 @@ class IPlayerForPlace(IPlayerBase):
         pass
 
     @abc.abstractmethod
-    def buy(self, player):
-        '''player buy the place
-
-        :param player: the player to buy the place
-        '''
-        pass
-
-    @abc.abstractmethod
-    def sell(self):
-        '''sell the place, remove the owner mark of the place
-        '''
-        pass
-
-    @abc.abstractmethod
     def __str__(self):
         '''display place info
         '''
         pass
-
 
 class IPlayerForEstate(IPlayerForPlace):
 
@@ -118,42 +120,19 @@ class IPlayerForEstate(IPlayerForPlace):
         pass
     @property
     @abc.abstractmethod
-    def is_available(self):
-        pass
-    @property
-    @abc.abstractmethod
     def is_level_max(self):
         pass
     @property
     @abc.abstractmethod
     def current_level(self):
         pass
-
+    @property
     @abc.abstractmethod
-    def upgrade(self):
-        '''upgrade the place
-        '''
+    def fees(self):
+        '''所有的过路费用'''
         pass
-
-    @abc.abstractmethod
-    def pledge(self):
-        '''pledge the place to the bank
-        '''
-        pass
-
-    @abc.abstractmethod
-    def rebuy(self):
-        '''re-buy the place when it is pledged
-        '''
-        pass
-
 
 class IPlayerForProject(IPlayerForPlace):
-
-    pass
-
-
-class IPlayerForEvent(IPlayerBase):
 
     pass
 
@@ -161,23 +140,79 @@ class IPlayerForEvent(IPlayerBase):
 # map interface
 
 class IMapForPlayer(abc.ABC):
-    
+
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        pass
+    @property
+    @abc.abstractmethod
+    def map(self):
+        pass
     @property
     @abc.abstractmethod
     def pos(self):
         pass
+    @property
+    @abc.abstractmethod
+    def is_banckrupted(self)->bool:
+        '''
+        :return: True if is banckrupted.
+        '''
+        pass
 
+    @abc.abstractmethod
+    def add_map(self, map)->None:
+        '''add map to player
 
-class IMapForEstate(abc.ABC):
+        :param map: map with IPlayerForMap interface
+        '''
+        pass
+
+    @abc.abstractmethod
+    def dice(self)->int:
+        '''dice
+
+        :return: current pos of player 
+        '''
+        pass
 
     @abc.abstractmethod
     def __eq__(self, obj):
         pass
 
+class IMapForItem(abc.ABC):
 
-# estate interface
+    @abc.abstractmethod
+    def trigger(self, player):
+        '''trigger the effect of the item in the map
 
-class IEstateForPlayer(abc.ABC):
+        :param player: the player that trigger the effect
+        '''
+        pass
+
+class IMapForPlace(IMapForItem):
+
+    @abc.abstractmethod
+    def __eq__(self, obj):
+        pass
+
+class IMapForEstate(IMapForPlace):
+
+    pass
+
+class IMapForProject(IMapForPlace):
+
+    pass
+
+class IMapForPublic(IMapForItem):
+
+    pass
+
+
+# place interface
+
+class IPlaceForPlayer(abc.ABC):
 
     @property
     @abc.abstractmethod
@@ -188,96 +223,25 @@ class IEstateForPlayer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add_money(self, delta: int):
-        '''change player money
-
-        :param delta: minus means subtract
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_buy(self, place):
-        '''decide whether to buy the place
-
-        :param place: IPlayerForPlace
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_upgrade(self, place):
-        '''decide whether to upgrade the place
-
-        :param place: IPlayerForPlace
-        '''
-        pass
-
-    @abc.abstractmethod
-    def __eq__(self, obj):
-        pass
-
-
-# project interface
-
-class IProjectForPlayer(abc.ABC):
-
-    @property
-    @abc.abstractmethod
-    def estate_max_level(self):
-        '''return the max level of all the estate the player has
-        '''
-        pass
-
-    @abc.abstractmethod
-    def add_money(self, delta: int):
-        '''change player money
-
-        :param delta: minus means subtract
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_buy(self, place):
-        '''decide whether to buy the project
-
-        :param place: IPlayerForPlace
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_upgrade_any_estate(self):
-        '''decide whether to upgrade any estate that belongs to the player
-        '''
-        pass
-
-    @abc.abstractmethod
-    def trigger_jump_to_estate(self):
-        '''select which estate to go when jump is needed
-        '''
-        pass
-
-    @abc.abstractmethod
     def __eq__(self, obj):
         '''check if two player equls
         '''
         pass
 
+# estate interface
 
-class IProjectForEstate(abc.ABC):
+class IEstateForPlayer(IPlaceForPlayer):
+    
+    pass
 
-    @staticmethod
+
+# project interface
+
+class IProjectForPlayer(IPlaceForPlayer):
+
+    @property
     @abc.abstractmethod
-    def add_to_static_callbacks_upgrade(callback):
-        '''add callback to the static callbacks of upgrade
-
-        :param callback: callback(estate, player)
-        '''
-        pass
-
-    @staticmethod
-    @abc.abstractmethod
-    def remove_from_static_callbacks_upgrade(callback):
-        '''remove callback from the static callbacks of upgrade
-
-        :param callback: callback(estate, player)
+    def estate_max_level(self):
+        '''return the max level of all the estate the player has
         '''
         pass

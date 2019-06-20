@@ -3,47 +3,47 @@
 '''
 import logging
 
-import richman.interface as itf
+import richman.interface as itf  # type: ignore
 
 
 class BasePublic:
     
-    def __init__(self, name):
-        self.__name = name
+    def __init__(self, name: str)->None:
+        self.__name:str = name
 
     @property
-    def name(self):
+    def name(self)->str:
         return self.__name
 
 
 class PublicStart(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('起点')
 
 class PublicNews(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('新闻')
 
 class PublicPrison(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('监狱')
 
 class PublicLuck(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('运气')
 
 class PublicStock(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('证券中心')
 
 class PublicGotoPrison(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('入狱')
 
 class PublicPark(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('公园')
 
 class PublicTax(BasePublic):
-    def __init__(self):
+    def __init__(self)->None:
         super().__init__('税务中心')
