@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''player
 '''
-import typing
+from typing import List
 import random
 import datetime
 import logging
@@ -56,10 +56,10 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def pos(self, value: int):
         self.__pos = value % len(self.__map)
     @property
-    def estates(self)->typing.List[itf.IPlayerForEstate]:
+    def estates(self)->List[itf.IPlayerForEstate]:
         return self._estates
     @property
-    def projects(self)->typing.List[itf.IPlayerForProject]:
+    def projects(self)->List[itf.IPlayerForProject]:
         return self._projects
     @property
     def estate_max_level(self)->int:
@@ -84,7 +84,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.pos += step
         return self.pos
 
-    def _remove_place(self, places: typing.List[itf.IPlayerForPlace]):
+    def _remove_place(self, places: List[itf.IPlayerForPlace]):
         '''remove the place from self._estates or self._projects
 
         :param places: list of estate or project
@@ -262,7 +262,7 @@ class PlayerSimple(BasePlayer):
         else:
             return False
 
-    def __sell_place(self, places: typing.List[itf.IPlayerForPlace])->int:
+    def __sell_place(self, places: List[itf.IPlayerForPlace])->int:
         ''' sell the places
 
         :param places: list of IPlayerForPlace

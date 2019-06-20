@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''房产类
 '''
-import typing
+from typing import List
 import logging
 
 import richman.interface as itf
@@ -277,7 +277,7 @@ class EstateBlock:
         :param name: block name
         '''
         self.__name = name
-        self.__estates:typing.List[Estate] = []
+        self.__estates:List[Estate] = []
 
     @property
     def name(self)->str:

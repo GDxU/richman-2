@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''hold the whole game
 '''
-import typing
+from typing import List
 import logging
 
 import richman.interface as itf
@@ -10,7 +10,7 @@ import richman.event as ev
 
 class BaseGame:
 
-    def __init__(self, map: itf.IGameForMap, players: typing.List[itf.IGameForPlayer]):
+    def __init__(self, map: itf.IGameForMap, players: List[itf.IGameForPlayer]):
         '''init
 
         :param map: 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''map
 '''
-import typing
+from typing import List
 import logging
 import pickle
 import os
@@ -18,10 +18,10 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         '''
         self.__name = name
         # init others
-        self.__items:typing.List[itf.IMapForItem] = []
-        self.__players:typing.List[itf.IMapForPlayer] = []
-        self.__players_in_game:typing.List[itf.IMapForPlayer] = []
-        self.__players_banckrupted:typing.List[itf.IMapForPlayer] = []
+        self.__items:[itf.IMapForItem] = []
+        self.__players:[itf.IMapForPlayer] = []
+        self.__players_in_game:[itf.IMapForPlayer] = []
+        self.__players_banckrupted:[itf.IMapForPlayer] = []
         self.__current_player_index = 0
         self.__round_cnt = 0
 
@@ -29,16 +29,16 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
     def name(self)->str:
         return self.__name
     @property
-    def items(self)->typing.List[itf.IMapForItem]:
+    def items(self)->[itf.IMapForItem]:
         return self.__items
     @property
-    def players(self)->typing.List[itf.IMapForPlayer]:
+    def players(self)->[itf.IMapForPlayer]:
         return self.__players
     @property
-    def players_in_game(self)->typing.List[itf.IMapForPlayer]:
+    def players_in_game(self)->[itf.IMapForPlayer]:
         return self.__players_in_game
     @property
-    def players_banckrupted(self)->typing.List[itf.IMapForPlayer]:
+    def players_banckrupted(self)->[itf.IMapForPlayer]:
         return self.__players_banckrupted
     @property
     def round(self)->int:
@@ -50,7 +50,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         else:
             return self.players_in_game[0]
 
-    def add_items(self, items: typing.List[itf.IMapForItem]):
+    def add_items(self, items: [itf.IMapForItem]):
         if not isinstance(items, list):
             items = [items]
         for item in items:
@@ -58,7 +58,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
                 'estate names should not be duplicated.'
             self.__items.append(item)
 
-    def add_players(self, players: typing.List[itf.IMapForPlayer]):
+    def add_players(self, players: [itf.IMapForPlayer]):
         '''add players to map
 
         :param players: list of players
@@ -100,7 +100,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         for player in self.players:
             logging.info('参赛者信息：{}'.format(player))
 
-    def _remove_players_banckrupted(self, players_banckrupted: typing.List[itf.IMapForPlayer]):
+    def _remove_players_banckrupted(self, players_banckrupted: [itf.IMapForPlayer]):
         '''remove current player from __players_in_game list
 
         :param players_banckrupted: list of banckrupted player
