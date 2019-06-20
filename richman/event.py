@@ -6,6 +6,14 @@ from blinker import Namespace  # type: ignore
 
 _events = Namespace()
 
+# event from estate
+event_from_estate_bought = _events.signal("event-from-estate-bought")
+event_from_estate_sold = _events.signal("event-from-estate-sold")
+event_from_estate_upgraded = _events.signal("event-from-estate-upgraded")
+event_from_estate_degraded = _events.signal("event-from-estate-degraded")
+event_from_estate_pledged = _events.signal("event-from-estate-pledged")
+event_from_estate_rebought = _events.signal("event-from-estate-rebought")
+
 # event to player
 event_to_player_add_money = _events.signal("event-to-player-add-money")
 event_to_player_move_to = _events.signal("event-to-player-move-to")
