@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*
 '''房产类
 '''
-from typing import List
+from typing import Any, List, Optional
 import logging
 
-import richman.interface as itf
-import richman.event as ev
+import richman.interface as itf  # type: ignore
+import richman.event as ev  # type: ignore
 
 
 # base place
@@ -23,7 +23,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         self.__buy_value = buy_value
         self.__sell_value = sell_value
         # init others
-        self.__owner:itf.IPlaceForPlayer = None
+        self.__owner:Optional[itf.IPlaceForPlayer] = None
 
     @property
     def buy_value(self)->int:
@@ -38,7 +38,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
     def name(self)->str:
         return self.__name
     @property
-    def owner(self)->itf.IPlaceForPlayer:
+    def owner(self)->Optional[itf.IPlaceForPlayer]:
         return self.__owner
 
     def _exchange_money(self,
@@ -87,7 +87,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         self.__owner = None
         self.reset()
 
-    def trigger(self, player: itf.IPlaceForPlayer):
+    def trigger(self, player: Any)->None:
         raise NotImplementedError('need override')
 
     def reset(self):
@@ -162,7 +162,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
     def fee(self)->int:
         return self.__fees[self.current_level]
     @property
-    def fees(self)->int:
+    def fees(self)->List[int]:
         return self.__fees
 
     @staticmethod
@@ -235,7 +235,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         self.__is_pledged = False
         logging.info('{} 赎回地产 {}，获得 {} 元。'.format(self.owner.name, self.name, self.buy_value))
 
-    def trigger(self, player: itf.IEstateForPlayer):
+    def trigger(self, player: itf.IEstateForPlayer)->None:
         '''override if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
@@ -310,7 +310,7 @@ class EstateBlock:
 
 class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
-    def trigger(self, player: itf.IProjectForPlayer):
+    def trigger(self, player: itf.IProjectForPlayer)->None:
         '''override take the effect of the place, triggered by the player
 
         :param player: IProjectForPlayer
@@ -357,6 +357,7 @@ class ProjectNuclear(Project):
         '''
         fine = 500 + 500 * player.estate_max_level
         logging.info('{} 走到 {}，缴付 {} 元。'.format(player.name, self.name, fine))
+        assert self.owner is not None
         self._exchange_money(player, self.owner, fine)
 
 

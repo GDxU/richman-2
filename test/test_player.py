@@ -12,9 +12,8 @@ class TestBasePlayer(unittest.TestCase):
     def setUp(self):
         map = MagicMock()
         map.__len__.return_value = 10
-        self.player = BasePlayer(name='Hangzhou',
-                                 money=10000,
-                                 map=map)
+        self.player = BasePlayer(name='Hangzhou', money=10000)
+        self.player.add_map(map)
 
     def tearDown(self):
         pass

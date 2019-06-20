@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''事件类
 '''
-from blinker import Namespace
+from blinker import Namespace  # type: ignore
 
 
 _events = Namespace()

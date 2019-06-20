@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*
+from typing import List
 import logging
 from logging.handlers import RotatingFileHandler
 
-from richman.game import Game
-from richman.maps.map_test import MapTest
-from richman.player import PlayerSimple
+from richman.game import Game  # tpye: ignore
+from richman.maps.map_test import MapTest  # tpye: ignore
+from richman.player import PlayerSimple  # tpye: ignore
 
 
-def _set_logger():
+def _set_logger()->None:
     logger = logging.getLogger()
     #logger.setLevel(logging.CRITICAL)
     #logger.setLevel(logging.WARNING)
@@ -37,12 +38,12 @@ def _set_logger():
     logger.propagate = False
 
 
-def main(log_on:bool = False):
+def main(log_on:bool = False)->None:
     if log_on:
         _set_logger()
     # player
     init_money = 50000
-    players = []
+    players:List[PlayerSimple] = []
     players.append(PlayerSimple(name='邓彦修', money=init_money))
     players.append(PlayerSimple(name='邓哲', money=init_money))
     players.append(PlayerSimple(name='戎萍', money=init_money))

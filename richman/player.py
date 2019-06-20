@@ -1,38 +1,37 @@
 # -*- coding: utf-8 -*
 '''player
 '''
-from typing import List
+from typing import Any, List, Iterable, Optional, cast
 import random
 import datetime
 import logging
 
-import richman.interface as itf
-import richman.event as ev
+import richman.interface as itf  # type: ignore
+import richman.event as ev  # type: ignore
 
 
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                  itf.IEstateForPlayer, itf.IProjectForPlayer,
                  itf.IPlaceForPlayer):
 
-    def __init__(self, name: str, money: int,
-                 map:itf.IPlayerForMap = None):
+    def __init__(self, name: str, money: int)->None:
         '''init
 
         :param name: player name
         :param money: player's init money
-        :param map: map for player to add to, default is None
         '''
-        self.__name = name
+        self.__name:str = name
         assert money > 0, '初始资金必须大于零。'
-        self.__money = money
-        self.__map = map
+        self.__money:int = money
+        self.__map:Optional[itf.IPlayerForMap] = None
         # init others
-        self._estates = []
-        self._projects = []
-        self.__pos = 0
+        self._estates:List[itf.IPlayerForEstate] = []
+        self._projects:List[itf.IPlayerForProject] = []
+        self.__pos:int = 0
         random.seed(datetime.datetime.now())
-        self.__is_making_money = False  # 防止一个 make_money() 过程中多次调用该函数
-                                        # event_handler_add_money() 中使用
+        self.__is_making_money:bool = \
+            False  # 防止一个 make_money() 过程中多次调用该函数
+            # event_handler_add_money() 中使用
 
     @property
     def name(self)->str:
@@ -44,17 +43,15 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def money(self)->int:
         return self.__money
     @property
-    def map(self)->itf.IPlayerForMap:
+    def map(self)->Optional[itf.IPlayerForMap]:
         return self.__map
-    @map.setter
-    def map(self, value: itf.IPlayerForMap):
-        self.__map = value
     @property
     def pos(self)->int:
         return self.__pos
     @pos.setter
     def pos(self, value: int):
-        self.__pos = value % len(self.__map)
+        assert self.map is not None, 'player is not added to any map, yet.'
+        self.__pos = value % len(self.map)
     @property
     def estates(self)->List[itf.IPlayerForEstate]:
         return self._estates
@@ -71,6 +68,14 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                     if isinstance(estate, itf.IPlayerForEstate))
         return max(levels)
 
+    def add_map(self, map: itf.IPlayerForMap)->None:
+        '''add map to player
+
+        :param map: map with IPlayerForMap interface
+        '''
+        assert self.map is None
+        self.__map = map
+
     def _dice(self)->int:
         return random.randrange(1,7)
 
@@ -84,13 +89,13 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.pos += step
         return self.pos
 
-    def _remove_place(self, places: List[itf.IPlayerForPlace]):
+    def _remove_place(self, places: List[itf.IPlayerForPlace])->None:
         '''remove the place from self._estates or self._projects
 
         :param places: list of estate or project
         '''
         if not isinstance(places, list):
-            places = [places]
+            places = [cast(itf.IPlayerForPlace, places)]
         for place in places:
             if isinstance(place, itf.IPlayerForEstate):
                 self._estates.remove(place)
@@ -114,7 +119,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_add_money.connect
-    def event_handler_add_money(sender, **kwargs):
+    def event_handler_add_money(sender, **kwargs)->None:
         '''change the player's money
 
         :param sender: not used
@@ -125,7 +130,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_move_to.connect
-    def event_handler_move_to(sender, **kwargs):
+    def event_handler_move_to(sender, **kwargs)->None:
         '''move player to pos
 
         :param sender: not used
@@ -136,7 +141,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
-    def event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs):
+    def event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs)->None:
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
@@ -156,7 +161,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
-    def event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs):
+    def event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs)->None:
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
@@ -170,7 +175,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
-    def event_handler_jump_to_estate_decision(sender, **kwargs):
+    def event_handler_jump_to_estate_decision(sender, **kwargs)->None:
         '''select which estate to go when jump is needed
 
         :param sender: not used
@@ -181,7 +186,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
-    def event_handler_upgrade_any_estate(sender, **kwargs):
+    def event_handler_upgrade_any_estate(sender, **kwargs)->None:
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
@@ -193,7 +198,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self._add_money(-estate.upgrade_value)
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
-    def _make_money(self):
+    def _make_money(self)->None:
         '''make money my pledging or selling,
         to make player's money more than zero
         '''
@@ -222,7 +227,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _make_decision_upgrade_any_estate(self)->itf.IPlayerForEstate:
+    def _make_decision_upgrade_any_estate(self)->Optional[itf.IPlayerForEstate]:
         '''upgrade and estate that belongs to the player
 
         :return: estate to upgrade, or None for not upgrade
@@ -262,7 +267,7 @@ class PlayerSimple(BasePlayer):
         else:
             return False
 
-    def __sell_place(self, places: List[itf.IPlayerForPlace])->int:
+    def __sell_place(self, places: List[itf.IPlayerForPlace])->bool:
         ''' sell the places
 
         :param places: list of IPlayerForPlace
@@ -291,16 +296,16 @@ class PlayerSimple(BasePlayer):
         :return: True if money is enough
         '''
         # sell estate
-        if self.__sell_place(self._estates):
+        if self.__sell_place(cast(List[itf.IPlayerForPlace], self.estates)):
             return True
         # sell project
-        elif self.__sell_place(self._projects):
+        elif self.__sell_place(cast(List[itf.IPlayerForPlace], self.projects)):
             return True
         # all places is sold out, but still money is below zero
         else:
             return False
 
-    def _make_money(self):
+    def _make_money(self)->None:
         '''make money my pledging or selling,
         to make player's money more than zero
         '''
@@ -344,6 +349,7 @@ class PlayerSimple(BasePlayer):
 
         :return: position of estate to jump
         '''
+        assert self.map is not None
         for index, item in enumerate(self.map.items):
             if (isinstance(item, itf.IPlayerForEstate)
                     and item.pledge_value is not None):
@@ -351,18 +357,16 @@ class PlayerSimple(BasePlayer):
         else:
             raise RuntimeError('map {} 中没有设置地产！'.format(self.map.name))
 
-    def _make_decision_upgrade_any_estate(self)->itf.IPlayerForEstate:
+    def _make_decision_upgrade_any_estate(self)->Optional[itf.IPlayerForEstate]:
         '''upgrade and estate that belongs to the player
 
         :return: estate to upgrade, or None for not upgrade
         '''
         estates_need_upgrade = [estate for estate in self.estates
                                     if not estate.is_level_max]
-        if estates_need_upgrade:
-            for estate in estates_need_upgrade:
-                if self.money > estate.upgrade_value:
-                    return estate
-            return None
+        for estate in estates_need_upgrade:
+            if self.money > estate.upgrade_value:
+                return estate
         else:
             return None
 

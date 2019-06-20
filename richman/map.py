@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*
 '''map
 '''
-from typing import List
+from typing import Any, List, Dict, Optional, cast
 import logging
 import pickle
 import os
 
-import richman.interface as itf
+import richman.interface as itf  # type: ignore
 
 
 class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
@@ -18,10 +18,10 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         '''
         self.__name = name
         # init others
-        self.__items:[itf.IMapForItem] = []
-        self.__players:[itf.IMapForPlayer] = []
-        self.__players_in_game:[itf.IMapForPlayer] = []
-        self.__players_banckrupted:[itf.IMapForPlayer] = []
+        self.__items:List[itf.IMapForItem] = []
+        self.__players:List[itf.IMapForPlayer] = []
+        self.__players_in_game:List[itf.IMapForPlayer] = []
+        self.__players_banckrupted:List[itf.IMapForPlayer] = []
         self.__current_player_index = 0
         self.__round_cnt = 0
 
@@ -29,50 +29,50 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
     def name(self)->str:
         return self.__name
     @property
-    def items(self)->[itf.IMapForItem]:
+    def items(self)->List[itf.IMapForItem]:
         return self.__items
     @property
-    def players(self)->[itf.IMapForPlayer]:
+    def players(self)->List[itf.IMapForPlayer]:
         return self.__players
     @property
-    def players_in_game(self)->[itf.IMapForPlayer]:
+    def players_in_game(self)->List[itf.IMapForPlayer]:
         return self.__players_in_game
     @property
-    def players_banckrupted(self)->[itf.IMapForPlayer]:
+    def players_banckrupted(self)->List[itf.IMapForPlayer]:
         return self.__players_banckrupted
     @property
     def round(self)->int:
         return self.__round_cnt
     @property
-    def winner(self)->itf.IMapForPlayer:
+    def winner(self)->Optional[itf.IMapForPlayer]:
         if len(self.players_in_game) > 1:
             return None
         else:
             return self.players_in_game[0]
 
-    def add_items(self, items: [itf.IMapForItem]):
+    def add_items(self, items: List[itf.IMapForItem]):
         if not isinstance(items, list):
-            items = [items]
+            items = [cast(itf.IMapForItem, items)]
         for item in items:
             assert item not in self.items,\
                 'estate names should not be duplicated.'
             self.__items.append(item)
 
-    def add_players(self, players: [itf.IMapForPlayer]):
+    def add_players(self, players: List[itf.IMapForPlayer]):
         '''add players to map
 
         :param players: list of players
         '''
         if not isinstance(players, list):
-            players = [players]
+            players = [cast(itf.IMapForPlayer, players)]
         for player in players:
             assert player not in self.players,\
                 '{} has been existed already.'.format(player.name)
             self.__players.append(player)
-            player.map = self
+            player.add_map(self)
         self.__players_in_game = self.players.copy()
 
-    def load(self, file_path: str):
+    def load(self, file_path: str)->None:
         '''load map from pickle
 
         :param file_path: file_path to load
@@ -85,22 +85,23 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         self.__name = map['name']
         self.__items = map['items']
 
-    def save(self, file_path: str):
+    def save(self, file_path: str)->None:
         '''save map into pickle
 
         :param file_path: file_path to save
         '''
-        map = {}
+        map:Dict[str, Any] = {}
         map['name'] = self.name
         map['items'] = self.items
         with open(file_path, 'wb') as f:
             pickle.dump(map, f)
 
-    def _display_players_info(self):
+    def _display_players_info(self)->None:
         for player in self.players:
             logging.info('参赛者信息：{}'.format(player))
 
-    def _remove_players_banckrupted(self, players_banckrupted: [itf.IMapForPlayer]):
+    def _remove_players_banckrupted(self,
+                                    players_banckrupted: List[itf.IMapForPlayer])->None:
         '''remove current player from __players_in_game list
 
         :param players_banckrupted: list of banckrupted player
@@ -108,11 +109,11 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         for player in players_banckrupted:
             self.__players_in_game.remove(player)
 
-    def _player_action(self, player: itf.IMapForPlayer):
+    def _player_action(self, player: itf.IMapForPlayer)->None:
         pos = player.dice()
         self.items[pos].trigger(player)
 
-    def _run_one_round(self):
+    def _run_one_round(self)->None:
         '''run one round of the map, which means every player run once
 
         :note: banckrupted players is remove from players list
@@ -128,7 +129,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         self._display_players_info()
         self.__round_cnt += 1
 
-    def run_one_round(self):
+    def run_one_round(self)->bool:
         '''run one round of the map, which means every player run once
 
         :return: False if only one player is left

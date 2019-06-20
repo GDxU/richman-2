@@ -68,6 +68,9 @@ class IPlayerBase(abc.ABC):
 class IPlayerForMap(IPlayerBase):
 
     @property
+    def items(self)->list:
+        pass
+    @property
     @abc.abstractmethod
     def players_in_game(self):
         pass
@@ -142,18 +145,9 @@ class IMapForPlayer(abc.ABC):
     @abc.abstractmethod
     def name(self)->str:
         pass
-    
     @property
     @abc.abstractmethod
     def map(self):
-        pass
-    @map.setter
-    @abc.abstractmethod
-    def map(self, value):
-        '''set player's map
-
-        :param value: map
-        '''
         pass
     @property
     @abc.abstractmethod
@@ -164,6 +158,14 @@ class IMapForPlayer(abc.ABC):
     def is_banckrupted(self)->bool:
         '''
         :return: True if is banckrupted.
+        '''
+        pass
+
+    @abc.abstractmethod
+    def add_map(self, map)->None:
+        '''add map to player
+
+        :param map: map with IPlayerForMap interface
         '''
         pass
 
