@@ -104,27 +104,23 @@ class TestOtherPoject(unittest.TestCase):
     def test_nuclear_project_should_take_effect_to_player(self):
         p = place.ProjectNuclear()
         p._exchange_money = MagicMock()
+        owner = MagicMock()
+        p.event_handler_buy(owner, receiver=p)
         player = MagicMock()
-        p.event_handler_buy(player, receiver=p)
         player.estate_max_level = 3
         p._take_effect(player)
         p._exchange_money.assert_called_once_with(player, p.owner, 2000)
 
     def test_builder_project_should_take_effect_to_player(self):
         p = place.ProjectBuilder()
+        p._exchange_money = MagicMock()
         player = MagicMock()
         player.name = 'player that has the builder project.'
         estate = MagicMock()
         estate.owner = MagicMock()
         estate.owner.name = 'player that upgrades the estate.'
         p._buy(player)
-        ev.event_from_estate_upgraded.send(estate)
         # upgrade and estat test
-        event_handler_upgrade_estate = MagicMock()
-        with ev.event_to_player_upgrade_any_estate.connected_to(event_handler_upgrade_estate):
-            p._take_effect(player)
-            event_handler_upgrade_estate.assert_called_once()
-        # take fee for upgrade estate
-        p._exchange_money = MagicMock()
-        ev.event_from_estate_upgraded.send(estate)
+        p._exchange_money.reset_mock()
+        p._ProjectBuilder__someone_upgraded_estate(estate)
         p._exchange_money.assert_called_once_with(estate.owner, p.owner, 500)

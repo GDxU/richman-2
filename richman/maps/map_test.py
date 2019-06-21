@@ -9,7 +9,7 @@ from richman.place import (
     EstateBlock,
     ProjectNuclear,
     ProjectBuilder,
-    # ProjectTransportation,
+    ProjectTransportation,
     # ProjectTvStation,
     # ProjectSewerage
 )
@@ -103,6 +103,7 @@ class MapTest(BaseMap):
             upgrade_value=600,
             block=block
         ))
+        self.add_items(ProjectTransportation('大陆运输'))
         self.add_items(Estate(
             name='拉萨',
             fees=[400, 900, 2000, 5000],
@@ -153,3 +154,7 @@ class MapTest(BaseMap):
             upgrade_value=1200,
             block=block
         ))
+
+        # for test
+        self.add_items(ProjectTransportation('航空运输'))
+        self.add_items(ProjectTransportation('大洋运输'))

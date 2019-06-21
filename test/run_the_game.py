@@ -8,7 +8,7 @@ from richman.maps.map_test import MapTest  # tpye: ignore
 from richman.player import PlayerSimple  # tpye: ignore
 
 
-def _set_logger()->None:
+def _set_logger(text_log_on=False)->None:
     logger = logging.getLogger()
     #logger.setLevel(logging.CRITICAL)
     #logger.setLevel(logging.WARNING)
@@ -29,18 +29,18 @@ def _set_logger()->None:
     console.setFormatter(formatter)
     logger.addHandler(console)
     # add txt log
-    rt_handler = RotatingFileHandler(r"log.txt", maxBytes=1*1024*1024, backupCount=5)
-    rt_handler.setLevel(logging.INFO)
-    rt_handler.setFormatter(formatter)
-    logger.addHandler(rt_handler)
-    logger.propagate = False
+    if text_log_on:
+        rt_handler = RotatingFileHandler(r"log.txt", maxBytes=1*1024*1024, backupCount=5)
+        rt_handler.setLevel(logging.INFO)
+        rt_handler.setFormatter(formatter)
+        logger.addHandler(rt_handler)
     # set progate
     logger.propagate = False
 
 
 def main(log_on:bool = False)->None:
     if log_on:
-        _set_logger()
+        _set_logger(text_log_on=False)
     # player
     init_money = 50000
     players:List[PlayerSimple] = []

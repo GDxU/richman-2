@@ -29,6 +29,7 @@ class BaseGame:
         '''
         while self.map.run_one_round():
             pass
+        self.map.destroy()
 
 class Game(BaseGame):
     pass

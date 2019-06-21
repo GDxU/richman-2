@@ -6,6 +6,7 @@ import logging
 import pickle
 import os
 
+import richman.event as ev  # type: ignore
 import richman.interface as itf  # type: ignore
 
 
@@ -110,8 +111,10 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             self.__players_in_game.remove(player)
 
     def _player_action(self, player: itf.IMapForPlayer)->None:
-        pos = player.dice()
-        self.items[pos].trigger(player)
+        # pos = player.take_the_turn()
+        # if pos:
+        #     self.items[pos].trigger(player)
+        player.take_the_turn()
 
     def _run_one_round(self)->None:
         '''run one round of the map, which means every player run once
@@ -140,6 +143,12 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             return False
         else:
             return True
+
+    def destroy(self)->None:
+        '''destroy
+        '''
+        for item in self.items:
+            item.destroy()
 
     def __len__(self):
         return len(self.items)

@@ -2,6 +2,7 @@
 '''接口类
 '''
 import abc
+from typing import Optional
 
 
 # game interface
@@ -52,6 +53,12 @@ class IGameForMap(abc.ABC):
         '''run one round of the map, which means every player run once
 
         :return: False if only one player is left
+        '''
+        pass
+
+    @abc.abstractmethod
+    def destroy(self)->None:
+        '''destroy
         '''
         pass
 
@@ -170,10 +177,8 @@ class IMapForPlayer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def dice(self)->int:
-        '''dice
-
-        :return: current pos of player 
+    def take_the_turn(self):
+        '''take_the_turn
         '''
         pass
 
@@ -188,6 +193,12 @@ class IMapForItem(abc.ABC):
         '''trigger the effect of the item in the map
 
         :param player: the player that trigger the effect
+        '''
+        pass
+
+    @abc.abstractmethod
+    def destroy(self)->None:
+        '''destroy
         '''
         pass
 
@@ -216,7 +227,7 @@ class IPlaceForPlayer(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def name(self):
+    def name(self)->str:
         '''
         :return: name of the player
         '''
@@ -231,14 +242,27 @@ class IPlaceForPlayer(abc.ABC):
 # estate interface
 
 class IEstateForPlayer(IPlaceForPlayer):
-    
-    pass
+
+    @property
+    @abc.abstractmethod
+    def estates(self)->list:
+        '''
+        :return: estate list that the player has
+        '''
+        pass
 
 
 # project interface
 
 class IProjectForPlayer(IPlaceForPlayer):
 
+    @property
+    @abc.abstractmethod
+    def projects(self)->list:
+        '''
+        :return: project list that the player has
+        '''
+        pass
     @property
     @abc.abstractmethod
     def estate_max_level(self):

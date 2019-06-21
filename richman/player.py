@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''player
 '''
-from typing import Any, List, Iterable, Optional, cast
+from typing import Any, List, Dict, Iterable, Optional, cast
 import random
 import datetime
 import logging
@@ -28,10 +28,11 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self._estates:List[itf.IPlayerForEstate] = []
         self._projects:List[itf.IPlayerForProject] = []
         self.__pos:int = 0
+        self.__pos_queue:List[Dict[str, int]] = []
         random.seed(datetime.datetime.now())
         self.__is_making_money:bool = \
             False  # 防止一个 make_money() 过程中多次调用该函数
-            # event_handler_add_money() 中使用
+            # __event_handler_add_money() 中使用
 
     @property
     def name(self)->str:
@@ -77,17 +78,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.__map = map
 
     def _dice(self)->int:
-        return random.randrange(1,7)
-
-    def dice(self)->int:
-        '''dice
-
-        :return: current pos of player
-        '''
-        step = self._dice()
-        logging.info('{} 掷出 {} 点。'.format(self.name, step))
-        self.pos += step
-        return self.pos
+        dice_num = random.randrange(1,7)
+        logging.info('{} 掷出 {} 点。'.format(self.name, dice_num))
+        return dice_num
 
     def _remove_place(self, places: List[itf.IPlayerForPlace])->None:
         '''remove the place from self._estates or self._projects
@@ -117,9 +110,35 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self.__is_making_money = False
         return self.money
 
+    def _push_pos(self, pos: int, delay: int)->None:
+        '''push the pos, where to direct the player to go, to the queue
+
+        :param pos: next pos the player should stand
+        :param delay: the effect takes on after delay of the turns
+        '''
+        assert delay >= 0, 'delay should be above zero!'
+        self.__pos_queue.append({'pos': pos, 'delay': delay})
+
+    def _pull_pos(self)->Optional[int]:
+        '''push the pos, where to direct the player to go, to the queue
+
+        :return: pos to go, None if no pos in the queue
+        '''
+        if not self.__pos_queue:
+            return None
+        pos_with_no_delay:List[int] = []
+        for item in self.__pos_queue:
+            delay = item['delay']
+            assert delay >= 0, 'delay should be above zero!'
+            if delay == 0:
+                pos_with_no_delay.append(item['pos'])
+            item['delay'] -= 1
+        assert len(pos_with_no_delay) <= 1, 'more than one pos signal triggered!'
+        return pos_with_no_delay[0] if pos_with_no_delay else None
+
     @staticmethod
     @ev.event_to_player_add_money.connect
-    def event_handler_add_money(sender, **kwargs)->None:
+    def __event_handler_add_money(sender, **kwargs)->None:
         '''change the player's money
 
         :param sender: not used
@@ -130,7 +149,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_move_to.connect
-    def event_handler_move_to(sender, **kwargs)->None:
+    def __event_handler_move_to(sender, **kwargs)->None:
         '''move player to pos
 
         :param sender: not used
@@ -141,7 +160,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
-    def event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs)->None:
+    def __event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs)->None:
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
@@ -161,7 +180,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
-    def event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs)->None:
+    def __event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs)->None:
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
@@ -175,7 +194,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
-    def event_handler_jump_to_estate_decision(sender, **kwargs)->None:
+    def __event_handler_jump_to_estate_decision(sender, **kwargs)->None:
         '''select which estate to go when jump is needed
 
         :param sender: not used
@@ -186,7 +205,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
-    def event_handler_upgrade_any_estate(sender, **kwargs)->None:
+    def __event_handler_upgrade_any_estate(sender, **kwargs)->None:
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
@@ -233,6 +252,18 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :return: estate to upgrade, or None for not upgrade
         '''
         raise NotImplementedError('override is needed.')
+
+    def take_the_turn(self)->None:
+        '''take_the_turn
+        '''
+        # pos_in_queue = self._pull_pos()
+        # if pos_in_queue:
+        #     self.pos = pos_in_queue
+        # else:
+        #     self.pos += self._dice()
+        self.pos += self._dice()
+        assert self.map is not None
+        self.map.items[self.pos].trigger(self)
 
     def __eq__(self, obj):
         return self.name == obj.name
