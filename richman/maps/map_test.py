@@ -142,6 +142,7 @@ class MapTest(BaseMap):
             upgrade_value=900,
             block=block
         ))
+        self.add_items(PublicStock(name='证券中心'))
         self.add_items(Estate(
             name='厦门',
             fees=[800, 1900, 5000, 10500],

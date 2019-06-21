@@ -313,3 +313,10 @@ class IPublicForPlayer(abc.ABC):
         :return: estate list that the player has
         '''
         pass
+    @property
+    @abc.abstractmethod
+    def projects(self)->list:
+        '''
+        :return: project list that the player has
+        '''
+        pass

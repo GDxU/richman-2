@@ -87,8 +87,21 @@ class PublicLuck(BasePublic):
         logging.info('{} 抽取一张幸运卡。'.format(player.name))
 
 class PublicStock(BasePublic):
-    def __init__(self)->None:
-        super().__init__('证券中心')
+    def __init__(self, name='证券中心')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''获得500元，然后额外获得你拥有投资项目数量*500元的奖励。
+
+        :param player: the player that trigger the effect
+        '''
+        projects_amount = len(player.projects)
+        gain = 500 + 500 * projects_amount
+        logging.info('{} 有 {} 块项目，获得 {} 元资金。'.format(player.name,
+                                                              projects_amount,
+                                                              gain))
+        ev.event_to_player_add_money.send(self, receiver=player,
+                                          money_delta=gain)
 
 class PublicGotoPrison(BasePublic):
     def __init__(self)->None:
