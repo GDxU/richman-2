@@ -96,7 +96,14 @@ class IPlayerForMap(IPlayerBase):
         '''
         pass
 
-class IPlayerForPlace(IPlayerBase):
+class IPlayerForItem(IPlayerBase):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        pass
+
+class IPlayerForPlace(IPlayerForItem):
 
     @property
     @abc.abstractmethod
@@ -150,6 +157,9 @@ class IPlayerForProject(IPlayerForPlace):
 
     pass
 
+class IPlayerForPublic(IPlayerForItem):
+
+    pass
 
 # map interface
 

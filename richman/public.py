@@ -7,7 +7,7 @@ import richman.event as ev
 import richman.interface as itf
 
 
-class BasePublic(itf.IMapForPublic):
+class BasePublic(itf.IMapForPublic,  itf.IPlayerForPublic):
     
     def __init__(self, name: str)->None:
         self.__name:str = name
@@ -67,16 +67,24 @@ class PublicNews(BasePublic):
 
         :param player: the player that trigger the effect
         '''
-        logging.info('{} 可选择一处地产升级。'.format(player.name))
         ev.event_from_public_news_or_luck_triggered.send(self)
+        logging.info('{} 抽取一张新闻卡。'.format(player.name))
 
 class PublicPrison(BasePublic):
     def __init__(self)->None:
         super().__init__('监狱')
 
 class PublicLuck(BasePublic):
-    def __init__(self)->None:
-        super().__init__('运气')
+    def __init__(self, name='运气')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''抽取1张运气卡。
+
+        :param player: the player that trigger the effect
+        '''
+        ev.event_from_public_news_or_luck_triggered.send(self)
+        logging.info('{} 抽取一张幸运卡。'.format(player.name))
 
 class PublicStock(BasePublic):
     def __init__(self)->None:

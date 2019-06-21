@@ -306,7 +306,6 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         '''override, if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
-        logging.info('{} 走到 {}。'.format(player.name, self.name))
         # has owner
         if self.owner:
             # is pledged, escape
@@ -382,7 +381,6 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
         :param player: IProjectForPlayer
         '''
-        logging.info('{} 走到 {}。'.format(player.name, self.name))
         if self.owner:
             self._take_effect(player)
         else:
@@ -560,10 +558,10 @@ class ProjectTvStation(Project):
         self.__unregister_event_handler()
 
     def __register_event_handler(self):
-        ev.event_from_estate_upgraded.connect(self.__someone_triggered_news_or_luck)
+        ev.event_from_public_news_or_luck_triggered.connect(self.__someone_triggered_news_or_luck)
 
     def __unregister_event_handler(self):
-        ev.event_from_estate_upgraded.disconnect(self.__someone_triggered_news_or_luck)
+        ev.event_from_public_news_or_luck_triggered.disconnect(self.__someone_triggered_news_or_luck)
 
     def __someone_triggered_news_or_luck(self, sender: Any)->None:
         '''当任何人走到运气和新闻时，你获得500元奖励。

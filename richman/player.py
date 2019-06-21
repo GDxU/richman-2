@@ -296,7 +296,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         self.pos = pos
         assert self.map is not None
-        self.map.items[self.pos].trigger(self)
+        item:itf.IPlayerForItem = self.map.items[self.pos]
+        logging.info('{} 走到 {}。'.format(self.name, item.name))
+        item.trigger(self)
 
     def __eq__(self, obj):
         return self.name == obj.name

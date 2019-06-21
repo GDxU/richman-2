@@ -114,6 +114,7 @@ class MapTest(BaseMap):
             upgrade_value=600,
             block=block
         ))
+        self.add_items(PublicLuck('运气1'))
         #block3 region
         block = EstateBlock('block3')
         self.add_items(Estate(
@@ -215,6 +216,7 @@ class MapTest(BaseMap):
             upgrade_value=1200,
             block=block
         ))
+        self.add_items(PublicLuck('运气2'))
         self.add_items(Estate(
             name='澳门',
             fees=[1000, 2400, 6000, 13000],
