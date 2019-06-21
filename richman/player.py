@@ -282,6 +282,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             pos = self.pos + self._dice()
         pos_after_turn = pos
         # check if the player passes the start line
+        assert self.map is not None
         if (pos_after_turn < pos_before_turn
                 and pos_before_turn > 0.5*len(self.map)):
             ev.event_from_player_pass_start_line.send(self)

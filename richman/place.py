@@ -76,9 +76,8 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         assert seller == self.owner, '该地产（项目）不归 {} 所有，无法变卖！'.format(seller.name)
         assert self.owner is not None, '该地无主，不能卖！'
         ev.event_to_player_add_money.send(self, receiver=seller, money_delta=self.sell_value)
-        owner = self.__owner
+        logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(self.owner.name, self.name, self.sell_value))
         self.__owner = None
-        logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(owner.name, self.name, self.sell_value))
 
     @staticmethod
     @ev.event_to_place_buy.connect
