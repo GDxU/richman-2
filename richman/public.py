@@ -95,8 +95,18 @@ class PublicGotoPrison(BasePublic):
         super().__init__('入狱')
 
 class PublicPark(BasePublic):
-    def __init__(self)->None:
-        super().__init__('公园')
+    def __init__(self, name='公园')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''拾到300元。
+
+        :param player: the player that trigger the effect
+        '''
+        gain = 300
+        logging.info('{} 在公园捡到 {} 元。'.format(player.name, gain))
+        ev.event_to_player_add_money.send(self, receiver=player,
+                                          money_delta=gain)
 
 class PublicTax(BasePublic):
     def __init__(self)->None:

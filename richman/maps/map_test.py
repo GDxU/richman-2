@@ -178,6 +178,7 @@ class MapTest(BaseMap):
             upgrade_value=900,
             block=block
         ))
+        self.add_items(PublicPark(name='公园'))
         #block5 region
         block = EstateBlock('block5')
         self.add_items(Estate(
