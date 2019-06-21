@@ -310,8 +310,8 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         # has owner
         if self.owner:
             # is pledged, escape
-            if  self.is_pledged:
-                logging.info('该地已被 {} 抵押给银行，无需支付地租。'.format(self.owner.name))
+            if self.is_pledged:
+                logging.info('该地已被 {} 抵押给银行，无法升级和收取地租。'.format(self.owner.name))
                 return None
             # take the fee
             elif self.owner != player:

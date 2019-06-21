@@ -399,10 +399,9 @@ class PlayerSimple(BasePlayer):
         :return: position of estate to jump
         '''
         assert self.map is not None
-        for item in self.map.items:
-            if (isinstance(item, itf.IPlayerForEstate)
-                    and item.pledge_value is not None):
-                return self.map.get_item_position(item)
+        for estate in self.estates:
+            if not estate.is_pledged:
+                return self.map.get_item_position(estate)
         else:
             return None
 
