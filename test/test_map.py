@@ -22,11 +22,11 @@ class TestBaseMap(unittest.TestCase):
         self.player1 = MagicMock()
         self.player1.name = '邓哲'
         self.player1.is_banckrupted = False
-        self.player1.dice = MagicMock()
+        self.player1.take_the_turn = MagicMock()
         self.player2 = MagicMock()
         self.player2.name = '戎萍'
         self.player2.is_banckrupted = False
-        self.player2.dice = MagicMock()
+        self.player2.take_the_turn = MagicMock()
         players = [self.player1, self.player2]
         self.map = BaseMap('China')
         self.map.add_items([estate1, estate2, estate3])
@@ -59,9 +59,11 @@ class TestBaseMap(unittest.TestCase):
             map.add_items(estate1)
 
     def test_run_one_round_should_finish_when_all_players_banckrupted(self):
+        self.player1.pos = 10
+        self.player2.pos = 10
         self.assertTrue(self.map.run_one_round())
-        self.player1.dice.assert_called_once()
-        self.player2.dice.assert_called_once()
+        self.player1.take_the_turn.assert_called_once()
+        self.player2.take_the_turn.assert_called_once()
 
         self.player1.is_banckrupted = True
         self.assertFalse(self.map.run_one_round())

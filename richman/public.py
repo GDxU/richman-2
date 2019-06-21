@@ -3,10 +3,11 @@
 '''
 import logging
 
-import richman.interface as itf  # type: ignore
+import richman.event as ev
+import richman.interface as itf
 
 
-class BasePublic:
+class BasePublic(itf.IMapForPublic):
     
     def __init__(self, name: str)->None:
         self.__name:str = name
@@ -15,14 +16,59 @@ class BasePublic:
     def name(self)->str:
         return self.__name
 
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''trigger the effect of the item in the map
+
+        :param player: the player that trigger the effect
+        '''
+        raise NotImplementedError('override is needed.')
+
+    def destroy(self)->None:
+        '''destroy
+        '''
+        pass
+
+    def __eq__(self, obj):
+        return False
+
 
 class PublicStart(BasePublic):
-    def __init__(self)->None:
-        super().__init__('起点')
+    def __init__(self, name='起点')->None:
+        super().__init__(name)
+
+    @staticmethod
+    @ev.event_from_player_pass_start_line.connect
+    def event_handler_add_money_when_player_pass_start_line(sender: itf.IPublicForPlayer):
+        '''经过时领取奖励4000元，
+
+        :param sender: the player that trigger the effect
+        '''
+        player = sender
+        gain = 4000
+        ev.event_to_player_add_money.send(None, receiver=player, money_delta=gain)
+        logging.info('{} 经过起点，得到资金 {} 元。'.format(player.name, gain))
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''经过时领取奖励4000元，
+        若刚好到达起点，可将自己任意一处地产升一级（仍需支付升级费用）。
+
+        :param player: the player that trigger the effect
+        '''
+        logging.info('{} 可选择一处地产升级。'.format(player.name))
+        ev.event_to_player_upgrade_any_estate.send(self, receiver=player)
+
 
 class PublicNews(BasePublic):
-    def __init__(self)->None:
-        super().__init__('新闻')
+    def __init__(self, name='新闻')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''抽取1张新闻卡。
+
+        :param player: the player that trigger the effect
+        '''
+        logging.info('{} 可选择一处地产升级。'.format(player.name))
+        ev.event_from_public_news_or_luck_triggered.send(self)
 
 class PublicPrison(BasePublic):
     def __init__(self)->None:

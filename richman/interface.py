@@ -2,6 +2,7 @@
 '''接口类
 '''
 import abc
+from typing import Optional, Any
 
 
 # game interface
@@ -55,6 +56,12 @@ class IGameForMap(abc.ABC):
         '''
         pass
 
+    @abc.abstractmethod
+    def destroy(self)->None:
+        '''destroy
+        '''
+        pass
+
 
 # player interface
 
@@ -73,6 +80,13 @@ class IPlayerForMap(IPlayerBase):
     @property
     @abc.abstractmethod
     def players_in_game(self):
+        pass
+
+    @abc.abstractmethod
+    def get_item_position(self, item: Any)->int:
+        '''get the position of the item in the map
+        :param item: item in the map
+        '''
         pass
 
     @abc.abstractmethod
@@ -170,10 +184,8 @@ class IMapForPlayer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def dice(self)->int:
-        '''dice
-
-        :return: current pos of player 
+    def take_the_turn(self):
+        '''take_the_turn
         '''
         pass
 
@@ -183,6 +195,11 @@ class IMapForPlayer(abc.ABC):
 
 class IMapForItem(abc.ABC):
 
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        pass
+
     @abc.abstractmethod
     def trigger(self, player):
         '''trigger the effect of the item in the map
@@ -191,11 +208,19 @@ class IMapForItem(abc.ABC):
         '''
         pass
 
-class IMapForPlace(IMapForItem):
+    @abc.abstractmethod
+    def destroy(self)->None:
+        '''destroy
+        '''
+        pass
 
     @abc.abstractmethod
     def __eq__(self, obj):
         pass
+
+class IMapForPlace(IMapForItem):
+
+    pass
 
 class IMapForEstate(IMapForPlace):
 
@@ -216,9 +241,16 @@ class IPlaceForPlayer(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def name(self):
+    def name(self)->str:
         '''
         :return: name of the player
+        '''
+        pass
+    @property
+    @abc.abstractmethod
+    def estates(self)->list:
+        '''
+        :return: estate list that the player has
         '''
         pass
 
@@ -231,7 +263,7 @@ class IPlaceForPlayer(abc.ABC):
 # estate interface
 
 class IEstateForPlayer(IPlaceForPlayer):
-    
+
     pass
 
 
@@ -241,7 +273,26 @@ class IProjectForPlayer(IPlaceForPlayer):
 
     @property
     @abc.abstractmethod
+    def projects(self)->list:
+        '''
+        :return: project list that the player has
+        '''
+        pass
+    @property
+    @abc.abstractmethod
     def estate_max_level(self):
         '''return the max level of all the estate the player has
+        '''
+        pass
+
+# public interface
+
+class IPublicForPlayer(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        '''
+        :return: name of the player
         '''
         pass

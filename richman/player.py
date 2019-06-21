@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*
 '''player
 '''
-from typing import Any, List, Iterable, Optional, cast
+from typing import Any, List, Dict, Iterable, Optional, cast
 import random
 import datetime
 import logging
 
-import richman.interface as itf  # type: ignore
-import richman.event as ev  # type: ignore
+import richman.interface as itf
+import richman.event as ev
 
 
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
@@ -28,10 +28,11 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self._estates:List[itf.IPlayerForEstate] = []
         self._projects:List[itf.IPlayerForProject] = []
         self.__pos:int = 0
+        self.__pos_queue:List[Dict[str, int]] = []
         random.seed(datetime.datetime.now())
         self.__is_making_money:bool = \
             False  # 防止一个 make_money() 过程中多次调用该函数
-            # event_handler_add_money() 中使用
+            # __event_handler_add_money() 中使用
 
     @property
     def name(self)->str:
@@ -77,17 +78,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self.__map = map
 
     def _dice(self)->int:
-        return random.randrange(1,7)
-
-    def dice(self)->int:
-        '''dice
-
-        :return: current pos of player
-        '''
-        step = self._dice()
-        logging.info('{} 掷出 {} 点。'.format(self.name, step))
-        self.pos += step
-        return self.pos
+        dice_num = random.randrange(1,7)
+        logging.info('{} 掷出 {} 点。'.format(self.name, dice_num))
+        return dice_num
 
     def _remove_place(self, places: List[itf.IPlayerForPlace])->None:
         '''remove the place from self._estates or self._projects
@@ -117,9 +110,43 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self.__is_making_money = False
         return self.money
 
+    def _push_pos(self, pos: int, delay: int)->None:
+        '''push the pos, where to direct the player to go, to the queue
+
+        :param pos: next pos the player should stand
+        :param delay: the effect takes on after delay of the turns
+        :note: (delay = 0) means trigger the map item right now,
+               (delay = 1) means trigger the map item at next turn
+        '''
+        assert delay >= 0, 'delay should be above zero!'
+        if delay == 0:
+            self.__trigger_map_item(pos)
+        else:
+            self.__pos_queue.append({'pos': pos, 'delay': delay})
+
+    def _pull_pos(self)->Optional[int]:
+        '''push the pos, where to direct the player to go, to the queue
+
+        :return: pos to go, None if no pos in the queue
+        '''
+        if not self.__pos_queue:
+            return None
+        pos_with_no_delay:List[Dict[str, int]] = []
+        for item in self.__pos_queue:
+            item['delay'] -= 1
+            assert item['delay'] >= 0, 'delay should be above zero!'
+            if item['delay'] == 0:
+                pos_with_no_delay.append(item)
+        assert len(pos_with_no_delay) <= 1, 'more than one pos signal triggered!'
+        if pos_with_no_delay:
+            self.__pos_queue.remove(pos_with_no_delay[0])
+            return pos_with_no_delay[0]['pos']
+        else:
+            return None
+
     @staticmethod
     @ev.event_to_player_add_money.connect
-    def event_handler_add_money(sender, **kwargs)->None:
+    def __event_handler_add_money(sender, **kwargs)->None:
         '''change the player's money
 
         :param sender: not used
@@ -130,7 +157,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_move_to.connect
-    def event_handler_move_to(sender, **kwargs)->None:
+    def __event_handler_move_to(sender, **kwargs)->None:
         '''move player to pos
 
         :param sender: not used
@@ -141,7 +168,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
-    def event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs)->None:
+    def __event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs)->None:
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
@@ -156,12 +183,11 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                 self._estates.append(place)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
-            self._add_money(-place.buy_value)
             ev.event_to_place_buy.send(self, receiver=place)
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
-    def event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs)->None:
+    def __event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs)->None:
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
@@ -170,23 +196,28 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self:BasePlayer = kwargs['receiver']
         estate = sender
         if self._make_decision_upgrade(estate):
-            self._add_money(-estate.upgrade_value)
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
-    def event_handler_jump_to_estate_decision(sender, **kwargs)->None:
+    def __event_handler_jump_to_estate_decision(sender, **kwargs)->bool:
         '''select which estate to go when jump is needed
 
         :param sender: not used
         :param kwargs: holds receiver of player
         '''
         self:BasePlayer = kwargs['receiver']
-        self.pos = self._make_decision_jump_to_estate()
+        delay = kwargs.get('delay', 0)
+        pos = self._make_decision_jump_to_estate()
+        if pos is not None:
+            self._push_pos(pos=pos, delay=delay)  # take action at next turn
+            return True
+        else:
+            return False
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
-    def event_handler_upgrade_any_estate(sender, **kwargs)->None:
+    def __event_handler_upgrade_any_estate(sender, **kwargs)->None:
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
@@ -195,7 +226,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self:BasePlayer = kwargs['receiver']
         estate = self._make_decision_upgrade_any_estate()
         if estate and self.money > estate.upgrade_value:
-            self._add_money(-estate.upgrade_value)
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     def _make_money(self)->None:
@@ -220,7 +250,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _make_decision_jump_to_estate(self)->int:
+    def _make_decision_jump_to_estate(self)->Optional[int]:
         '''select which estate to go when jump is needed
 
         :return: position of estate to jump
@@ -234,6 +264,39 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
+    def _make_decision_before_dice_start(self)->None:
+        '''do something before dice
+        '''
+        raise NotImplementedError('override is needed.')
+
+    def take_the_turn(self)->None:
+        '''take_the_turn
+        '''
+        ev.event_from_player_start_turn.send(self)
+        pos_before_turn = self.pos  # for pass start line check
+        pos_in_queue = self._pull_pos()
+        if pos_in_queue is not None:
+            pos = pos_in_queue
+        else:
+            self._make_decision_before_dice_start()
+            pos = self.pos + self._dice()
+        pos_after_turn = pos
+        # check if the player passes the start line
+        if (pos_after_turn < pos_before_turn
+                and pos_before_turn > 0.5*len(self.map)):
+            ev.event_from_player_pass_start_line.send(self)
+        # trigger the item
+        self.__trigger_map_item(pos)
+
+    def __trigger_map_item(self, pos: int)->None:
+        '''trigger the map item action
+
+        :param pos: the position the player go to
+        '''
+        self.pos = pos
+        assert self.map is not None
+        self.map.items[self.pos].trigger(self)
+
     def __eq__(self, obj):
         return self.name == obj.name
 
@@ -242,8 +305,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         projects_info = [str(project) for project in self.projects]
         estates_info = [str(estate) for estate in self.estates]
-        lines = r'姓名: {}，现金: {}，地产: {}，项目：{}。'.format(self.name, self.money,
-                                                                 estates_info, projects_info)
+        lines = (r'姓名: {}，位置: {}，现金: {}，地产: {}，'
+                    r'项目：{}。').format(self.name, self.pos, self.money,
+                                  estates_info, projects_info)
         return lines
 
 
@@ -262,7 +326,7 @@ class PlayerSimple(BasePlayer):
         for estate in self.estates:
             if not estate.is_pledged:
                 ev.event_to_estate_pledge.send(self, receiver=estate)
-                if self._add_money(estate.pledge_value) > 0:
+                if self.money > 0:
                     return True
         else:
             return False
@@ -276,7 +340,7 @@ class PlayerSimple(BasePlayer):
         def sell_place_iteration(cls: BasePlayer, places_to_sell):
             for place in places_to_sell:
                 ev.event_to_place_sell.send(cls, receiver=place)
-                yield (place, cls._add_money(place.sell_value))
+                yield (place, cls.money)
         place_to_remove = []
         is_money_enough = False
         for place, money in sell_place_iteration(self, places):
@@ -338,24 +402,23 @@ class PlayerSimple(BasePlayer):
         :param estate: IPlayerForPlace
         :return: True if upgrade
         '''
-        if (self.money > estate.upgrade_value
+        if (self.money > estate.upgrade_value + 1000
                 and not estate.is_level_max):
             return True
         else:
             return False
 
-    def _make_decision_jump_to_estate(self)->int:
+    def _make_decision_jump_to_estate(self)->Optional[int]:
         '''select which estate to go when jump is needed
 
         :return: position of estate to jump
         '''
         assert self.map is not None
-        for index, item in enumerate(self.map.items):
-            if (isinstance(item, itf.IPlayerForEstate)
-                    and item.pledge_value is not None):
-                return index
+        for estate in self.estates:
+            if not estate.is_pledged:
+                return self.map.get_item_position(estate)
         else:
-            raise RuntimeError('map {} 中没有设置地产！'.format(self.map.name))
+            return None
 
     def _make_decision_upgrade_any_estate(self)->Optional[itf.IPlayerForEstate]:
         '''upgrade and estate that belongs to the player
@@ -365,10 +428,22 @@ class PlayerSimple(BasePlayer):
         estates_need_upgrade = [estate for estate in self.estates
                                     if not estate.is_level_max]
         for estate in estates_need_upgrade:
-            if self.money > estate.upgrade_value:
+            if self.money > estate.upgrade_value + 1000:
                 return estate
         else:
             return None
+
+    def _make_decision_before_dice_start(self)->None:
+        '''do something before dice
+        rebuy if has enough money
+        '''
+        money_threshold = 10000
+        if self.money > money_threshold:
+            estates_pledged = [estate for estate in self.estates
+                                if estate.is_pledged]
+            for estate in estates_pledged:
+                if self.money > money_threshold:
+                    ev.event_to_estate_rebuy.send(self, receiver=estate)
 
 
 class PlayerPerson(BasePlayer):

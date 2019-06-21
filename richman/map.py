@@ -6,7 +6,8 @@ import logging
 import pickle
 import os
 
-import richman.interface as itf  # type: ignore
+import richman.event as ev
+import richman.interface as itf
 
 
 class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
@@ -50,12 +51,23 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         else:
             return self.players_in_game[0]
 
+    def get_item_position(self, item: Any)->int:
+        '''get the position of the item in the map
+        :param item: item in the map
+        '''
+        for pos, item_in_map in enumerate(self.items):
+            if item == item_in_map:
+                return pos
+        else:
+            raise RuntimeError('{} is not in the map'.format(item))
+
     def add_items(self, items: List[itf.IMapForItem]):
         if not isinstance(items, list):
             items = [cast(itf.IMapForItem, items)]
         for item in items:
-            assert item not in self.items,\
-                'estate names should not be duplicated.'
+            if isinstance(item, itf.IMapForEstate):
+                assert item not in self.items,\
+                    '%s estate should not be duplicated.' % item.name
             self.__items.append(item)
 
     def add_players(self, players: List[itf.IMapForPlayer]):
@@ -110,8 +122,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             self.__players_in_game.remove(player)
 
     def _player_action(self, player: itf.IMapForPlayer)->None:
-        pos = player.dice()
-        self.items[pos].trigger(player)
+        player.take_the_turn()
 
     def _run_one_round(self)->None:
         '''run one round of the map, which means every player run once
@@ -140,6 +151,12 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             return False
         else:
             return True
+
+    def destroy(self)->None:
+        '''destroy
+        '''
+        for item in self.items:
+            item.destroy()
 
     def __len__(self):
         return len(self.items)
