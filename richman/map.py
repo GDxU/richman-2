@@ -6,8 +6,8 @@ import logging
 import pickle
 import os
 
-import richman.event as ev  # type: ignore
-import richman.interface as itf  # type: ignore
+import richman.event as ev
+import richman.interface as itf
 
 
 class BaseMap(itf.IPlayerForMap, itf.IGameForMap):

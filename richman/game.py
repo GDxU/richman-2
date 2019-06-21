@@ -4,8 +4,8 @@
 from typing import List
 import logging
 
-import richman.interface as itf  # type: ignore
-import richman.event as ev  # type: ignore
+import richman.interface as itf
+import richman.event as ev
 
 
 class BaseGame:

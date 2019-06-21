@@ -283,3 +283,15 @@ class IProjectForPlayer(IPlaceForPlayer):
         '''return the max level of all the estate the player has
         '''
         pass
+
+# public interface
+
+class IPublicForPlayer(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        '''
+        :return: name of the player
+        '''
+        pass

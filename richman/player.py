@@ -6,8 +6,8 @@ import random
 import datetime
 import logging
 
-import richman.interface as itf  # type: ignore
-import richman.event as ev  # type: ignore
+import richman.interface as itf
+import richman.event as ev
 
 
 class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
