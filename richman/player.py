@@ -273,12 +273,19 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''take_the_turn
         '''
         ev.event_from_player_start_turn.send(self)
+        pos_before_turn = self.pos  # for pass start line check
         pos_in_queue = self._pull_pos()
         if pos_in_queue is not None:
             pos = pos_in_queue
         else:
             self._make_decision_before_dice_start()
             pos = self.pos + self._dice()
+        pos_after_turn = pos
+        # check if the player passes the start line
+        if (pos_after_turn < pos_before_turn
+                and pos_before_turn > 0.5*len(self.map)):
+            ev.event_from_player_pass_start_line.send(self)
+        # trigger the item
         self.__trigger_map_item(pos)
 
     def __trigger_map_item(self, pos: int)->None:
@@ -395,7 +402,7 @@ class PlayerSimple(BasePlayer):
         :param estate: IPlayerForPlace
         :return: True if upgrade
         '''
-        if (self.money > estate.upgrade_value
+        if (self.money > estate.upgrade_value + 1000
                 and not estate.is_level_max):
             return True
         else:
@@ -421,7 +428,7 @@ class PlayerSimple(BasePlayer):
         estates_need_upgrade = [estate for estate in self.estates
                                     if not estate.is_level_max]
         for estate in estates_need_upgrade:
-            if self.money > estate.upgrade_value:
+            if self.money > estate.upgrade_value + 1000:
                 return estate
         else:
             return None

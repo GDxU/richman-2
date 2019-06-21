@@ -18,6 +18,9 @@ event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 event_from_player_start_turn = _events.signal("event-from-player-start-turn")
 event_from_player_pass_start_line = _events.signal("event-from-player-pass-start-line")
 
+# event from public
+event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")
+
 
 # event to player
 event_to_player_add_money = _events.signal("event-to-player-add-money")

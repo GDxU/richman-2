@@ -61,6 +61,7 @@ class MapTest(BaseMap):
             upgrade_value=600,
             block=block
         ))
+        self.add_items(PublicNews(name='新闻1'))
         self.add_items(Estate(
             name='大连',
             fees=[200, 500, 1000, 3000],
@@ -123,6 +124,7 @@ class MapTest(BaseMap):
             upgrade_value=600,
             block=block
         ))
+        self.add_items(ProjectTvStation(name='电视台'))
         self.add_items(Estate(
             name='南京',
             fees=[700, 1600, 4500, 9000],
@@ -156,8 +158,9 @@ class MapTest(BaseMap):
             block=block
         ))
         #block4 region
-        self.add_items(ProjectTransportation('航空运输'))
         block = EstateBlock('block4')
+        self.add_items(ProjectTransportation('航空运输'))
+        self.add_items(PublicNews(name='新闻2'))
         self.add_items(Estate(
             name='重庆',
             fees=[600, 1400, 3500, 7500],

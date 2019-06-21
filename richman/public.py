@@ -59,8 +59,16 @@ class PublicStart(BasePublic):
 
 
 class PublicNews(BasePublic):
-    def __init__(self)->None:
-        super().__init__('新闻')
+    def __init__(self, name='新闻')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''抽取1张新闻卡。
+
+        :param player: the player that trigger the effect
+        '''
+        logging.info('{} 可选择一处地产升级。'.format(player.name))
+        ev.event_from_public_news_or_luck_triggered.send(self)
 
 class PublicPrison(BasePublic):
     def __init__(self)->None:
