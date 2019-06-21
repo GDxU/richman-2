@@ -42,7 +42,7 @@ def main(log_on:bool = False)->None:
     if log_on:
         _set_logger(text_log_on=False)
     # player
-    init_money = 50000
+    init_money = 20000
     players:List[PlayerSimple] = []
     players.append(PlayerSimple(name='邓彦修', money=init_money))
     players.append(PlayerSimple(name='邓哲', money=init_money))

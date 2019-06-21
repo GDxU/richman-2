@@ -195,6 +195,11 @@ class IMapForPlayer(abc.ABC):
 
 class IMapForItem(abc.ABC):
 
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        pass
+
     @abc.abstractmethod
     def trigger(self, player):
         '''trigger the effect of the item in the map

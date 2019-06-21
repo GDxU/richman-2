@@ -147,7 +147,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         # check
         assert len(self.__fees) == self.__kMaxLevel
         assert fees == sorted(fees), \
-            'fees of estate should go up with level up'
+            'fees of %s should go up with level up' % name
         assert self.sell_value > self.pledge_value
 
     @property
@@ -400,10 +400,10 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
 class ProjectNuclear(Project):
 
-    def __init__(self)->None:
+    def __init__(self, name='核能发电站')->None:
         '''override, init
         '''
-        super().__init__(name='核能发电站',
+        super().__init__(name=name,
                          buy_value=3500,
                          sell_value=3000)
 
@@ -422,10 +422,10 @@ class ProjectNuclear(Project):
 
 class ProjectBuilder(Project):
 
-    def __init__(self):
+    def __init__(self, name='建筑公司'):
         '''init
         '''
-        super().__init__(name='建筑公司',
+        super().__init__(name=name,
                          buy_value=4000,
                          sell_value=3000)
 
@@ -525,3 +525,29 @@ class ProjectTransportation(Project):
                                                                            self.owner.name,
                                                                            fine))
             self._exchange_money(player, self.owner, fine)
+
+
+class ProjectTvStation(Project):
+
+    def _take_effect(self, player: itf.IProjectForPlayer):
+        '''take the effect of the place, triggered by the player
+
+        :param player: IProjectForPlayer
+        '''
+        pass
+
+class ProjectSewerage(Project):
+
+    def __init__(self, name='污水处理厂'):
+        '''init
+        '''
+        super().__init__(name=name,
+                         buy_value=3000,
+                         sell_value=3000)
+
+    def _take_effect(self, player: itf.IProjectForPlayer):
+        '''take the effect of the place, triggered by the player
+
+        :param player: IProjectForPlayer
+        '''
+        pass

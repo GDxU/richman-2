@@ -65,8 +65,9 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         if not isinstance(items, list):
             items = [cast(itf.IMapForItem, items)]
         for item in items:
-            assert item not in self.items,\
-                'estate names should not be duplicated.'
+            if isinstance(item, itf.IMapForEstate):
+                assert item not in self.items,\
+                    '%s estate should not be duplicated.' % item.name
             self.__items.append(item)
 
     def add_players(self, players: List[itf.IMapForPlayer]):
