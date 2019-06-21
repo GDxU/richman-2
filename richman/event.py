@@ -15,6 +15,10 @@ event_from_estate_pledged = _events.signal("event-from-estate-pledged")
 event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 
 # event to player
+event_from_player_start_turn = _events.signal("event-from_player-start-turn")
+
+
+# event to player
 event_to_player_add_money = _events.signal("event-to-player-add-money")
 event_to_player_move_to = _events.signal("event-to-player-move-to")
 event_to_player_buy_place = _events.signal("event-to-player-buy-place")

@@ -264,13 +264,20 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
+    def _make_decision_before_dice_start(self)->None:
+        '''do something before dice
+        '''
+        raise NotImplementedError('override is needed.')
+
     def take_the_turn(self)->None:
         '''take_the_turn
         '''
+        ev.event_from_player_start_turn.send(self)
         pos_in_queue = self._pull_pos()
         if pos_in_queue is not None:
             pos = pos_in_queue
         else:
+            self._make_decision_before_dice_start()
             pos = self.pos + self._dice()
         self.__trigger_map_item(pos)
 
@@ -417,6 +424,16 @@ class PlayerSimple(BasePlayer):
                 return estate
         else:
             return None
+
+    def _make_decision_before_dice_start(self)->None:
+        '''do something before dice
+        rebuy if has enough money
+        '''
+        if self.money > 10000:
+            estates_pledged = [estate for estate in self.estates
+                                if estate.is_pledged]
+            if estates_pledged:
+                ev.event_to_estate_rebuy.send(self, receiver=estates_pledged[0])
 
 
 class PlayerPerson(BasePlayer):

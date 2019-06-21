@@ -242,7 +242,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         ev.event_from_estate_pledged.send(self)
 
     def _rebuy(self, player: itf.IEstateForPlayer)->None:
-        '''pledge the estate
+        '''rebuy pledged estate
 
         :param player: player to rebuy
         '''
@@ -250,8 +250,8 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert player == self.owner, '该地产不归 {} 所有，无法赎回！'.format(player.name)
         assert self.is_pledged, '该地当前未被抵押！'
         self.__is_pledged = False
-        ev.event_to_player_add_money.send(self, receiver=player, money_delta=-self.buy_value)
-        logging.info('{} 赎回地产 {}，获得 {} 元。'.format(self.owner.name, self.name, self.buy_value))
+        ev.event_to_player_add_money.send(self, receiver=player, money_delta=-self.pledge_value)
+        logging.info('{} 赎回地产 {}，花费 {} 元。'.format(self.owner.name, self.name, self.pledge_value))
         ev.event_from_estate_rebought.send(self)
 
     @staticmethod
