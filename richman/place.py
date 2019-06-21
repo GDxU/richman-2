@@ -316,12 +316,6 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         else:
             ev.event_to_player_buy_place.send(self, receiver=player)
 
-    def reset(self)->None:
-        '''reset item to its initial state
-        '''
-        super().reset()
-        self.__current_level = 0
-
     def __str__(self):
         '''override, display place info
         '''
@@ -481,7 +475,6 @@ class ProjectBuilder(Project):
         '''
         logging.info('{} 走到 {}，可选择一处地产升级。'.format(player.name, self.name))
         ev.event_to_player_upgrade_any_estate.send(self, receiver=player)
-
 
     def destroy(self)->None:
         '''override, destroy
