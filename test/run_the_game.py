@@ -38,9 +38,9 @@ def _set_logger(text_log_on=False)->None:
     logger.propagate = False
 
 
-def main(log_on:bool = False)->None:
+def main(log_on:bool = False, text_log_on:bool = True)->None:
     if log_on:
-        _set_logger(text_log_on=False)
+        _set_logger(text_log_on)
     # player
     init_money = 20000
     players:List[PlayerSimple] = []
@@ -56,4 +56,4 @@ def main(log_on:bool = False)->None:
 
 
 if __name__ == "__main__":
-    main(log_on=True)
+    main(log_on=True, text_log_on=True)

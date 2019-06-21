@@ -183,7 +183,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                 self._estates.append(place)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
-            self._add_money(-place.buy_value)
             ev.event_to_place_buy.send(self, receiver=place)
 
     @staticmethod
@@ -197,7 +196,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self:BasePlayer = kwargs['receiver']
         estate = sender
         if self._make_decision_upgrade(estate):
-            self._add_money(-estate.upgrade_value)
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     @staticmethod
@@ -228,7 +226,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         self:BasePlayer = kwargs['receiver']
         estate = self._make_decision_upgrade_any_estate()
         if estate and self.money > estate.upgrade_value:
-            self._add_money(-estate.upgrade_value)
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     def _make_money(self)->None:
@@ -314,7 +311,7 @@ class PlayerSimple(BasePlayer):
         for estate in self.estates:
             if not estate.is_pledged:
                 ev.event_to_estate_pledge.send(self, receiver=estate)
-                if self._add_money(estate.pledge_value) > 0:
+                if self.money > 0:
                     return True
         else:
             return False
@@ -328,7 +325,7 @@ class PlayerSimple(BasePlayer):
         def sell_place_iteration(cls: BasePlayer, places_to_sell):
             for place in places_to_sell:
                 ev.event_to_place_sell.send(cls, receiver=place)
-                yield (place, cls._add_money(place.sell_value))
+                yield (place, cls.money)
         place_to_remove = []
         is_money_enough = False
         for place, money in sell_place_iteration(self, places):
