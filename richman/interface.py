@@ -2,7 +2,7 @@
 '''接口类
 '''
 import abc
-from typing import Optional
+from typing import Optional, Any
 
 
 # game interface
@@ -80,6 +80,13 @@ class IPlayerForMap(IPlayerBase):
     @property
     @abc.abstractmethod
     def players_in_game(self):
+        pass
+
+    @abc.abstractmethod
+    def get_item_position(self, item: Any)->int:
+        '''get the position of the item in the map
+        :param item: item in the map
+        '''
         pass
 
     @abc.abstractmethod
@@ -202,11 +209,13 @@ class IMapForItem(abc.ABC):
         '''
         pass
 
-class IMapForPlace(IMapForItem):
-
     @abc.abstractmethod
     def __eq__(self, obj):
         pass
+
+class IMapForPlace(IMapForItem):
+
+    pass
 
 class IMapForEstate(IMapForPlace):
 

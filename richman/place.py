@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''房产类
 '''
-from typing import Any, List, Optional, cast
+from typing import Any, List, Tuple, Optional, cast
 import logging
 
 import richman.interface as itf  # type: ignore
@@ -374,6 +374,7 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
         :param player: IProjectForPlayer
         '''
+        logging.info('{} 走到 {}。'.format(player.name, self.name))
         if self.owner:
             self._take_effect(player)
         else:
@@ -415,8 +416,7 @@ class ProjectNuclear(Project):
         if self.owner == player:
             return None
         fine = 500 + 500 * player.estate_max_level
-        logging.info('{} 走到 {}，缴付 {} 元给 {}。'.format(player.name, self.name,
-                                                          fine, self.owner.name))
+        logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
         self._exchange_money(player, self.owner, fine)
 
 
@@ -429,19 +429,13 @@ class ProjectBuilder(Project):
                          buy_value=4000,
                          sell_value=3000)
 
-    def __register_event_handler_estate_upgraded(self):
-        ev.event_from_estate_upgraded.connect(self.__someone_upgraded_estate)
-
-    def __unregister_event_handler_estate_upgraded(self):
-        ev.event_from_estate_upgraded.disconnect(self.__someone_upgraded_estate)
-
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
         '''override, set the owner to the buyer
 
         :param buyer: buyer to buy the place
         '''
         super()._buy(buyer)
-        self.__register_event_handler_estate_upgraded()
+        self.__register_event_handler()
 
     def _sell(self, seller: itf.IPlaceForPlayer)->None:
         '''override, remove the owner
@@ -449,7 +443,13 @@ class ProjectBuilder(Project):
         :param seller: seller to sell place
         '''
         super()._sell(seller)
-        self.__unregister_event_handler_estate_upgraded()
+        self.__unregister_event_handler()
+
+    def __register_event_handler(self):
+        ev.event_from_estate_upgraded.connect(self.__someone_upgraded_estate)
+
+    def __unregister_event_handler(self):
+        ev.event_from_estate_upgraded.disconnect(self.__someone_upgraded_estate)
 
     def __someone_upgraded_estate(self, sender: Estate)->None:
         '''有人升级房屋，该人需要支付 500 元给 owner of builder
@@ -473,13 +473,13 @@ class ProjectBuilder(Project):
 
         :param player: IProjectForPlayer
         '''
-        logging.info('{} 走到 {}，可选择一处地产升级。'.format(player.name, self.name))
+        logging.info('{} 可选择一处地产升级。'.format(player.name))
         ev.event_to_player_upgrade_any_estate.send(self, receiver=player)
 
     def destroy(self)->None:
         '''override, destroy
         '''
-        self.__unregister_event_handler_estate_upgraded()
+        self.__unregister_event_handler()
 
 
 class ProjectTransportation(Project):
@@ -512,8 +512,16 @@ class ProjectTransportation(Project):
         amount = self.__find_transportaion_amount()
         assert amount >= 1
         fine = fines[amount-1]
-        logging.info('{} 走到 {}，缴付 {} 元给 {}。'.format(player.name, self.name,
-                                                          fine, self.owner.name))
+        logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
         assert self.owner is not None
         self._exchange_money(player, self.owner, fine)
-
+        results:List[Tuple[Any, bool]] =\
+            ev.event_to_player_jump_to_estate.send(self, receiver=player, delay=1)
+        assert len(results), 1
+        rst:bool = results[0][-1]
+        if rst:
+            fine = 500
+            logging.info('{} 准备移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
+                                                                           self.owner.name,
+                                                                           fine))
+            self._exchange_money(player, self.owner, fine)

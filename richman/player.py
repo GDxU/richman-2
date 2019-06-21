@@ -115,9 +115,14 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
         :param pos: next pos the player should stand
         :param delay: the effect takes on after delay of the turns
+        :note: (delay = 0) means trigger the map item right now,
+               (delay = 1) means trigger the map item at next turn
         '''
         assert delay >= 0, 'delay should be above zero!'
-        self.__pos_queue.append({'pos': pos, 'delay': delay})
+        if delay == 0:
+            self.__trigger_map_item(pos)
+        else:
+            self.__pos_queue.append({'pos': pos, 'delay': delay})
 
     def _pull_pos(self)->Optional[int]:
         '''push the pos, where to direct the player to go, to the queue
@@ -126,15 +131,18 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         if not self.__pos_queue:
             return None
-        pos_with_no_delay:List[int] = []
+        pos_with_no_delay:List[Dict[str, int]] = []
         for item in self.__pos_queue:
-            delay = item['delay']
-            assert delay >= 0, 'delay should be above zero!'
-            if delay == 0:
-                pos_with_no_delay.append(item['pos'])
             item['delay'] -= 1
+            assert item['delay'] >= 0, 'delay should be above zero!'
+            if item['delay'] == 0:
+                pos_with_no_delay.append(item)
         assert len(pos_with_no_delay) <= 1, 'more than one pos signal triggered!'
-        return pos_with_no_delay[0] if pos_with_no_delay else None
+        if pos_with_no_delay:
+            self.__pos_queue.remove(pos_with_no_delay[0])
+            return pos_with_no_delay[0]['pos']
+        else:
+            return None
 
     @staticmethod
     @ev.event_to_player_add_money.connect
@@ -194,14 +202,20 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
-    def __event_handler_jump_to_estate_decision(sender, **kwargs)->None:
+    def __event_handler_jump_to_estate_decision(sender, **kwargs)->bool:
         '''select which estate to go when jump is needed
 
         :param sender: not used
         :param kwargs: holds receiver of player
         '''
         self:BasePlayer = kwargs['receiver']
-        self.pos = self._make_decision_jump_to_estate()
+        delay = kwargs.get('delay', 0)
+        pos = self._make_decision_jump_to_estate()
+        if pos is not None:
+            self._push_pos(pos=pos, delay=delay)  # take action at next turn
+            return True
+        else:
+            return False
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
@@ -239,7 +253,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         raise NotImplementedError('override is needed.')
 
-    def _make_decision_jump_to_estate(self)->int:
+    def _make_decision_jump_to_estate(self)->Optional[int]:
         '''select which estate to go when jump is needed
 
         :return: position of estate to jump
@@ -256,12 +270,19 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def take_the_turn(self)->None:
         '''take_the_turn
         '''
-        # pos_in_queue = self._pull_pos()
-        # if pos_in_queue:
-        #     self.pos = pos_in_queue
-        # else:
-        #     self.pos += self._dice()
-        self.pos += self._dice()
+        pos_in_queue = self._pull_pos()
+        if pos_in_queue is not None:
+            pos = pos_in_queue
+        else:
+            pos = self.pos + self._dice()
+        self.__trigger_map_item(pos)
+
+    def __trigger_map_item(self, pos: int)->None:
+        '''trigger the map item action
+
+        :param pos: the position the player go to
+        '''
+        self.pos = pos
         assert self.map is not None
         self.map.items[self.pos].trigger(self)
 
@@ -375,18 +396,18 @@ class PlayerSimple(BasePlayer):
         else:
             return False
 
-    def _make_decision_jump_to_estate(self)->int:
+    def _make_decision_jump_to_estate(self)->Optional[int]:
         '''select which estate to go when jump is needed
 
         :return: position of estate to jump
         '''
         assert self.map is not None
-        for index, item in enumerate(self.map.items):
+        for item in self.map.items:
             if (isinstance(item, itf.IPlayerForEstate)
                     and item.pledge_value is not None):
-                return index
+                return self.map.get_item_position(item)
         else:
-            raise RuntimeError('map {} 中没有设置地产！'.format(self.map.name))
+            return None
 
     def _make_decision_upgrade_any_estate(self)->Optional[itf.IPlayerForEstate]:
         '''upgrade and estate that belongs to the player

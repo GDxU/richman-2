@@ -51,6 +51,16 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         else:
             return self.players_in_game[0]
 
+    def get_item_position(self, item: Any)->int:
+        '''get the position of the item in the map
+        :param item: item in the map
+        '''
+        for pos, item_in_map in enumerate(self.items):
+            if item == item_in_map:
+                return pos
+        else:
+            raise RuntimeError('{} is not in the map'.format(item))
+
     def add_items(self, items: List[itf.IMapForItem]):
         if not isinstance(items, list):
             items = [cast(itf.IMapForItem, items)]
