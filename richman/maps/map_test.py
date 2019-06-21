@@ -226,6 +226,7 @@ class MapTest(BaseMap):
             upgrade_value=1500,
             block=block
         ))
+        self.add_items(PublicTax('税务中心'))
         self.add_items(Estate(
             name='上海',
             fees=[1000, 2400, 6500, 13500],

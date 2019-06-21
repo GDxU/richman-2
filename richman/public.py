@@ -109,5 +109,18 @@ class PublicPark(BasePublic):
                                           money_delta=gain)
 
 class PublicTax(BasePublic):
-    def __init__(self)->None:
-        super().__init__('税务中心')
+    def __init__(self, name='税务中心')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''缴纳每块地产300元税金。
+
+        :param player: the player that trigger the effect
+        '''
+        estates_amount = len(player.estates)
+        fine = 300 * estates_amount
+        logging.info('{} 有 {} 块地产，需缴纳 {} 元税金。'.format(player.name,
+                                                                estates_amount,
+                                                                fine))
+        ev.event_to_player_add_money.send(self, receiver=player,
+                                          money_delta=-fine)

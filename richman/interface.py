@@ -306,3 +306,10 @@ class IPublicForPlayer(abc.ABC):
         :return: name of the player
         '''
         pass
+    @property
+    @abc.abstractmethod
+    def estates(self)->list:
+        '''
+        :return: estate list that the player has
+        '''
+        pass
