@@ -298,8 +298,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         projects_info = [str(project) for project in self.projects]
         estates_info = [str(estate) for estate in self.estates]
-        lines = r'姓名: {}，现金: {}，地产: {}，项目：{}。'.format(self.name, self.money,
-                                                                 estates_info, projects_info)
+        lines = (r'姓名: {}，位置: {}，现金: {}，地产: {}，'
+                    r'项目：{}。').format(self.name, self.pos, self.money,
+                                  estates_info, projects_info)
         return lines
 
 
@@ -429,11 +430,13 @@ class PlayerSimple(BasePlayer):
         '''do something before dice
         rebuy if has enough money
         '''
-        if self.money > 10000:
+        money_threshold = 10000
+        if self.money > money_threshold:
             estates_pledged = [estate for estate in self.estates
                                 if estate.is_pledged]
-            if estates_pledged:
-                ev.event_to_estate_rebuy.send(self, receiver=estates_pledged[0])
+            for estate in estates_pledged:
+                if self.money > money_threshold:
+                    ev.event_to_estate_rebuy.send(self, receiver=estate)
 
 
 class PlayerPerson(BasePlayer):

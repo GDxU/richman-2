@@ -246,6 +246,13 @@ class IPlaceForPlayer(abc.ABC):
         :return: name of the player
         '''
         pass
+    @property
+    @abc.abstractmethod
+    def estates(self)->list:
+        '''
+        :return: estate list that the player has
+        '''
+        pass
 
     @abc.abstractmethod
     def __eq__(self, obj):
@@ -257,13 +264,7 @@ class IPlaceForPlayer(abc.ABC):
 
 class IEstateForPlayer(IPlaceForPlayer):
 
-    @property
-    @abc.abstractmethod
-    def estates(self)->list:
-        '''
-        :return: estate list that the player has
-        '''
-        pass
+    pass
 
 
 # project interface

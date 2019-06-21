@@ -59,6 +59,8 @@ class TestBaseMap(unittest.TestCase):
             map.add_items(estate1)
 
     def test_run_one_round_should_finish_when_all_players_banckrupted(self):
+        self.player1.pos = 10
+        self.player2.pos = 10
         self.assertTrue(self.map.run_one_round())
         self.player1.take_the_turn.assert_called_once()
         self.player2.take_the_turn.assert_called_once()

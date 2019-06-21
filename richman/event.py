@@ -14,8 +14,9 @@ event_from_estate_degraded = _events.signal("event-from-estate-degraded")
 event_from_estate_pledged = _events.signal("event-from-estate-pledged")
 event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 
-# event to player
-event_from_player_start_turn = _events.signal("event-from_player-start-turn")
+# event from player
+event_from_player_start_turn = _events.signal("event-from-player-start-turn")
+event_from_player_pass_start_line = _events.signal("event-from-player-pass-start-line")
 
 
 # event to player

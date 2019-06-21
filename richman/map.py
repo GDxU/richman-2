@@ -122,10 +122,13 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             self.__players_in_game.remove(player)
 
     def _player_action(self, player: itf.IMapForPlayer)->None:
-        # pos = player.take_the_turn()
-        # if pos:
-        #     self.items[pos].trigger(player)
+        pos_before_turn = player.pos
         player.take_the_turn()
+        pos_after_turn = player.pos
+        # check if the player passes the start line
+        if (pos_after_turn < pos_before_turn
+                and pos_before_turn > 0.5*len(self)):
+            ev.event_from_player_pass_start_line.send(player)
 
     def _run_one_round(self)->None:
         '''run one round of the map, which means every player run once

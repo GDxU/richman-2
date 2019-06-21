@@ -35,6 +35,7 @@ class MapTest(BaseMap):
     def _build(self):
         # block1 region
         block = EstateBlock('block1')
+        self.add_items(PublicStart(name='起点'))
         self.add_items(Estate(
             name='沈阳',
             fees=[400, 1000, 2500, 5500],
