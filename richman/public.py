@@ -45,7 +45,7 @@ class PublicStart(BasePublic):
         '''
         player = sender
         gain = 4000
-        ev.event_to_player_add_money.send(None, receiver=player, money_delta=gain)
+        ev.event_to_player_add_money.send(None, player=player, money_delta=gain)
         logging.info('{} 经过起点，得到资金 {} 元。'.format(player.name, gain))
 
     def trigger(self, player: itf.IPublicForPlayer):
@@ -55,7 +55,7 @@ class PublicStart(BasePublic):
         :param player: the player that trigger the effect
         '''
         logging.info('{} 可选择一处地产升级。'.format(player.name))
-        ev.event_to_player_upgrade_any_estate.send(self, receiver=player)
+        ev.event_to_player_upgrade_any_estate.send(self, player=player)
 
 
 class PublicNews(BasePublic):
@@ -100,7 +100,7 @@ class PublicStock(BasePublic):
         logging.info('{} 有 {} 块项目，获得 {} 元资金。'.format(player.name,
                                                               projects_amount,
                                                               gain))
-        ev.event_to_player_add_money.send(self, receiver=player,
+        ev.event_to_player_add_money.send(self, player=player,
                                           money_delta=gain)
 
 class PublicGotoPrison(BasePublic):
@@ -118,7 +118,7 @@ class PublicPark(BasePublic):
         '''
         gain = 300
         logging.info('{} 在公园捡到 {} 元。'.format(player.name, gain))
-        ev.event_to_player_add_money.send(self, receiver=player,
+        ev.event_to_player_add_money.send(self, player=player,
                                           money_delta=gain)
 
 class PublicTax(BasePublic):
@@ -135,5 +135,5 @@ class PublicTax(BasePublic):
         logging.info('{} 有 {} 块地产，需缴纳 {} 元税金。'.format(player.name,
                                                                 estates_amount,
                                                                 fine))
-        ev.event_to_player_add_money.send(self, receiver=player,
+        ev.event_to_player_add_money.send(self, player=player,
                                           money_delta=-fine)

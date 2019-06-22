@@ -147,41 +147,41 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     @staticmethod
     @ev.event_to_player_add_money.connect
     def __event_handler_add_money(sender: Any,
-                                  receiver,
+                                  player,
                                   money_delta: int)->None:
         '''change the player's money
 
         :param sender: not used
-        :param receiver: receiver of player
+        :param player: player to change the money
         :param money_delta: money to change
         '''
-        self:BasePlayer = receiver
+        self:BasePlayer = player
         self._add_money(money_delta)
 
     @staticmethod
     @ev.event_to_player_move_to.connect
     def __event_handler_move_to(sender,
-                                receiver,
+                                player,
                                 pos: int)->None:
         '''move player to pos
 
         :param sender: not used
-        :param receiver: receiver of player
+        :param player: player to move
         :param pos: position to move to
         '''
-        self:BasePlayer = receiver
+        self:BasePlayer = player
         self.pos = pos
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
     def __event_handler_buy_decision(sender: itf.IPlayerForPlace,
-                                     receiver)->None:
+                                     buyer)->None:
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
-        :param receiver: receiver of player
+        :param buyer: buyer
         '''
-        self:BasePlayer = receiver
+        self:BasePlayer = buyer
         place = sender
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
@@ -190,34 +190,34 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                 self._estates.append(place)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
-            ev.event_to_place_buy.send(self, receiver=place)
+            ev.event_to_place_buy.send(self, place=place)
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
     def __event_handler_upgrade_decision(sender: itf.IPlayerForEstate,
-                                         receiver)->None:
+                                         owner)->None:
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
-        :param receiver: receiver of player
+        :param owner: owner of the estate to upgrade
         '''
-        self:BasePlayer = receiver
+        self:BasePlayer = owner
         estate = sender
         if self._make_decision_upgrade(estate):
-            ev.event_to_estate_upgrade.send(self, receiver=estate)
+            ev.event_to_estate_upgrade.send(self, estate=estate)
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
     def __event_handler_jump_to_estate_decision(sender: Any,
-                                                receiver,
+                                                player,
                                                 delay:int = 0)->bool:
         '''select which estate to go when jump is needed
 
         :param sender: not used
-        :param receiver: receiver of player
+        :param player: player to jump
         :param delay: delay of turns to take effect
         '''
-        self:BasePlayer = receiver
+        self:BasePlayer = player
         pos = self._make_decision_jump_to_estate()
         if pos is not None:
             self._push_pos(pos=pos, delay=delay)  # take action at next turn
@@ -227,16 +227,16 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
-    def __event_handler_upgrade_any_estate(sender: Any, receiver)->None:
+    def __event_handler_upgrade_any_estate(sender: Any, player)->None:
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
-        :param receiver: receiver of player
+        :param player: player to upgrade any estate
         '''
-        self:BasePlayer = receiver
+        self:BasePlayer = player
         estate = self._make_decision_upgrade_any_estate()
         if estate and self.money > estate.upgrade_value:
-            ev.event_to_estate_upgrade.send(self, receiver=estate)
+            ev.event_to_estate_upgrade.send(self, estate=estate)
 
     def _make_money(self)->None:
         '''make money my pledging or selling,
@@ -338,7 +338,7 @@ class PlayerSimple(BasePlayer):
         '''
         for estate in self.estates:
             if not estate.is_pledged:
-                ev.event_to_estate_pledge.send(self, receiver=estate)
+                ev.event_to_estate_pledge.send(self, estate=estate)
                 if self.money > 0:
                     return True
         else:
@@ -352,7 +352,7 @@ class PlayerSimple(BasePlayer):
         '''
         def sell_place_iteration(cls: BasePlayer, places_to_sell):
             for place in places_to_sell:
-                ev.event_to_place_sell.send(cls, receiver=place)
+                ev.event_to_place_sell.send(cls, place=place)
                 yield (place, cls.money)
         place_to_remove = []
         is_money_enough = False
@@ -456,7 +456,7 @@ class PlayerSimple(BasePlayer):
                                 if estate.is_pledged]
             for estate in estates_pledged:
                 if self.money > money_threshold:
-                    ev.event_to_estate_rebuy.send(self, receiver=estate)
+                    ev.event_to_estate_rebuy.send(self, estate=estate)
 
 
 class PlayerPerson(BasePlayer):

@@ -20,6 +20,7 @@ event_from_player_pass_start_line = _events.signal("event-from-player-pass-start
 
 # event from public
 event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")
+# event_from_public_no_fees_ = _events.signal("event-from-public-news-triggered")
 
 
 # event to player

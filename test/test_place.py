@@ -31,11 +31,11 @@ class TestEstate(unittest.TestCase):
     def test_estate_pledge_should_execute_correctlly(self):
         player = MagicMock()
         with self.assertRaises(AssertionError):
-            ev.event_to_estate_pledge.send(player, receiver=self.estate)
-        ev.event_to_place_buy.send(player, receiver=self.estate)
-        ev.event_to_estate_pledge.send(player, receiver=self.estate)
+            ev.event_to_estate_pledge.send(player, estate=self.estate)
+        ev.event_to_place_buy.send(player, place=self.estate)
+        ev.event_to_estate_pledge.send(player, estate=self.estate)
         with self.assertRaises(AssertionError):
-            ev.event_to_estate_pledge.send(player, receiver=self.estate)
+            ev.event_to_estate_pledge.send(player, estate=self.estate)
 
     def test_two_place_eq_check(self):
         estate1 = place.Estate(name='Hangzhou',
@@ -61,10 +61,10 @@ class TestEstate(unittest.TestCase):
 
     def test_upgrade_should_run_correctly_and_raise_exception(self):
         player = MagicMock()
-        ev.event_to_place_buy.send(player, receiver=self.estate)
+        ev.event_to_place_buy.send(player, place=self.estate)
 
         self.assertEqual(self.estate.fee, self.fees[0])
-        ev.event_to_estate_upgrade.send(player, receiver=self.estate)
+        ev.event_to_estate_upgrade.send(player, estate=self.estate)
         self.assertEqual(self.estate.fee, self.fees[1])
 
 
@@ -85,11 +85,11 @@ class TestEstateBlock(unittest.TestCase):
         place3 = place.Estate('苏州', [100, 200, 300, 400],
                               3000, 2000, 300, block)
         player = MagicMock()
-        ev.event_to_place_buy.send(player, receiver=place1)
-        ev.event_to_estate_upgrade.send(player, receiver=place1)
-        ev.event_to_place_buy.send(player, receiver=place2)
+        ev.event_to_place_buy.send(player, place=place1)
+        ev.event_to_estate_upgrade.send(player, estate=place1)
+        ev.event_to_place_buy.send(player, place=place2)
         self.assertEqual(block.block_fee_calc(player), 300)
-        ev.event_to_place_buy.send(player, receiver=place3)
+        ev.event_to_place_buy.send(player, place=place3)
         self.assertEqual(block.block_fee_calc(player), 400)
 
 
@@ -105,7 +105,7 @@ class TestOtherPoject(unittest.TestCase):
         p = place.ProjectNuclear()
         p._exchange_money = MagicMock()
         owner = MagicMock()
-        p.event_handler_buy(owner, receiver=p)
+        p.event_handler_buy(owner, place=p)
         player = MagicMock()
         player.estate_max_level = 3
         p._take_effect(player)
