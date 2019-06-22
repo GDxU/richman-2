@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''player
 '''
-from typing import Any, List, Dict, Iterable, Optional, cast
+from typing import Any, List, Dict, Tuple, Iterable, Optional, cast
 import random
 import datetime
 import logging
@@ -156,6 +156,11 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         :param money_delta: money to change
         '''
         self:BasePlayer = player
+        results:List[Tuple[Any, Optional[bool]]] = \
+            ev.event_from_player_block_before_add_money.send(self, money_delta=money_delta)
+        is_blocked = ev.check_event_result_is_true(results)
+        if is_blocked:
+            logging.info('{} 现金禁止发生变化。'.format(self.name))
         self._add_money(money_delta)
 
     @staticmethod
@@ -285,7 +290,16 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     def take_the_turn(self)->None:
         '''take_the_turn
         '''
+        # send start_turn event
         ev.event_from_player_start_turn.send(self)
+        # check if the turn is blocked
+        results:List[Tuple[Any, Optional[bool]]] = \
+            ev.event_from_player_block_before_turn.send(self)
+        is_blocked = ev.check_event_result_is_true(results)
+        if is_blocked:
+            logging.info('{} 本回合不能移动。'.format(self.name))
+            return None
+        # calculate pos
         pos_before_turn = self.pos  # for pass start line check
         pos_in_queue = self._pull_pos()
         if pos_in_queue is not None:

@@ -1,7 +1,22 @@
 # -*- coding: utf-8 -*
 '''事件类
 '''
+from typing import Any, List, Tuple, Optional
+
 from blinker import Namespace  # type: ignore
+
+
+def check_event_result_is_true(results: List[Tuple[Any, Optional[bool]]])->bool:
+    '''check whether any result of the event returns True
+
+    :param results: results of event, with struct of [(function, rst)]
+    '''
+    is_true = False
+    for _, block in results:
+        if block is True:
+            is_true = True
+            break
+    return is_true
 
 
 _events = Namespace()
@@ -21,6 +36,8 @@ event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 # event from player
 event_from_player_start_turn = _events.signal("event-from-player-start-turn")
 event_from_player_pass_start_line = _events.signal("event-from-player-pass-start-line")
+event_from_player_block_before_add_money = _events.signal("event-from-player-block-before-add-money")
+event_from_player_block_before_turn = _events.signal("event-from-player-block-before-turn")
 
 # event from public
 event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")
