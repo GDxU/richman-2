@@ -146,35 +146,42 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_add_money.connect
-    def __event_handler_add_money(sender, **kwargs)->None:
+    def __event_handler_add_money(sender: Any,
+                                  receiver,
+                                  money_delta: int)->None:
         '''change the player's money
 
         :param sender: not used
-        :param kwargs: holds receiver of player and money_delta
+        :param receiver: receiver of player
+        :param money_delta: money to change
         '''
-        self:BasePlayer = kwargs['receiver']
-        self._add_money(kwargs['money_delta'])
+        self:BasePlayer = receiver
+        self._add_money(money_delta)
 
     @staticmethod
     @ev.event_to_player_move_to.connect
-    def __event_handler_move_to(sender, **kwargs)->None:
+    def __event_handler_move_to(sender,
+                                receiver,
+                                pos: int)->None:
         '''move player to pos
 
         :param sender: not used
-        :param kwargs: holds receiver of player and pos
+        :param receiver: receiver of player
+        :param pos: position to move to
         '''
-        self:BasePlayer = kwargs['receiver']
-        self.pos = kwargs['pos']
+        self:BasePlayer = receiver
+        self.pos = pos
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
-    def __event_handler_buy_decision(sender: itf.IPlayerForPlace, **kwargs)->None:
+    def __event_handler_buy_decision(sender: itf.IPlayerForPlace,
+                                     receiver)->None:
         '''decide whether to buy the place
 
         :param sender: place to decide to buy
-        :param kwargs: holds receiver of player
+        :param receiver: receiver of player
         '''
-        self:BasePlayer = kwargs['receiver']
+        self:BasePlayer = receiver
         place = sender
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
@@ -187,27 +194,30 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_estate.connect
-    def __event_handler_upgrade_decision(sender: itf.IPlayerForEstate, **kwargs)->None:
+    def __event_handler_upgrade_decision(sender: itf.IPlayerForEstate,
+                                         receiver)->None:
         '''decide whether to upgrade the place
 
         :param sender: estate to upgrade
-        :param kwargs: holds receiver of player
+        :param receiver: receiver of player
         '''
-        self:BasePlayer = kwargs['receiver']
+        self:BasePlayer = receiver
         estate = sender
         if self._make_decision_upgrade(estate):
             ev.event_to_estate_upgrade.send(self, receiver=estate)
 
     @staticmethod
     @ev.event_to_player_jump_to_estate.connect
-    def __event_handler_jump_to_estate_decision(sender, **kwargs)->bool:
+    def __event_handler_jump_to_estate_decision(sender: Any,
+                                                receiver,
+                                                delay:int = 0)->bool:
         '''select which estate to go when jump is needed
 
         :param sender: not used
-        :param kwargs: holds receiver of player
+        :param receiver: receiver of player
+        :param delay: delay of turns to take effect
         '''
-        self:BasePlayer = kwargs['receiver']
-        delay = kwargs.get('delay', 0)
+        self:BasePlayer = receiver
         pos = self._make_decision_jump_to_estate()
         if pos is not None:
             self._push_pos(pos=pos, delay=delay)  # take action at next turn
@@ -217,13 +227,13 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     @staticmethod
     @ev.event_to_player_upgrade_any_estate.connect
-    def __event_handler_upgrade_any_estate(sender, **kwargs)->None:
+    def __event_handler_upgrade_any_estate(sender: Any, receiver)->None:
         '''upgrade and estate that belongs to the player
 
         :param sender: not used
-        :param kwargs: holds receiver of player
+        :param receiver: receiver of player
         '''
-        self:BasePlayer = kwargs['receiver']
+        self:BasePlayer = receiver
         estate = self._make_decision_upgrade_any_estate()
         if estate and self.money > estate.upgrade_value:
             ev.event_to_estate_upgrade.send(self, receiver=estate)

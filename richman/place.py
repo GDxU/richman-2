@@ -81,25 +81,27 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
 
     @staticmethod
     @ev.event_to_place_buy.connect
-    def event_handler_buy(sender: itf.IPlaceForPlayer, **kwargs)->None:
+    def event_handler_buy(sender: itf.IPlaceForPlayer,
+                          receiver)->None:
         '''set the owner to the buyer
 
         :param sender: player to buy the place
-        :param kwargs: holds receiver of place to buy
+        :param receiver: receiver of place to buy
         '''
-        self:BasePlace = kwargs['receiver']
+        self:BasePlace = receiver
         buyer = sender
         self._buy(buyer)
 
     @staticmethod
     @ev.event_to_place_sell.connect
-    def event_handler_sell(sender: itf.IPlaceForPlayer, **kwargs)->None:
+    def event_handler_sell(sender: itf.IPlaceForPlayer,
+                           receiver)->None:
         '''remove the owner
 
         :param sender: player to sell the place
-        :param kwargs: holds receiver of place to sell
+        :param receiver: receiver of place to sell
         '''
-        self:BasePlace = kwargs['receiver']
+        self:BasePlace = receiver
         seller = sender
         self._sell(seller)
 
@@ -256,49 +258,49 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
 
     @staticmethod
     @ev.event_to_estate_upgrade.connect
-    def event_handler_upgrade(sender: itf.IEstateForPlayer, **kwargs)->None:
+    def event_handler_upgrade(sender: itf.IEstateForPlayer, receiver)->None:
         '''upgrade estate
 
         :param sender: player to upgrade
-        :param kwargs: holds receiver of estate
+        :param receiver: receiver of estate
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = receiver
         player = sender
         self._upgrade(player)
 
     @staticmethod
     @ev.event_to_estate_degrade.connect
-    def event_handler_degrade(sender: itf.IEstateForPlayer, **kwargs):
+    def event_handler_degrade(sender: itf.IEstateForPlayer, receiver):
         '''degrade estate
 
         :param sender: player to degrade
-        :param kwargs: holds receiver of estate
+        :param receiver: receiver of estate
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = receiver
         player = sender
         self._degrade(player)
 
     @staticmethod
     @ev.event_to_estate_pledge.connect
-    def event_handler_pledge(sender: itf.IEstateForPlayer, **kwargs):
+    def event_handler_pledge(sender: itf.IEstateForPlayer, receiver):
         '''pledge the estate
 
         :param sender: player to pledge
-        :param kwargs: holds receiver of estate
+        :param receiver: receiver of estate
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = receiver
         player = sender
         self._pledge(player)
 
     @staticmethod
     @ev.event_to_estate_rebuy.connect
-    def event_handler_rebuy(sender: itf.IEstateForPlayer, **kwargs):
+    def event_handler_rebuy(sender: itf.IEstateForPlayer, receiver):
         '''pledge the estate
 
         :param sender: player to rebuy
-        :param kwargs: holds receiver of estate
+        :param receiver: receiver of estate
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = receiver
         player = sender
         self._rebuy(player)
 
