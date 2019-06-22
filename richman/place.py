@@ -522,9 +522,10 @@ class ProjectTransportation(Project):
         fine = fines[amount-1]
         logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
         self._exchange_money(player, self.owner, fine)
+        # delay_turns=1 means take action at next turn
         results:List[Tuple[Any, bool]] =\
-            ev.event_to_player_jump_to_estate.send(self, player=player, delay=1)
-        assert len(results), 1
+            ev.event_to_player_jump_to_estate.send(self, player=player, delay_turns=1)
+        assert len(results) == 1
         rst:bool = results[0][-1]
         if rst:
             fine = 500

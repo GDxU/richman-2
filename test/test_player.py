@@ -33,11 +33,11 @@ class TestBasePlayer(unittest.TestCase):
         self.assertEqual(self.player.pos, 3)
 
     def test_pos_queue_should_push_and_pull_with_delay_correctly(self):
-        self.player._push_pos(pos=10, delay=2)
+        self.player._push_pos(pos=10, delay_turns=2)
         self.assertIsNone(self.player._pull_pos())
         self.assertEqual(self.player._pull_pos(), 10)
-        self.player._push_pos(pos=10, delay=1)
-        self.player._push_pos(pos=10, delay=1)
+        self.player._push_pos(pos=10, delay_turns=1)
+        self.player._push_pos(pos=10, delay_turns=1)
         with self.assertRaises(AssertionError):
             self.player._pull_pos()
 

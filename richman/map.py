@@ -130,6 +130,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         :note: banckrupted players is remove from players list
         '''
         logging.info('\n第 {} 回合开始：'.format(self.round))
+        ev.event_from_map_start_round.send(self)
         players_banckrupted = []
         for player in self.players_in_game:
             self._player_action(player)
@@ -139,6 +140,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         self._remove_players_banckrupted(players_banckrupted)
         self._display_players_info()
         self.__round_cnt += 1
+        ev.event_from_map_finish_round.send(self)
 
     def run_one_round(self)->bool:
         '''run one round of the map, which means every player run once

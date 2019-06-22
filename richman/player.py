@@ -110,19 +110,19 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self.__is_making_money = False
         return self.money
 
-    def _push_pos(self, pos: int, delay: int)->None:
+    def _push_pos(self, pos: int, delay_turns: int)->None:
         '''push the pos, where to direct the player to go, to the queue
 
         :param pos: next pos the player should stand
-        :param delay: the effect takes on after delay of the turns
-        :note: (delay = 0) means trigger the map item right now,
-               (delay = 1) means trigger the map item at next turn
+        :param delay_turns: the effect takes on after delay_turns of the turns
+        :note: (delay_turns = 0) means trigger the map item right now,
+               (delay_turns = 1) means trigger the map item at next turn
         '''
-        assert delay >= 0, 'delay should be above zero!'
-        if delay == 0:
+        assert delay_turns >= 0, 'delay_turns should be above zero!'
+        if delay_turns == 0:
             self.__trigger_map_item(pos)
         else:
-            self.__pos_queue.append({'pos': pos, 'delay': delay})
+            self.__pos_queue.append({'pos': pos, 'delay_turns': delay_turns})
 
     def _pull_pos(self)->Optional[int]:
         '''push the pos, where to direct the player to go, to the queue
@@ -133,9 +133,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             return None
         pos_with_no_delay:List[Dict[str, int]] = []
         for item in self.__pos_queue:
-            item['delay'] -= 1
-            assert item['delay'] >= 0, 'delay should be above zero!'
-            if item['delay'] == 0:
+            item['delay_turns'] -= 1
+            assert item['delay_turns'] >= 0, 'delay_turns should be above zero!'
+            if item['delay_turns'] == 0:
                 pos_with_no_delay.append(item)
         assert len(pos_with_no_delay) <= 1, 'more than one pos signal triggered!'
         if pos_with_no_delay:
@@ -162,15 +162,18 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     @ev.event_to_player_move_to.connect
     def __event_handler_move_to(sender,
                                 player,
-                                pos: int)->None:
+                                pos: int,
+                                delay_turns:int = 0)->None:
         '''move player to pos
 
         :param sender: not used
         :param player: player to move
         :param pos: position to move to
+        :param delay_turns: delay_turns of turns to take effect
         '''
         self:BasePlayer = player
-        self.pos = pos
+        assert pos is not None
+        self._push_pos(pos=pos, delay_turns=delay_turns)
 
     @staticmethod
     @ev.event_to_player_buy_place.connect
@@ -210,17 +213,17 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     @ev.event_to_player_jump_to_estate.connect
     def __event_handler_jump_to_estate_decision(sender: Any,
                                                 player,
-                                                delay:int = 0)->bool:
+                                                delay_turns:int = 0)->bool:
         '''select which estate to go when jump is needed
 
         :param sender: not used
         :param player: player to jump
-        :param delay: delay of turns to take effect
+        :param delay_turns: delay_turns of turns to take effect
         '''
         self:BasePlayer = player
         pos = self._make_decision_jump_to_estate()
         if pos is not None:
-            self._push_pos(pos=pos, delay=delay)  # take action at next turn
+            self._push_pos(pos=pos, delay_turns=delay_turns)
             return True
         else:
             return False

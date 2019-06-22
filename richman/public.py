@@ -29,7 +29,7 @@ class BasePublic(itf.IMapForPublic,  itf.IPlayerForPublic):
         pass
 
     def __eq__(self, obj):
-        return False
+        return self.name == obj.name
 
 
 class PublicStart(BasePublic):
@@ -45,8 +45,8 @@ class PublicStart(BasePublic):
         '''
         player = sender
         gain = 4000
-        ev.event_to_player_add_money.send(None, player=player, money_delta=gain)
         logging.info('{} 经过起点，得到资金 {} 元。'.format(player.name, gain))
+        ev.event_to_player_add_money.send(None, player=player, money_delta=gain)
 
     def trigger(self, player: itf.IPublicForPlayer):
         '''经过时领取奖励4000元，
@@ -67,12 +67,20 @@ class PublicNews(BasePublic):
 
         :param player: the player that trigger the effect
         '''
-        ev.event_from_public_news_or_luck_triggered.send(self)
         logging.info('{} 抽取一张新闻卡。'.format(player.name))
+        ev.event_from_public_news_or_luck_triggered.send(self)
 
 class PublicPrison(BasePublic):
-    def __init__(self)->None:
-        super().__init__('监狱')
+    def __init__(self, name='监狱')->None:
+        super().__init__(name)
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''停留一回合。
+        当你在监狱时，不能收取租金或获得任何金钱奖励。
+
+        :param player: the player that trigger the effect
+        '''
+        logging.info('{} 停留一回合，不能收取租金或奖励。'.format(player.name))
 
 class PublicLuck(BasePublic):
     def __init__(self, name='运气')->None:
@@ -104,8 +112,26 @@ class PublicStock(BasePublic):
                                           money_delta=gain)
 
 class PublicGotoPrison(BasePublic):
-    def __init__(self)->None:
-        super().__init__('入狱')
+    def __init__(self, name='入狱', prison_pos:int = None)->None:
+        '''init
+
+        :param name: name of the publick
+        :param prison_pos: prison position in the map
+        '''
+        super().__init__(name)
+        assert prison_pos is not None
+        self.__prison_pos = prison_pos
+
+    def trigger(self, player: itf.IPublicForPlayer):
+        '''立即进入监狱并停留一回合。
+
+        :param player: the player that trigger the effect
+        '''
+        logging.info('{} 立即进入监狱。'.format(player.name))
+        # delay_turns=0 means take action right now
+        ev.event_to_player_move_to.send(self, player=player,
+                                        pos=self.__prison_pos,
+                                        delay_turns=0)
 
 class PublicPark(BasePublic):
     def __init__(self, name='公园')->None:

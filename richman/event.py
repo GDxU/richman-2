@@ -6,6 +6,10 @@ from blinker import Namespace  # type: ignore
 
 _events = Namespace()
 
+# event from map
+event_from_map_start_round = _events.signal("event-from-map-start-round")
+event_from_map_finish_round = _events.signal("event-from-map-finish-round")
+
 # event from estate
 event_from_estate_bought = _events.signal("event-from-estate-bought")
 event_from_estate_sold = _events.signal("event-from-estate-sold")
@@ -20,7 +24,6 @@ event_from_player_pass_start_line = _events.signal("event-from-player-pass-start
 
 # event from public
 event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")
-# event_from_public_no_fees_ = _events.signal("event-from-public-news-triggered")
 
 
 # event to player

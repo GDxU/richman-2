@@ -89,6 +89,8 @@ class MapTest(BaseMap):
             upgrade_value=300,
             block=block
         ))
+        public_prison = PublicPrison(name='监狱')
+        self.add_items(public_prison)
         self.add_items(Estate(
             name='银川',
             fees=[300, 700, 1500, 3500],
@@ -159,6 +161,9 @@ class MapTest(BaseMap):
             upgrade_value=1200,
             block=block
         ))
+        prison_pos = self.get_item_position(public_prison)
+        public_goto_prison = PublicGotoPrison('入狱', prison_pos=prison_pos)
+        self.add_items(public_goto_prison)
         #block4 region
         block = EstateBlock('block4')
         self.add_items(ProjectTransportation('航空运输'))
