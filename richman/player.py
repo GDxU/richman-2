@@ -151,17 +151,18 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                                   money_delta: int)->None:
         '''change the player's money
 
-        :param sender: not used
+        :param sender: source to add the money
         :param player: player to change the money
         :param money_delta: money to change
         '''
         self:BasePlayer = player
         results:List[Tuple[Any, Optional[bool]]] = \
-            ev.event_from_player_block_before_add_money.send(self, money_delta=money_delta)
+            ev.event_from_player_block_before_add_money.send(self, 
+                                                             source=sender,
+                                                             money_delta=money_delta)
         is_blocked = ev.check_event_result_is_true(results)
-        if is_blocked:
-            logging.info('{} 现金禁止发生变化。'.format(self.name))
-        self._add_money(money_delta)
+        if is_blocked is not True:
+            self._add_money(money_delta)
 
     @staticmethod
     @ev.event_to_player_move_to.connect
@@ -296,8 +297,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         results:List[Tuple[Any, Optional[bool]]] = \
             ev.event_from_player_block_before_turn.send(self)
         is_blocked = ev.check_event_result_is_true(results)
-        if is_blocked:
-            logging.info('{} 本回合不能移动。'.format(self.name))
+        if is_blocked is True:
             return None
         # calculate pos
         pos_before_turn = self.pos  # for pass start line check

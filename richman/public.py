@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''公用土地类，例如 新闻，公园 等无法买卖的公共地方
 '''
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 import logging
 
 import richman.event as ev
@@ -80,10 +80,12 @@ class PublicPrison(BasePublic):
     def __register_event_handler(self)->None:
         ev.event_from_player_start_turn.connect(self.__prison_day_count_down)
         ev.event_from_player_block_before_turn.connect(self.__block_prisoner_turn)
+        ev.event_from_player_block_before_add_money.connect(self.__block_prisoner_take_money)
 
     def __unregister_event_handler(self)->None:
         ev.event_from_player_start_turn.disconnect(self.__prison_day_count_down)
         ev.event_from_player_block_before_turn.disconnect(self.__block_prisoner_turn)
+        ev.event_from_player_block_before_add_money.disconnect(self.__block_prisoner_take_money)
 
     def __prison_day_count_down(self, sender: itf.IPublicForPlayer)->None:
         '''count down days in prison,
@@ -104,10 +106,42 @@ class PublicPrison(BasePublic):
         '''block the player turn if the player in the prison
 
         :param sender: player the trigger the event
+        :return: True if need to block the action
         '''
+        player:itf.IPublicForPlayer = sender
         if not self.__prisoners:
             self.__unregister_event_handler()
-        return sender.name in self.__prisoners
+        to_block =  player.name in self.__prisoners
+        if to_block:
+            logging.info('{} 入狱中，无法移动。'.format(player.name))
+        return to_block
+
+    def __block_prisoner_take_money(self, sender: itf.IPublicForPlayer,
+                                    source: Any,
+                                    money_delta)->bool:
+        '''block the positive add money if the player is in prison
+        and the negtive add money if the place owner is in prison
+
+        :param sender: player the trigger the event
+        :param source: the sender that trigger the "add_money" event
+        :param money_delta: money to add
+        :return: True if need to block the action
+        '''
+        player:itf.IPublicForPlayer = sender
+        # player is in prison, block if money_delta is positive
+        if player.name in self.__prisoners and money_delta > 0:
+            logging.info('{} 入狱中，无法收取地租（奖励）。'.format(player.name))
+            return True
+        # the source belongs to prisoner, block if money_delta is negtive
+        elif (isinstance(source, itf.IPublicForPlace)
+                and source.owner
+                and source.owner.name in self.__prisoners
+                and money_delta < 0):
+            logging.info('{} 入狱中，无需支付地租（费用）。'.format(source.owner.name))
+            return True
+        # do not block
+        else:
+            return False
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''停留一回合。

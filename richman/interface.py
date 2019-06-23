@@ -320,3 +320,20 @@ class IPublicForPlayer(abc.ABC):
         :return: project list that the player has
         '''
         pass
+
+class IPublicForPlace(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        '''
+        :return: name of the player
+        '''
+        pass
+    @property
+    @abc.abstractmethod
+    def owner(self)->Optional[IPlaceForPlayer]:
+        '''
+        :return: owner of the place
+        '''
+        pass

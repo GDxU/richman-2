@@ -11,7 +11,7 @@ import richman.event as ev
 
 # base place
 
-class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
+class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
 
     def __init__(self, name: str, buy_value: int, sell_value: int):
         '''init
