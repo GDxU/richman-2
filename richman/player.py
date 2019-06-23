@@ -130,7 +130,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         assert delay_turns >= 0, 'delay_turns should be above zero!'
         if delay_turns == 0:
-            self.__trigger_map_item(pos)
+            self.pos = pos
+            self.__trigger_map_item()
         else:
             self.__pos_queue.append({'pos': pos, 'delay_turns': delay_turns})
 

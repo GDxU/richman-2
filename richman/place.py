@@ -506,6 +506,15 @@ class ProjectTransportation(Project):
                             if isinstance(project, ProjectTransportation)]
         return len(transportations)
 
+    def trigger(self, player: itf.IProjectForPlayer)->None:
+        '''override take the effect of the place, triggered by the player
+
+        :param player: IProjectForPlayer
+        '''
+        if not self.owner:
+            ev.event_to_player_buy_place.send(self, buyer=player)
+        self._take_effect(player)
+
     def _take_effect(self, player: itf.IProjectForPlayer)->None:
         '''当你拥有1/2/3项运输项目时，收取500/1000/2000元。
         下回合开始时，你可以放弃投骰子，改为给本项目拥有着500元（无人拥有则给银行），
@@ -513,15 +522,15 @@ class ProjectTransportation(Project):
 
         :param player: IProjectForPlayer
         '''
-        assert self.owner is not None
-        if self.owner == player:
-            return None
-        fines = [500, 1000, 2000]
-        amount = self.__find_transportaion_amount()
-        assert amount >= 1
-        fine = fines[amount-1]
-        logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
-        self._exchange_money(player, self.owner, fine)
+        # take fine if owner is not None and is not the player
+        if self.owner and self.owner != player:
+            fines = [500, 1000, 2000]
+            amount = self.__find_transportaion_amount()
+            assert amount >= 1
+            fine = fines[amount-1]
+            logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
+            self._exchange_money(player, self.owner, fine)
+        # ask the player to jump to any estate
         # delay_turns=1 means take action at next turn
         results:List[Tuple[Any, bool]] =\
             ev.event_to_player_jump_to_estate.send(self, player=player, delay_turns=1)
@@ -529,10 +538,18 @@ class ProjectTransportation(Project):
         rst:bool = results[0][-1]
         if rst:
             fine = 500
-            logging.info('{} 准备移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
-                                                                           self.owner.name,
-                                                                           fine))
-            self._exchange_money(player, self.owner, fine)
+            if self.owner is None:
+                logging.info('{} 下回合移动位置，支付运输费用 {} 元。'.format(player.name,
+                                                                         fine))
+                ev.event_to_player_add_money.send(self, player=player,
+                                                  money_delta=-fine)
+            elif self.owner == player:
+                logging.info('{} 下回合移动位置。'.format(player.name))
+            else:
+                logging.info('{} 下回合移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
+                                                                            self.owner.name,
+                                                                            fine))
+                self._exchange_money(player, self.owner, fine)
 
 
 class ProjectTvStation(Project):
