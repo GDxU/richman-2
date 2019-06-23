@@ -68,6 +68,16 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         levels = (estate.current_level for estate in self.estates
                     if isinstance(estate, itf.IPlayerForEstate))
         return max(levels)
+    @property
+    def total_asset(self)->int:
+        '''total asset
+
+        :return: total asset including estates and projects
+        '''
+        money = self.money
+        money += sum((estate.sell_value for estate in self.estates))
+        money += sum((project.sell_value for project in self.projects))
+        return money
 
     def add_map(self, map: itf.IPlayerForMap)->None:
         '''add map to player
@@ -335,9 +345,10 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         projects_info = [str(project) for project in self.projects]
         estates_info = [str(estate) for estate in self.estates]
-        lines = (r'姓名: {}，位置: {}，现金: {}，地产: {}，'
+        lines = (r'姓名：{}，位置：{}，现金：{}，总资产：{}，地产：{}，'
                     r'项目：{}。').format(self.name, self.pos, self.money,
-                                  estates_info, projects_info)
+                                         self.total_asset, estates_info,
+                                         projects_info)
         return lines
 
 

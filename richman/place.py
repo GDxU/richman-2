@@ -481,8 +481,8 @@ class ProjectBuilder(Project):
 
         :param player: IProjectForPlayer
         '''
-        ev.event_to_player_upgrade_any_estate.send(self, player=player)
         logging.info('{} 可选择一处地产升级。'.format(player.name))
+        ev.event_to_player_upgrade_any_estate.send(self, player=player)
 
     def destroy(self)->None:
         '''override, destroy

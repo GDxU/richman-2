@@ -98,6 +98,7 @@ class PublicPrison(BasePublic):
         if name not in self.__prisoners:
             return None
         if self.__prisoners[name] == 0:
+            logging.info('{} 出狱。'.format(player.name))
             self.__prisoners.pop(name)
         else:
             self.__prisoners[name] -= 1
