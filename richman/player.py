@@ -313,25 +313,22 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         pos_before_turn = self.pos  # for pass start line check
         pos_in_queue = self._pull_pos()
         if pos_in_queue is not None:
-            pos = pos_in_queue
+            self.pos = pos_in_queue
         else:
             self._make_decision_before_dice_start()
-            pos = self.pos + self._dice()
-        pos_after_turn = pos
+            self.pos += self._dice()
+        pos_after_turn = self.pos
         # check if the player passes the start line
         assert self.map is not None
         if (pos_after_turn < pos_before_turn
                 and pos_before_turn > 0.5*len(self.map)):
             ev.event_from_player_pass_start_line.send(self)
         # trigger the item
-        self.__trigger_map_item(pos)
+        self.__trigger_map_item()
 
-    def __trigger_map_item(self, pos: int)->None:
+    def __trigger_map_item(self)->None:
         '''trigger the map item action
-
-        :param pos: the position the player go to
         '''
-        self.pos = pos
         assert self.map is not None
         item:itf.IMapForItem = self.map.items[self.pos]
         logging.info('{} 走到 {}。'.format(self.name, item.name))
