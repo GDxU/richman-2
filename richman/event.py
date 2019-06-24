@@ -10,13 +10,13 @@ def check_event_result_is_true(results: List[Tuple[Any, Optional[bool]]])->bool:
     '''check whether any result of the event returns True
 
     :param results: results of event, with struct of [(function, rst)]
+    :return: True if any of results is True
     '''
-    is_true = False
-    for _, block in results:
-        if block is True:
-            is_true = True
-            break
-    return is_true
+    for _, rst in results:
+        if rst:
+            return True
+    else:
+        return False
 
 
 _events = Namespace()

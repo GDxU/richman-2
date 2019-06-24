@@ -64,8 +64,8 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
         :param buyer: buyer to buy the place
         '''
         assert self.__owner is None, '该地已经卖出，无法购买！'
-        self.__owner = buyer
         ev.event_to_player_add_money.send(self, player=buyer, money_delta=-self.buy_value)
+        self.__owner = buyer
         logging.info('{} 购买地产（项目） {}，花费 {} 元。'.format(buyer.name, self.name, self.buy_value))
 
     def _sell(self, seller: itf.IPlaceForPlayer)->None:

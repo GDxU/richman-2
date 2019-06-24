@@ -111,18 +111,18 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             else:
                 raise RuntimeError('参数类型不正确。')
 
-    def _add_money(self, delta: int)->int:
+    def _add_money(self, delta: int)->bool:
         '''change the player's money
 
         :param delta: amount of change, minus means subtraction
-        :return: current money after add action
+        :return: True if current is above zero
         '''
         self.__money += delta
         if self.money < 0 and not self.__is_making_money:
             self.__is_making_money = True
             self._make_money()
             self.__is_making_money = False
-        return self.money
+        return self.money >= 0
 
     def _push_pos(self, pos: int, delay_turns: int)->None:
         '''push the pos, where to direct the player to go, to the queue
@@ -163,21 +163,23 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
     @ev.event_to_player_add_money.connect
     def __event_handler_add_money(sender: Any,
                                   player,
-                                  money_delta: int)->None:
+                                  money_delta: int)->bool:
         '''change the player's money
 
         :param sender: source to add the money
         :param player: player to change the money
         :param money_delta: money to change
+        :return: True if succeeds
         '''
         self:BasePlayer = player
-        results:List[Tuple[Any, Optional[bool]]] = \
+        block_returns:List[Tuple[Any, Optional[bool]]] = \
             ev.event_from_player_block_before_add_money.send(self, 
                                                              source=sender,
                                                              money_delta=money_delta)
-        is_blocked = ev.check_event_result_is_true(results)
-        if is_blocked is not True:
-            self._add_money(money_delta)
+        if ev.check_event_result_is_true(block_returns):
+            return self._add_money(money_delta)
+        else:
+            return True
 
     @staticmethod
     @ev.event_to_player_move_to.connect
@@ -309,10 +311,9 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         # send start_turn event
         ev.event_from_player_start_turn.send(self)
         # check if the turn is blocked
-        results:List[Tuple[Any, Optional[bool]]] = \
+        block_returns:List[Tuple[Any, Optional[bool]]] = \
             ev.event_from_player_block_before_turn.send(self)
-        is_blocked = ev.check_event_result_is_true(results)
-        if is_blocked is True:
+        if ev.check_event_result_is_true(block_returns):
             return None
         # calculate pos
         pos_before_turn = self.pos  # for pass start line check
