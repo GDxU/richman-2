@@ -176,7 +176,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             ev.event_from_player_block_before_add_money.send(self, 
                                                              source=sender,
                                                              money_delta=money_delta)
-        if ev.check_event_result_is_true(block_returns):
+        if not ev.check_event_result_is_true(block_returns):
             return self._add_money(money_delta)
         else:
             return True
