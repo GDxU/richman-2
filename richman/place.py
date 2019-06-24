@@ -187,13 +187,19 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         return self.__block
     @property
     def fee(self)->int:
-        return self.__fees[self.current_level]
+        if self.is_pledged:
+            return 0
+        else:
+            return self.__fees[self.current_level]
     @property
     def fees(self)->List[int]:
         return self.__fees
     @property
     def block_fee(self)->int:
-        return self.block.block_fee_calc(self.owner)
+        if self.is_pledged:
+            return 0
+        else:
+            return self.block.block_fee_calc(self.owner)
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
         '''override, set the owner to the buyer
@@ -382,7 +388,7 @@ class EstateBlock:
         if owner is None:
             return block_fee
         for estate in self.__estates:
-            if estate.owner and estate.owner == owner:
+            if estate.owner and estate.owner == owner and not estate.is_pledged:
                 block_fee += estate.fee
         return block_fee
 

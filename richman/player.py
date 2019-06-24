@@ -212,6 +212,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         if self._make_decision_buy(place):
             if isinstance(place, itf.IPlayerForProject):
                 self._projects.append(place)
+                self._projects.sort(key=lambda project: project.pos_in_map)
             elif isinstance(place, itf.IPlayerForEstate):
                 self._estates.append(place)
                 self._estates.sort(key=lambda estate: estate.pos_in_map)

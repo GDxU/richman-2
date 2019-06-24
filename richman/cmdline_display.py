@@ -52,9 +52,11 @@ class CmdlineDisplay:
 
     def event_from_map_start_round(self, sender: BaseMap)->None:
         map = sender
-        print('{} 回合开始。'.format(map.round))
-        for player in map.players_in_game:
-            print(player.name)
+        print('第 {} 回合。'.format(map.round))
+        players:List[BasePlayer] = cast(List[BasePlayer], map.players_in_game)
+        for player in players:
+            print('%s：' % player.name)
+            display_player_info(player)
 
     def event_from_map_finish(self, sender: BaseMap)->None:
         map = sender
