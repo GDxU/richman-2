@@ -330,10 +330,11 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         '''override, display place info
         '''
         owner_name = self.owner.name if self.owner else 'None'
+        pledge_state = '抵押' if self.is_pledged else '正常'
         lines = '{}: {}, {}, {}'.format(self.name,
                                         owner_name,
                                         self.current_level,
-                                        'x' if self.is_pledged else 'o')
+                                        pledge_state)
         return lines
 
 
