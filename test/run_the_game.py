@@ -3,9 +3,9 @@ from typing import List
 import logging
 from logging.handlers import RotatingFileHandler
 
-from richman.game import Game  # tpye: ignore
-from richman.maps.map_test import MapTest  # tpye: ignore
-from richman.player import PlayerSimple  # tpye: ignore
+from richman.game import Game
+from richman.maps.map_test import MapTest
+from richman.player import PlayerSimple, PlayerPersonCommandLine
 
 
 def _set_logger(text_log_on=False)->None:
@@ -44,9 +44,11 @@ def main(log_on:bool = False, text_log_on:bool = True)->None:
     # player
     init_money = 20000
     players:List[PlayerSimple] = []
-    players.append(PlayerSimple(name='邓彦修', money=init_money))
+    # players.append(PlayerPersonCommandLine(name='邓哲', money=init_money))
+    players.append(PlayerPersonCommandLine(name='邓彦修', money=init_money))
     players.append(PlayerSimple(name='邓哲', money=init_money))
-    players.append(PlayerSimple(name='戎萍', money=init_money))
+    # players.append(PlayerPersonCommandLine(name='戎萍', money=init_money))
+    # players.append(PlayerSimple(name='外婆', money=init_money))
     # map
     map = MapTest()
     # game

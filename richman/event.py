@@ -1,10 +1,29 @@
 # -*- coding: utf-8 -*
 '''事件类
 '''
+from typing import Any, List, Tuple, Optional
+
 from blinker import Namespace  # type: ignore
 
 
+def check_event_result_is_true(results: List[Tuple[Any, Optional[bool]]])->bool:
+    '''check whether any result of the event returns True
+
+    :param results: results of event, with struct of [(function, rst)]
+    :return: True if any of results is True
+    '''
+    for _, rst in results:
+        if rst:
+            return True
+    else:
+        return False
+
+
 _events = Namespace()
+
+# event from map
+event_from_map_start_round = _events.signal("event-from-map-start-round")
+event_from_map_finish_round = _events.signal("event-from-map-finish-round")
 
 # event from estate
 event_from_estate_bought = _events.signal("event-from-estate-bought")
@@ -17,6 +36,8 @@ event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 # event from player
 event_from_player_start_turn = _events.signal("event-from-player-start-turn")
 event_from_player_pass_start_line = _events.signal("event-from-player-pass-start-line")
+event_from_player_block_before_add_money = _events.signal("event-from-player-block-before-add-money")
+event_from_player_block_before_turn = _events.signal("event-from-player-block-before-turn")
 
 # event from public
 event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")

@@ -89,6 +89,8 @@ class MapTest(BaseMap):
             upgrade_value=300,
             block=block
         ))
+        public_prison = PublicPrison(name='监狱')
+        self.add_items(public_prison)
         self.add_items(Estate(
             name='银川',
             fees=[300, 700, 1500, 3500],
@@ -114,6 +116,7 @@ class MapTest(BaseMap):
             upgrade_value=600,
             block=block
         ))
+        self.add_items(PublicLuck('运气1'))
         #block3 region
         block = EstateBlock('block3')
         self.add_items(Estate(
@@ -141,6 +144,7 @@ class MapTest(BaseMap):
             upgrade_value=900,
             block=block
         ))
+        self.add_items(PublicStock(name='证券中心'))
         self.add_items(Estate(
             name='厦门',
             fees=[800, 1900, 5000, 10500],
@@ -157,6 +161,9 @@ class MapTest(BaseMap):
             upgrade_value=1200,
             block=block
         ))
+        prison_pos = self.get_item_position(public_prison)
+        public_goto_prison = PublicGotoPrison('入狱', prison_pos=prison_pos)
+        self.add_items(public_goto_prison)
         #block4 region
         block = EstateBlock('block4')
         self.add_items(ProjectTransportation('航空运输'))
@@ -177,6 +184,7 @@ class MapTest(BaseMap):
             upgrade_value=900,
             block=block
         ))
+        self.add_items(PublicPark(name='公园'))
         #block5 region
         block = EstateBlock('block5')
         self.add_items(Estate(
@@ -215,6 +223,7 @@ class MapTest(BaseMap):
             upgrade_value=1200,
             block=block
         ))
+        self.add_items(PublicLuck('运气2'))
         self.add_items(Estate(
             name='澳门',
             fees=[1000, 2400, 6000, 13000],
@@ -223,6 +232,7 @@ class MapTest(BaseMap):
             upgrade_value=1500,
             block=block
         ))
+        self.add_items(PublicTax('税务中心'))
         self.add_items(Estate(
             name='上海',
             fees=[1000, 2400, 6500, 13500],

@@ -109,8 +109,9 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             pickle.dump(map, f)
 
     def _display_players_info(self)->None:
+        logging.info('\n参赛者信息：')
         for player in self.players:
-            logging.info('参赛者信息：{}'.format(player))
+            logging.info('{}'.format(player))
 
     def _remove_players_banckrupted(self,
                                     players_banckrupted: List[itf.IMapForPlayer])->None:
@@ -129,9 +130,12 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
 
         :note: banckrupted players is remove from players list
         '''
-        logging.info('\n第 {} 回合开始：'.format(self.round))
+        logging.info('\n\n第 {} 回合开始：'.format(self.round))
+        self._display_players_info()
+        ev.event_from_map_start_round.send(self)
         players_banckrupted = []
         for player in self.players_in_game:
+            logging.info('\n{}：'.format(player.name))
             self._player_action(player)
             if player.is_banckrupted:
                 logging.info('{} 破产。'.format(player.name))
@@ -139,6 +143,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         self._remove_players_banckrupted(players_banckrupted)
         self._display_players_info()
         self.__round_cnt += 1
+        ev.event_from_map_finish_round.send(self)
 
     def run_one_round(self)->bool:
         '''run one round of the map, which means every player run once

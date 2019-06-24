@@ -96,7 +96,14 @@ class IPlayerForMap(IPlayerBase):
         '''
         pass
 
-class IPlayerForPlace(IPlayerBase):
+class IPlayerForItem(IPlayerBase):
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        pass
+
+class IPlayerForPlace(IPlayerForItem):
 
     @property
     @abc.abstractmethod
@@ -150,6 +157,9 @@ class IPlayerForProject(IPlayerForPlace):
 
     pass
 
+class IPlayerForPublic(IPlayerForItem):
+
+    pass
 
 # map interface
 
@@ -294,5 +304,36 @@ class IPublicForPlayer(abc.ABC):
     def name(self)->str:
         '''
         :return: name of the player
+        '''
+        pass
+    @property
+    @abc.abstractmethod
+    def estates(self)->list:
+        '''
+        :return: estate list that the player has
+        '''
+        pass
+    @property
+    @abc.abstractmethod
+    def projects(self)->list:
+        '''
+        :return: project list that the player has
+        '''
+        pass
+
+class IPublicForPlace(abc.ABC):
+
+    @property
+    @abc.abstractmethod
+    def name(self)->str:
+        '''
+        :return: name of the player
+        '''
+        pass
+    @property
+    @abc.abstractmethod
+    def owner(self)->Optional[IPlaceForPlayer]:
+        '''
+        :return: owner of the place
         '''
         pass

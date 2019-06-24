@@ -11,7 +11,7 @@ import richman.event as ev
 
 # base place
 
-class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
+class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
 
     def __init__(self, name: str, buy_value: int, sell_value: int):
         '''init
@@ -53,9 +53,9 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         :param money_delta: amount of money_delta to take
         '''
         assert money_delta > 0, '交换费用需要大于零！'
-        ev.event_to_player_add_money.send(self, receiver=player_src,
+        ev.event_to_player_add_money.send(self, player=player_src,
                                           money_delta=-money_delta)
-        ev.event_to_player_add_money.send(self, receiver=player_dst,
+        ev.event_to_player_add_money.send(self, player=player_dst,
                                           money_delta=money_delta)
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
@@ -64,8 +64,8 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         :param buyer: buyer to buy the place
         '''
         assert self.__owner is None, '该地已经卖出，无法购买！'
+        ev.event_to_player_add_money.send(self, player=buyer, money_delta=-self.buy_value)
         self.__owner = buyer
-        ev.event_to_player_add_money.send(self, receiver=buyer, money_delta=-self.buy_value)
         logging.info('{} 购买地产（项目） {}，花费 {} 元。'.format(buyer.name, self.name, self.buy_value))
 
     def _sell(self, seller: itf.IPlaceForPlayer)->None:
@@ -75,32 +75,33 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace):
         '''
         assert seller == self.owner, '该地产（项目）不归 {} 所有，无法变卖！'.format(seller.name)
         assert self.owner is not None, '该地无主，不能卖！'
-        ev.event_to_player_add_money.send(self, receiver=seller, money_delta=self.sell_value)
-        owner = self.__owner
+        ev.event_to_player_add_money.send(self, player=seller, money_delta=self.sell_value)
+        logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(self.owner.name, self.name, self.sell_value))
         self.__owner = None
-        logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(owner.name, self.name, self.sell_value))
 
     @staticmethod
     @ev.event_to_place_buy.connect
-    def event_handler_buy(sender: itf.IPlaceForPlayer, **kwargs)->None:
+    def event_handler_buy(sender: itf.IPlaceForPlayer,
+                          place)->None:
         '''set the owner to the buyer
 
         :param sender: player to buy the place
-        :param kwargs: holds receiver of place to buy
+        :param place: place to buy
         '''
-        self:BasePlace = kwargs['receiver']
+        self:BasePlace = place
         buyer = sender
         self._buy(buyer)
 
     @staticmethod
     @ev.event_to_place_sell.connect
-    def event_handler_sell(sender: itf.IPlaceForPlayer, **kwargs)->None:
+    def event_handler_sell(sender: itf.IPlaceForPlayer,
+                           place)->None:
         '''remove the owner
 
         :param sender: player to sell the place
-        :param kwargs: holds receiver of place to sell
+        :param place: place to sell
         '''
-        self:BasePlace = kwargs['receiver']
+        self:BasePlace = place
         seller = sender
         self._sell(seller)
 
@@ -210,7 +211,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert player == self.owner, '该地产不归 {} 所有，无法升级！'.format(player.name)
         assert not self.is_level_max, '已经满级，无法升级！'
         self.__current_level += 1
-        ev.event_to_player_add_money.send(self, receiver=player, money_delta=-self.upgrade_value)
+        ev.event_to_player_add_money.send(self, player=player, money_delta=-self.upgrade_value)
         ev.event_from_estate_upgraded.send(self)
         logging.info('{} 升级地产 {} 到 {} 级，花费 {} 元。'.format(self.owner.name,
                                                                   self.name,
@@ -238,7 +239,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert player == self.owner, '该地产不归 {} 所有，无法抵押！'.format(player.name)
         assert not self.is_pledged, '该地已经抵押！'
         self.__is_pledged = True
-        ev.event_to_player_add_money.send(self, receiver=player, money_delta=self.pledge_value)
+        ev.event_to_player_add_money.send(self, player=player, money_delta=self.pledge_value)
         ev.event_from_estate_pledged.send(self)
         logging.info('{} 抵押地产 {}，获得 {} 元。'.format(self.owner.name, self.name, self.pledge_value))
 
@@ -251,55 +252,55 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert player == self.owner, '该地产不归 {} 所有，无法赎回！'.format(player.name)
         assert self.is_pledged, '该地当前未被抵押！'
         self.__is_pledged = False
-        ev.event_to_player_add_money.send(self, receiver=player, money_delta=-self.pledge_value)
+        ev.event_to_player_add_money.send(self, player=player, money_delta=-self.buy_value)
         ev.event_from_estate_rebought.send(self)
-        logging.info('{} 赎回地产 {}，花费 {} 元。'.format(self.owner.name, self.name, self.pledge_value))
+        logging.info('{} 赎回地产 {}，花费 {} 元。'.format(self.owner.name, self.name, self.buy_value))
 
     @staticmethod
     @ev.event_to_estate_upgrade.connect
-    def event_handler_upgrade(sender: itf.IEstateForPlayer, **kwargs)->None:
+    def event_handler_upgrade(sender: itf.IEstateForPlayer, estate)->None:
         '''upgrade estate
 
         :param sender: player to upgrade
-        :param kwargs: holds receiver of estate
+        :param estate: estate to upgrade
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = estate
         player = sender
         self._upgrade(player)
 
     @staticmethod
     @ev.event_to_estate_degrade.connect
-    def event_handler_degrade(sender: itf.IEstateForPlayer, **kwargs):
+    def event_handler_degrade(sender: itf.IEstateForPlayer, estate):
         '''degrade estate
 
         :param sender: player to degrade
-        :param kwargs: holds receiver of estate
+        :param estate: estate to degrade
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = estate
         player = sender
         self._degrade(player)
 
     @staticmethod
     @ev.event_to_estate_pledge.connect
-    def event_handler_pledge(sender: itf.IEstateForPlayer, **kwargs):
+    def event_handler_pledge(sender: itf.IEstateForPlayer, estate):
         '''pledge the estate
 
         :param sender: player to pledge
-        :param kwargs: holds receiver of estate
+        :param estate: estate to pledge
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = estate
         player = sender
         self._pledge(player)
 
     @staticmethod
     @ev.event_to_estate_rebuy.connect
-    def event_handler_rebuy(sender: itf.IEstateForPlayer, **kwargs):
+    def event_handler_rebuy(sender: itf.IEstateForPlayer, estate):
         '''pledge the estate
 
         :param sender: player to rebuy
-        :param kwargs: holds receiver of estate
+        :param estate: estate to rebuy
         '''
-        self:Estate = kwargs['receiver']
+        self:Estate = estate
         player = sender
         self._rebuy(player)
 
@@ -307,7 +308,6 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         '''override, if owner is not None, take the fee from player
         else ask player whether to buy the place
         '''
-        logging.info('{} 走到 {}。'.format(player.name, self.name))
         # has owner
         if self.owner:
             # is pledged, escape
@@ -321,17 +321,19 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
                 self._exchange_money(player, self.owner, block_fee)
             # upgrade
             else:
-                ev.event_to_player_upgrade_estate.send(self, receiver=player)
+                ev.event_to_player_upgrade_estate.send(self, owner=player)
         # ask whether to buy
         else:
-            ev.event_to_player_buy_place.send(self, receiver=player)
+            ev.event_to_player_buy_place.send(self, buyer=player)
 
     def __str__(self):
         '''override, display place info
         '''
-        lines = '{}: {}, {}'.format(self.name,
-                                    self.current_level,
-                                    'x' if self.is_pledged else 'o')
+        owner_name = self.owner.name if self.owner else 'None'
+        lines = '{}: {}, {}, {}'.format(self.name,
+                                        owner_name,
+                                        self.current_level,
+                                        'x' if self.is_pledged else 'o')
         return lines
 
 
@@ -383,11 +385,10 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
         :param player: IProjectForPlayer
         '''
-        logging.info('{} 走到 {}。'.format(player.name, self.name))
         if self.owner:
             self._take_effect(player)
         else:
-            ev.event_to_player_buy_place.send(self, receiver=player)
+            ev.event_to_player_buy_place.send(self, buyer=player)
 
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''take the effect of the place, triggered by the player
@@ -404,7 +405,8 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
     def __str__(self):
         '''override display project info
         '''
-        return '{}'.format(self.name)
+        owner_name = self.owner.name if self.owner else 'None'
+        return '{}: {}'.format(self.name, owner_name)
 
 
 class ProjectNuclear(Project):
@@ -482,8 +484,8 @@ class ProjectBuilder(Project):
 
         :param player: IProjectForPlayer
         '''
-        ev.event_to_player_upgrade_any_estate.send(self, receiver=player)
         logging.info('{} 可选择一处地产升级。'.format(player.name))
+        ev.event_to_player_upgrade_any_estate.send(self, player=player)
 
     def destroy(self)->None:
         '''override, destroy
@@ -507,6 +509,15 @@ class ProjectTransportation(Project):
                             if isinstance(project, ProjectTransportation)]
         return len(transportations)
 
+    def trigger(self, player: itf.IProjectForPlayer)->None:
+        '''override take the effect of the place, triggered by the player
+
+        :param player: IProjectForPlayer
+        '''
+        if not self.owner:
+            ev.event_to_player_buy_place.send(self, buyer=player)
+        self._take_effect(player)
+
     def _take_effect(self, player: itf.IProjectForPlayer)->None:
         '''当你拥有1/2/3项运输项目时，收取500/1000/2000元。
         下回合开始时，你可以放弃投骰子，改为给本项目拥有着500元（无人拥有则给银行），
@@ -514,25 +525,34 @@ class ProjectTransportation(Project):
 
         :param player: IProjectForPlayer
         '''
-        assert self.owner is not None
-        if self.owner == player:
-            return None
-        fines = [500, 1000, 2000]
-        amount = self.__find_transportaion_amount()
-        assert amount >= 1
-        fine = fines[amount-1]
-        logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
-        self._exchange_money(player, self.owner, fine)
+        # take fine if owner is not None and is not the player
+        if self.owner and self.owner != player:
+            fines = [500, 1000, 2000]
+            amount = self.__find_transportaion_amount()
+            assert amount >= 1
+            fine = fines[amount-1]
+            logging.info('{} 缴付 {} 元给 {}。'.format(player.name, fine, self.owner.name))
+            self._exchange_money(player, self.owner, fine)
+        # ask the player to jump to any estate
+        # delay_turns=1 means take action at next turn
         results:List[Tuple[Any, bool]] =\
-            ev.event_to_player_jump_to_estate.send(self, receiver=player, delay=1)
-        assert len(results), 1
+            ev.event_to_player_jump_to_estate.send(self, player=player, delay_turns=1)
+        assert len(results) == 1
         rst:bool = results[0][-1]
         if rst:
             fine = 500
-            logging.info('{} 准备移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
-                                                                           self.owner.name,
-                                                                           fine))
-            self._exchange_money(player, self.owner, fine)
+            if self.owner is None:
+                logging.info('{} 下回合移动位置，支付运输费用 {} 元。'.format(player.name,
+                                                                         fine))
+                ev.event_to_player_add_money.send(self, player=player,
+                                                  money_delta=-fine)
+            elif self.owner == player:
+                logging.info('{} 下回合移动位置。'.format(player.name))
+            else:
+                logging.info('{} 下回合移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
+                                                                            self.owner.name,
+                                                                            fine))
+                self._exchange_money(player, self.owner, fine)
 
 
 class ProjectTvStation(Project):
@@ -561,10 +581,10 @@ class ProjectTvStation(Project):
         self.__unregister_event_handler()
 
     def __register_event_handler(self):
-        ev.event_from_estate_upgraded.connect(self.__someone_triggered_news_or_luck)
+        ev.event_from_public_news_or_luck_triggered.connect(self.__someone_triggered_news_or_luck)
 
     def __unregister_event_handler(self):
-        ev.event_from_estate_upgraded.disconnect(self.__someone_triggered_news_or_luck)
+        ev.event_from_public_news_or_luck_triggered.disconnect(self.__someone_triggered_news_or_luck)
 
     def __someone_triggered_news_or_luck(self, sender: Any)->None:
         '''当任何人走到运气和新闻时，你获得500元奖励。
@@ -573,7 +593,7 @@ class ProjectTvStation(Project):
         '''
         assert self.owner is not None
         gain = 500
-        ev.event_to_player_add_money.send(self, receiver=self.owner,
+        ev.event_to_player_add_money.send(self, player=self.owner,
                                           money_delta=gain)
         logging.info('新闻 或 运气 被触发，{} 获得 {} 元。'.format(self.owner.name,
                                                                  gain))
