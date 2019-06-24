@@ -252,9 +252,9 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert player == self.owner, '该地产不归 {} 所有，无法赎回！'.format(player.name)
         assert self.is_pledged, '该地当前未被抵押！'
         self.__is_pledged = False
-        ev.event_to_player_add_money.send(self, player=player, money_delta=-self.pledge_value)
+        ev.event_to_player_add_money.send(self, player=player, money_delta=-self.buy_value)
         ev.event_from_estate_rebought.send(self)
-        logging.info('{} 赎回地产 {}，花费 {} 元。'.format(self.owner.name, self.name, self.pledge_value))
+        logging.info('{} 赎回地产 {}，花费 {} 元。'.format(self.owner.name, self.name, self.buy_value))
 
     @staticmethod
     @ev.event_to_estate_upgrade.connect
@@ -329,9 +329,11 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
     def __str__(self):
         '''override, display place info
         '''
-        lines = '{}: {}, {}'.format(self.name,
-                                    self.current_level,
-                                    'x' if self.is_pledged else 'o')
+        owner_name = self.owner.name if self.owner else 'None'
+        lines = '{}: {}, {}, {}'.format(self.name,
+                                        owner_name,
+                                        self.current_level,
+                                        'x' if self.is_pledged else 'o')
         return lines
 
 
@@ -403,7 +405,8 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
     def __str__(self):
         '''override display project info
         '''
-        return '{}'.format(self.name)
+        owner_name = self.owner.name if self.owner else 'None'
+        return '{}: {}'.format(self.name, owner_name)
 
 
 class ProjectNuclear(Project):
