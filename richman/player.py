@@ -214,6 +214,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
                 self._projects.append(place)
             elif isinstance(place, itf.IPlayerForEstate):
                 self._estates.append(place)
+                self._estates.sort(key=lambda estate: estate.pos_in_map)
             else:
                 raise RuntimeError('参数 place 必须是 Estate 或者 Project 类型')
             ev.event_to_place_buy.send(self, place=place)

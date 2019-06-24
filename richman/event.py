@@ -22,6 +22,7 @@ def check_event_result_is_true(results: List[Tuple[Any, Optional[bool]]])->bool:
 _events = Namespace()
 
 # event from map
+event_from_map_finish = _events.signal("event-from-game-finish")
 event_from_map_start_round = _events.signal("event-from-map-start-round")
 event_from_map_finish_round = _events.signal("event-from-map-finish-round")
 

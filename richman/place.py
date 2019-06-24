@@ -13,16 +13,19 @@ import richman.event as ev
 
 class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
 
-    def __init__(self, name: str, buy_value: int, sell_value: int):
+    def __init__(self, name: str, buy_value: int, sell_value: int,
+                 pos_in_map: int)->None:
         '''init
 
         :param name: name of place
         :param buy_value: value to buy
         :param sell_value: value to sell
+        :param pos_in_map: position in map
         '''
         self.__name = name
         self.__buy_value = buy_value
         self.__sell_value = sell_value
+        self.__pos_in_map: int = pos_in_map
         # init others
         self.__owner:Optional[itf.IPlaceForPlayer] = None
 
@@ -41,6 +44,9 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
     @property
     def owner(self)->Optional[itf.IPlaceForPlayer]:
         return self.__owner
+    @property
+    def pos_in_map(self)->int:
+        return self.__pos_in_map
 
     def _exchange_money(self,
                         player_src: itf.IPlaceForPlayer,
@@ -128,7 +134,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
 
     def __init__(self, name: str, fees: list,
                  buy_value: int, pledge_value: int,
-                 upgrade_value: int, block):
+                 upgrade_value: int, block, pos_in_map: int):
         '''init
 
         :param name: name of place
@@ -137,8 +143,9 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         :param pledge_value: value to pledge, can not be pledge if is None
         :param upgrade_value: money value to upgrade
         :param block: block that holds the place.
+        :param pos_in_map: position in map
         '''
-        super().__init__(name, buy_value, sell_value=buy_value)
+        super().__init__(name, buy_value, sell_value=buy_value, pos_in_map=pos_in_map)
         self.__fees = fees
         self.__pledge_value = pledge_value
         self.__upgrade_value = upgrade_value
@@ -184,6 +191,9 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
     @property
     def fees(self)->List[int]:
         return self.__fees
+    @property
+    def block_fee(self)->int:
+        return self.block.block_fee_calc(self.owner)
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
         '''override, set the owner to the buyer
@@ -316,7 +326,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
                 return None
             # take the fee
             elif self.owner != player:
-                block_fee = self.block.block_fee_calc(self.owner)
+                block_fee = self.block_fee
                 logging.info('{} 交给 {} 地租 {}。'.format(player.name, self.owner.name, block_fee))
                 self._exchange_money(player, self.owner, block_fee)
             # upgrade
@@ -376,6 +386,9 @@ class EstateBlock:
                 block_fee += estate.fee
         return block_fee
 
+    def __len__(self)->int:
+        return len(self.__estates)
+
 
 # project
 
@@ -411,13 +424,15 @@ class Project(BasePlace, itf.IPlayerForProject, itf.IMapForProject):
 
 
 class ProjectNuclear(Project):
+    '''核能发电站'''
 
-    def __init__(self, name='核能发电站')->None:
+    def __init__(self, name: str, pos_in_map: int)->None:
         '''override, init
         '''
         super().__init__(name=name,
                          buy_value=3500,
-                         sell_value=3000)
+                         sell_value=3000,
+                         pos_in_map=pos_in_map)
 
     def _take_effect(self, player: itf.IProjectForPlayer)->None:
         '''收取500元，若对方拥有1级/2级/3级地产，额外收取500/1000/1500元。
@@ -433,13 +448,15 @@ class ProjectNuclear(Project):
 
 
 class ProjectBuilder(Project):
+    '''建筑公司'''
 
-    def __init__(self, name='建筑公司'):
-        '''init
+    def __init__(self, name: str, pos_in_map: int)->None:
+        '''override, init
         '''
         super().__init__(name=name,
                          buy_value=4000,
-                         sell_value=3000)
+                         sell_value=3000,
+                         pos_in_map=pos_in_map)
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
         '''override, set the owner to the buyer
@@ -495,13 +512,15 @@ class ProjectBuilder(Project):
 
 
 class ProjectTransportation(Project):
+    '''运输公司'''
 
-    def __init__(self, name):
-        '''init
+    def __init__(self, name: str, pos_in_map: int)->None:
+        '''override, init
         '''
         super().__init__(name=name,
                          buy_value=3000,
-                         sell_value=3000)
+                         sell_value=3000,
+                         pos_in_map=pos_in_map)
 
     def __find_transportaion_amount(self)->int:
         assert self.owner is not None
@@ -557,13 +576,15 @@ class ProjectTransportation(Project):
 
 
 class ProjectTvStation(Project):
+    '''电视台'''
 
-    def __init__(self, name='电视台'):
-        '''init
+    def __init__(self, name: str, pos_in_map: int)->None:
+        '''override, init
         '''
         super().__init__(name=name,
                          buy_value=3500,
-                         sell_value=3000)
+                         sell_value=3000,
+                         pos_in_map=pos_in_map)
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
         '''override, set the owner to the buyer
@@ -612,13 +633,15 @@ class ProjectTvStation(Project):
         self.__unregister_event_handler()
 
 class ProjectSewerage(Project):
+    '''污水处理厂'''
 
-    def __init__(self, name='污水处理厂'):
-        '''init
+    def __init__(self, name: str, pos_in_map: int)->None:
+        '''override, init
         '''
         super().__init__(name=name,
                          buy_value=3000,
-                         sell_value=3000)
+                         sell_value=3000,
+                         pos_in_map=pos_in_map)
 
     def _take_effect(self, player: itf.IProjectForPlayer):
         '''收取500元，若对方每拥有3块地产，额外收取500元。

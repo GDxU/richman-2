@@ -8,3 +8,4 @@ doc/test/~$map_test.xlsx
 /test/.mypy_cache
 log.txt
 log.txt.*
+.mypy_cache/

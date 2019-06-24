@@ -2,7 +2,7 @@
 '''接口类
 '''
 import abc
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 
 # game interface
@@ -102,6 +102,10 @@ class IPlayerForItem(IPlayerBase):
     @abc.abstractmethod
     def name(self):
         pass
+    @property
+    @abc.abstractmethod
+    def pos_in_map(self)->int:
+        pass
 
 class IPlayerForPlace(IPlayerForItem):
 
@@ -149,8 +153,17 @@ class IPlayerForEstate(IPlayerForPlace):
         pass
     @property
     @abc.abstractmethod
-    def fees(self):
-        '''所有的过路费用'''
+    def fees(self)->List:
+        '''所有的过路费用清单'''
+        pass
+    @property
+    @abc.abstractmethod
+    def block_fee(self)->int:
+        '''同个区块的过路费'''
+        pass
+    @property
+    def order_in_block(self)->int:
+        '''当前 estate 在 block 的位置'''
         pass
 
 class IPlayerForProject(IPlayerForPlace):

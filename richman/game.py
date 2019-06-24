@@ -10,15 +10,18 @@ import richman.event as ev
 
 class BaseGame:
 
-    def __init__(self, map: itf.IGameForMap, players: List[itf.IGameForPlayer]):
+    def __init__(self, map: itf.IGameForMap,
+                 players: List[itf.IGameForPlayer],
+                 display_frame = None)->None:
         '''init
 
         :param map: 
         :param player_names: list of BasePlayer
+        :param display_frame: the frame to display the gaming info
         '''
         self.__map = map
-        # init others
-        self.map.add_players(players)
+        self.__map.add_players(players)
+        self.display_frame = display_frame
 
     @property
     def map(self)->itf.IGameForMap:
@@ -29,7 +32,12 @@ class BaseGame:
         '''
         while self.map.run_one_round():
             pass
+        self.destroy()
+
+    def destroy(self):
         self.map.destroy()
+        if self.display_frame:
+            self.display_frame.destroy()
 
 class Game(BaseGame):
     pass

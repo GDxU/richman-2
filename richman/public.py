@@ -10,12 +10,16 @@ import richman.interface as itf
 
 class BasePublic(itf.IMapForPublic,  itf.IPlayerForPublic):
     
-    def __init__(self, name: str)->None:
+    def __init__(self, name: str, pos_in_map: int)->None:
         self.__name:str = name
+        self.__pos_in_map = pos_in_map
 
     @property
     def name(self)->str:
         return self.__name
+    @property
+    def pos_in_map(self)->int:
+        return self.__pos_in_map
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''trigger the effect of the item in the map
@@ -34,8 +38,8 @@ class BasePublic(itf.IMapForPublic,  itf.IPlayerForPublic):
 
 
 class PublicStart(BasePublic):
-    def __init__(self, name='起点')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
 
     @staticmethod
     @ev.event_from_player_pass_start_line.connect
@@ -60,8 +64,8 @@ class PublicStart(BasePublic):
 
 
 class PublicNews(BasePublic):
-    def __init__(self, name='新闻')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''抽取1张新闻卡。
@@ -72,8 +76,8 @@ class PublicNews(BasePublic):
         ev.event_from_public_news_or_luck_triggered.send(self)
 
 class PublicPrison(BasePublic):
-    def __init__(self, name='监狱')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
         # prisoner struct: list[player, days left in prison]
         self.__prisoners: Dict[str, int] = {}
 
@@ -159,8 +163,8 @@ class PublicPrison(BasePublic):
         self.__unregister_event_handler()
 
 class PublicLuck(BasePublic):
-    def __init__(self, name='运气')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''抽取1张运气卡。
@@ -171,8 +175,8 @@ class PublicLuck(BasePublic):
         logging.info('{} 抽取一张幸运卡。'.format(player.name))
 
 class PublicStock(BasePublic):
-    def __init__(self, name='证券中心')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''获得500元，然后额外获得你拥有投资项目数量*500元的奖励。
@@ -188,14 +192,14 @@ class PublicStock(BasePublic):
                                           money_delta=gain)
 
 class PublicGotoPrison(BasePublic):
-    def __init__(self, name='入狱', prison_pos:int = None)->None:
+    def __init__(self, name: str, pos_in_map: int,
+                 prison_pos: int)->None:
         '''init
 
         :param name: name of the publick
         :param prison_pos: prison position in the map
         '''
-        super().__init__(name)
-        assert prison_pos is not None
+        super().__init__(name, pos_in_map)
         self.__prison_pos = prison_pos
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
@@ -210,8 +214,8 @@ class PublicGotoPrison(BasePublic):
                                         delay_turns=0)
 
 class PublicPark(BasePublic):
-    def __init__(self, name='公园')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''拾到300元。
@@ -224,8 +228,8 @@ class PublicPark(BasePublic):
                                           money_delta=gain)
 
 class PublicTax(BasePublic):
-    def __init__(self, name='税务中心')->None:
-        super().__init__(name)
+    def __init__(self, name: str, pos_in_map: int)->None:
+        super().__init__(name, pos_in_map)
 
     def trigger(self, player: itf.IPublicForPlayer)->None:
         '''缴纳每块地产300元税金。

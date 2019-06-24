@@ -163,6 +163,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         '''
         self._run_one_round()
         if self.winner:
+            ev.event_from_map_finish.send(self)
             logging.info('{} 获得比赛胜利！'.format(self.winner.name))
             self._display_players_info()
             return False
