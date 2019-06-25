@@ -457,7 +457,9 @@ class PlayerSimple(BasePlayer):
         :return: position of estate to jump
         '''
         assert self.map is not None
-        for estate in self.estates:
+        estates = [estate for estate in self.estates
+                    if not estate.is_pledged and not estate.is_level_max]
+        for estate in estates:
             if not estate.is_pledged:
                 return self.map.get_item_position(estate)
         else:
@@ -601,6 +603,8 @@ class PlayerPersonCommandLine(BasePlayer):
         :param estate: IPlayerForPlace
         :return: True if upgrade
         '''
+        if estate.is_level_max:
+            return False
         logging.info('是否升级{}？\n0：不，1：是'.format(estate.name))
         rst:Optional[int] = self.__get_input_num()
         if rst:
