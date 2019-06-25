@@ -654,6 +654,8 @@ class PlayerPersonCommandLine(BasePlayer):
         :param place: IPlayerForPlace
         :return: True if buy the place
         '''
+        if self.money < place.buy_value:
+            return False
         logging.info('是否购买{}？\n0：不，1：是'.format(place.name))
         return self.__get_input_bool()
 
@@ -664,6 +666,8 @@ class PlayerPersonCommandLine(BasePlayer):
         :return: True if upgrade
         '''
         if estate.is_level_max:
+            return False
+        if self.money < estate.upgrade_value:
             return False
         logging.info('是否升级{}？\n0：不，1：是'.format(estate.name))
         return self.__get_input_bool()
@@ -697,7 +701,7 @@ class PlayerPersonCommandLine(BasePlayer):
         if self.__get_input_bool():
             logging.info('升级操作：')
             estates = [estate for estate in self.estates
-                        if not estate.is_level_max]
+                        if not estate.is_level_max and self.money > estate.upgrade_value]
             index = self.__display_place_and_return_index(estates)
             if index is None:
                 return None
