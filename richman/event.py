@@ -36,6 +36,7 @@ event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 
 # event from player
 event_from_player_start_turn = _events.signal("event-from-player-start-turn")
+event_from_player_finish_turn = _events.signal("event-from-player-finish-turn")
 event_from_player_pass_start_line = _events.signal("event-from-player-pass-start-line")
 event_from_player_block_before_add_money = _events.signal("event-from-player-block-before-add-money")
 event_from_player_block_before_turn = _events.signal("event-from-player-block-before-turn")

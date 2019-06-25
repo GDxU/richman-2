@@ -50,14 +50,14 @@ def main(log_on:bool = False, text_log_on:bool = True)->None:
     # players.append(PlayerPersonCommandLine(name='邓彦修', money=init_money))
     players.append(PlayerPersonCommandLine(name='邓哲', money=init_money))
     # players.append(PlayerPersonCommandLine(name='戎萍', money=init_money))
-    # players.append(PlayerSimple(name='邓彦修', money=init_money))
+    players.append(PlayerSimple(name='邓彦修', money=init_money))
     # players.append(PlayerSimple(name='邓哲', money=init_money))
     players.append(PlayerSimple(name='戎萍', money=init_money))
     players.append(PlayerSimple(name='外婆', money=init_money))
     # map
     map = MapTest()
     # display
-    cmdline = CmdlineDisplay()
+    cmdline = CmdlineDisplay(map)
     # game
     game = Game(map, players, cmdline)
     # start

@@ -333,6 +333,8 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             ev.event_from_player_pass_start_line.send(self)
         # trigger the item
         self.__trigger_map_item()
+        # send finish_turn event
+        ev.event_from_player_finish_turn.send(self)
 
     def __trigger_map_item(self)->None:
         '''trigger the map item action
@@ -514,6 +516,12 @@ class PlayerPersonCommandLine(BasePlayer):
             else:
                 return choose
 
+    def __get_input_bool(self)->bool:
+        rst = self.__get_input_num(less_than=2)
+        while rst is None:
+            rst = self.__get_input_num(less_than=2)
+        return rst == 1
+
     def __display_estates_and_return_index(
             self,
             estates: List[itf.IPlayerForEstate]
@@ -526,7 +534,7 @@ class PlayerPersonCommandLine(BasePlayer):
         table:List[List[str]] = []
         header:List[str] = ['序号', '名称', '归属', '购买费用', '升级费用', '状态']
         for index, estate in enumerate(estates):
-            table.append(['{}'.format(index), estate.name, estate.owner,
+            table.append(['{}'.format(index), estate.name, estate.owner.name if estate.owner else None,
                           estate.buy_value, estate.upgrade_value,
                           '正常' if not estate.is_pledged else '抵押'])
         ev.event_to_display_list_of_dict.send(self, table=table, header=header)
@@ -544,7 +552,7 @@ class PlayerPersonCommandLine(BasePlayer):
         table:List[List[str]] = []
         header:List[str] = ['序号', '名称', '归属']
         for index, project in enumerate(projects):
-            table.append(['{}'.format(index), project.name, project.owner])
+            table.append(['{}'.format(index), project.name, project.owner.name if project.owner else None])
         ev.event_to_display_list_of_dict.send(self, table=table, header=header)
         return self.__get_input_num(len(projects))
 
@@ -647,11 +655,7 @@ class PlayerPersonCommandLine(BasePlayer):
         :return: True if buy the place
         '''
         logging.info('是否购买{}？\n0：不，1：是'.format(place.name))
-        rst:Optional[int] = self.__get_input_num(2)
-        if rst:
-            return True
-        else:
-            return False
+        return self.__get_input_bool()
 
     def _make_decision_upgrade(self, estate: itf.IPlayerForEstate)->bool:
         '''decide whether to upgrade the estate
@@ -662,11 +666,7 @@ class PlayerPersonCommandLine(BasePlayer):
         if estate.is_level_max:
             return False
         logging.info('是否升级{}？\n0：不，1：是'.format(estate.name))
-        rst:Optional[int] = self.__get_input_num(2)
-        if rst:
-            return True
-        else:
-            return False
+        return self.__get_input_bool()
 
     def _make_decision_jump_to_estate(self)->Optional[int]:
         '''select which estate to go when jump is needed
@@ -674,8 +674,7 @@ class PlayerPersonCommandLine(BasePlayer):
         :return: position of estate to jump
         '''
         logging.info('是否跳到其他地产？\n0：不，1：是')
-        rst:Optional[int] = self.__get_input_num(2)
-        if rst:
+        if self.__get_input_bool():
             logging.info('跳转操作：')
             assert self.map is not None
             estates = [item for item in self.map.items
@@ -695,8 +694,7 @@ class PlayerPersonCommandLine(BasePlayer):
         :return: estate to upgrade, or None for not upgrade
         '''
         logging.info('是否升级任意地产？\n0：不，1：是')
-        rst:Optional[int] = self.__get_input_num(2)
-        if rst:
+        if self.__get_input_bool():
             logging.info('升级操作：')
             estates = [estate for estate in self.estates
                         if not estate.is_level_max]
@@ -716,8 +714,7 @@ class PlayerPersonCommandLine(BasePlayer):
         if not estate_pledged:
             return None
         logging.info('是否赎回任意地产？\n0：不，1：是')
-        rst:Optional[int] = self.__get_input_num(2)
-        if rst:
+        if self.__get_input_bool():
             logging.info('赎回地产操作：')
             estates = [estate for estate in self.estates
                         if estate.is_pledged]

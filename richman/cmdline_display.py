@@ -4,27 +4,14 @@
 from typing import Any, List, Tuple, Dict, Optional, cast
 
 from tabulate import tabulate  # type: ignore
+from colorama import init, Fore, Back, Style  # type: ignore
+init()
 
 import richman.event as ev
 from richman.map import BaseMap
 from richman.player import BasePlayer
 from richman.place import Estate, EstateBlock, Project
 
-
-# def split_list_with_width(src: list, width: int)->list:
-#     '''split list to lists if the width exceeds
-
-#     :param src: source list to split
-#     :param width: width to split with
-#     '''
-#     rst = []
-#     for start_index in range(0, len(src), width):
-#         stop_index = start_index + width
-#         if stop_index < len(src):
-#             rst.append(src[start_index:stop_index])
-#         else:
-#             rst.append(src[start_index:])
-#     return rst
 
 def display_list_of_dict(table: List[List[str]],
                          header:List[str] = None,
@@ -58,43 +45,76 @@ def display_player_info(player: BasePlayer)->None:
                       None, project.name,
                       None, None,
                       None, None))
-    # lines = tabulate(table, header, showindex='always', tablefmt="grid")
     lines = tabulate(table, header, showindex='always', tablefmt="psql")
     print(lines)
+
+def color_name(item: Any)->str:
+    return '%s%s%s%s' % (Fore.YELLOW, Back.BLUE, item, Style.RESET_ALL)
+
+def color_place(item: Any)->str:
+    return '%s%s%s%s' % (Fore.YELLOW, Back.GREEN, item, Style.RESET_ALL)
+
+def color_num(item: Any)->str:
+    # return '%s%s%s%s' % (Fore.GREEN, Back.BLUE, item, Style.RESET_ALL)
+    return str(item)
 
 
 class CmdlineDisplay:
 
-    def __init__(self):
+    def __init__(self, map: BaseMap):
+        self.__map = map
         self.register()
+
+    @property
+    def map(self)->BaseMap:
+        return self.__map
 
     def register(self):
         ev.event_from_map_finish.connect(self.event_from_map_finish)
         ev.event_from_map_start_round.connect(self.event_from_map_start_round)
+        ev.event_from_player_start_turn.connect(self.event_from_player_start_turn)
+        ev.event_from_player_finish_turn.connect(self.event_from_player_finish_turn)
         ev.event_to_display_list_of_dict.connect(self.event_to_display_list_of_dict)
 
     def unregister(self):
         ev.event_from_map_finish.disconnect(self.event_from_map_finish)
         ev.event_from_map_start_round.disconnect(self.event_from_map_start_round)
+        ev.event_from_player_start_turn.disconnect(self.event_from_player_start_turn)
+        ev.event_from_player_finish_turn.disconnect(self.event_from_player_finish_turn)
         ev.event_to_display_list_of_dict.disconnect(self.event_to_display_list_of_dict)
 
     def event_from_map_start_round(self, sender: BaseMap)->None:
-        map = sender
-        print('第 {} 回合。'.format(map.round))
-        players:List[BasePlayer] = cast(List[BasePlayer], map.players_in_game)
+        print('\n\n第 {} 回合：'.format(color_num(self.map.round)))
+        players:List[BasePlayer] = cast(List[BasePlayer], self.map.players_in_game)
         for player in players:
-            print('{} 在 {} ：'.format(player.name, map.items[player.pos].name))
+            print('{} 在 {} ：'.format(color_name(player.name),
+                                       color_place(self.map.items[player.pos].name)))
             display_player_info(player)
 
     def event_from_map_finish(self, sender: BaseMap)->None:
         map = sender
         players:List[BasePlayer] = cast(List[BasePlayer], map.players)
         assert map.winner is not None
-        print('游戏结束，恭喜 {} 获得比赛胜利！'.format(map.winner.name))
+        print('游戏结束，恭喜 {} 获得比赛胜利！'.format(color_name(map.winner.name)))
         print('比赛结果：')
         for player in players:
             display_player_info(player)
             print()
+        input()
+
+    def event_from_player_start_turn(self, sender: BasePlayer)->None:
+        '''turn start
+        '''
+        player = sender
+        print('\n{}（{}） 开始行动。'.format(color_name(player.name),
+                                            color_place(self.map.items[player.pos].name)))
+
+    def event_from_player_finish_turn(self, sender: BasePlayer)->None:
+        '''turn finish
+        '''
+        player = sender
+        print('{} 行动结束。'.format(color_name(player.name)), end='')
+        input()
 
     def event_to_display_list_of_dict(self, sender,
                                       table: List[List[str]],

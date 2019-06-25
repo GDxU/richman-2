@@ -109,9 +109,9 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             pickle.dump(map, f)
 
     def _display_players_info(self)->None:
-        logging.info('\n参赛者信息：')
+        logging.debug('\n参赛者信息：')
         for player in self.players:
-            logging.info('{}'.format(player))
+            logging.debug('{}'.format(player))
 
     def _remove_players_banckrupted(self)->None:
         '''remove banckrupted player from __players_in_game list
@@ -128,7 +128,7 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         # pick the current player
         player = self.players_in_game[self.__current_player_index]
         # play the turn
-        logging.info('\n{}：'.format(player.name))
+        logging.debug('\n{}：'.format(player.name))
         player.take_the_turn()
         if player.is_banckrupted:
             logging.info('{} 破产。'.format(player.name))
@@ -148,8 +148,8 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
 
         :note: banckrupted players is remove from players list
         '''
-        # logging.info('\n\n第 {} 回合开始：'.format(self.round))
-        # self._display_players_info()
+        logging.debug('\n\n第 {} 回合开始：'.format(self.round))
+        self._display_players_info()
         ev.event_from_map_start_round.send(self)
         while self.run_one_player_turn():
             pass
