@@ -216,6 +216,7 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         '''
         super()._sell(seller)
         self.__current_level = 0
+        self.__is_pledged = False
         ev.event_from_estate_sold.send(self)
 
     def _upgrade(self, player: itf.IEstateForPlayer)->None:

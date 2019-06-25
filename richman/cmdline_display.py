@@ -12,7 +12,7 @@ from richman.place import Estate, EstateBlock, Project
 
 
 def display_player_info(player: BasePlayer):
-    header = ["姓名", "现金", "总资产", "不动产", "等级", "状态", "区域", "收费"]
+    header = ["姓名", "现金", "总资产", "不动产", "等级", "状态", "收费", "区域收费"]
     RowTyping = Tuple[Optional[str], Optional[str],
                       Optional[str], Optional[str],
                       Optional[int], Optional[str],
@@ -26,7 +26,7 @@ def display_player_info(player: BasePlayer):
         table.append((None, None, None,
                       estate.name, estate.current_level,
                       '抵押' if estate.is_pledged else '正常',
-                      estate.block.name,
+                      estate.fee,
                       '{:,}'.format(estate.block_fee)))
     projects:List[Project] = cast(List[Project], player.projects)
     for project in projects:
@@ -55,7 +55,7 @@ class CmdlineDisplay:
         print('第 {} 回合。'.format(map.round))
         players:List[BasePlayer] = cast(List[BasePlayer], map.players_in_game)
         for player in players:
-            print('%s：' % player.name)
+            print('{} 在 {} ：'.format(player.name, map.items[player.pos].name))
             display_player_info(player)
 
     def event_from_map_finish(self, sender: BaseMap)->None:
