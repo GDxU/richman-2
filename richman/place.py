@@ -253,9 +253,15 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
 
         :param player: player to upgrade
         '''
-        assert self.owner is not None
-        assert player == self.owner, '该地产不归 {} 所有，无法升级！'.format(player.name)
-        assert not self.is_level_max, '已经满级，无法升级！'
+        if self.owner is None:
+            logging.warning('{} 无主，无法升级！'.format(self.name))
+            return None
+        if player != self.owner:
+            logging.warning('该地产不归 {} 所有，无法升级！'.format(player.name))
+            return None
+        if self.is_level_max:
+            logging.warning('已经满级，无法升级！')
+            return None
         rst = self._subtract_money(player, self.upgrade_value)
         if not rst:
             logging.warning('升级失败，当前玩家 {} 余额 {}。'.format(player.name, player.money))
@@ -271,9 +277,15 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
 
         :param player: player to degrade
         '''
-        assert self.owner is not None
-        assert player == self.owner, '该地产不归 {} 所有，无法降级！'.format(player.name)
-        assert self.current_level > 0, '最低级，无法降级！'
+        if self.owner is None:
+            logging.warning('{} 无主，无法降级！'.format(self.name))
+            return None
+        if player != self.owner:
+            logging.warning('该地产不归 {} 所有，无法降级！'.format(player.name))
+            return None
+        if self.current_level <= 0:
+            logging.warning('最低级，无法降级！')
+            return None
         self.__current_level -= 1
         ev.event_from_estate_degraded.send(self)
         logging.info('{} 降低地产 {} 等级到 {} 级。'.format(self.owner.name, self.name, self.current_level))
@@ -283,9 +295,15 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
 
         :param player: player to pledge
         '''
-        assert self.owner is not None, '该地当前无主，无法抵押！'
-        assert player == self.owner, '该地产不归 {} 所有，无法抵押！'.format(player.name)
-        assert not self.is_pledged, '该地已经抵押！'
+        if self.owner is None:
+            logging.warning('{} 无主，无法抵押！'.format(self.name))
+            return None
+        if player != self.owner:
+            logging.warning('该地产不归 {} 所有，无法抵押！'.format(player.name))
+            return None
+        if self.is_pledged:
+            logging.warning('该地已经抵押！')
+            return None
         self._add_money(player, self.pledge_value)
         self.__is_pledged = True
         ev.event_from_estate_pledged.send(self)
@@ -296,9 +314,15 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
 
         :param player: player to rebuy
         '''
-        assert self.owner is not None, '该地当前无主，赎回无效！'
-        assert player == self.owner, '该地产不归 {} 所有，无法赎回！'.format(player.name)
-        assert self.is_pledged, '该地当前未被抵押！'
+        if self.owner is None:
+            logging.warning('{} 无主，无法赎回！'.format(self.name))
+            return None
+        if player != self.owner:
+            logging.warning('该地产不归 {} 所有，无法赎回！'.format(player.name))
+            return None
+        if not self.is_pledged:
+            logging.warning('该地未被抵押！')
+            return None
         rst = self._subtract_money(player, self.buy_value)
         if not rst:
             logging.warning('赎回地产失败，当前玩家 {} 余额 {}。'.format(player.name, player.money))
