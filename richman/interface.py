@@ -111,6 +111,10 @@ class IPlayerForPlace(IPlayerForItem):
 
     @property
     @abc.abstractmethod
+    def owner(self):
+        pass
+    @property
+    @abc.abstractmethod
     def is_available(self):
         '''是否可以购买'''
         pass

@@ -63,3 +63,6 @@ event_to_estate_pledge = _events.signal("event-to-estate-pledge")
 event_to_estate_rebuy = _events.signal("event-to-estate-rebuy")
 
 # event to project
+
+# event to display
+event_to_display_list_of_dict = _events.signal("event-to-display-list-of-dict")

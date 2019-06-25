@@ -148,8 +148,8 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
 
         :note: banckrupted players is remove from players list
         '''
-        logging.info('\n\n第 {} 回合开始：'.format(self.round))
-        self._display_players_info()
+        # logging.info('\n\n第 {} 回合开始：'.format(self.round))
+        # self._display_players_info()
         ev.event_from_map_start_round.send(self)
         while self.run_one_player_turn():
             pass
