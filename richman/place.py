@@ -47,22 +47,48 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
     @property
     def pos_in_map(self)->int:
         return self.__pos_in_map
+    
+    def _subtract_money(self, player: itf.IPlaceForPlayer,
+                        amount: int)->bool:
+        '''subtract player's money and check if succeeds
+
+        :param player: player to subtract from
+        :param amount: money to subtract
+        :return: True if succeeds
+        '''
+        assert amount > 0
+        results:List[Tuple[Any, Optional[bool]]] =\
+            ev.event_to_player_add_money.send(self, player=player, money_delta=-amount)
+        return ev.check_event_result_is_true(results)
+
+    def _add_money(self, player: itf.IPlaceForPlayer, amount: int)->None:
+        '''add player's money and check if succeeds
+
+        :param player: player to subtract from
+        :param amount: money to subtract
+        '''
+        assert amount > 0
+        ev.event_to_player_add_money.send(self, player=player, money_delta=amount)
 
     def _exchange_money(self,
                         player_src: itf.IPlaceForPlayer,
                         player_dst: itf.IPlaceForPlayer,
-                        money_delta: int):
+                        money_delta: int)->bool:
         '''take money_delta from src to dst player
 
         :param player_src: src of player to subtract money_delta
         :param player_dst: dst of player to add money_delta
         :param money_delta: amount of money_delta to take
+        :return: True if succeeds
         '''
-        assert money_delta > 0, '交换费用需要大于零！'
-        ev.event_to_player_add_money.send(self, player=player_src,
-                                          money_delta=-money_delta)
-        ev.event_to_player_add_money.send(self, player=player_dst,
-                                          money_delta=money_delta)
+        rst = self._subtract_money(player=player_src,
+                                   amount=money_delta)
+        if not rst:
+            logging.warning('扣钱失败，当前玩家 {} 余额： {} 。'.format(player_src.name, player_src.money))
+            return False
+        self._add_money(player=player_dst,
+                        amount=money_delta)
+        return True
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
         '''set the owner to the buyer
@@ -70,7 +96,10 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
         :param buyer: buyer to buy the place
         '''
         assert self.__owner is None, '该地已经卖出，无法购买！'
-        ev.event_to_player_add_money.send(self, player=buyer, money_delta=-self.buy_value)
+        rst = self._subtract_money(buyer, self.buy_value)
+        if not rst:
+            logging.warning('购买失败，当前玩家 {} 余额 {}。'.format(buyer.name, buyer.money))
+            return None
         self.__owner = buyer
         logging.info('{} 购买地产（项目） {}，花费 {} 元。'.format(buyer.name, self.name, self.buy_value))
 
@@ -81,7 +110,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
         '''
         assert seller == self.owner, '该地产（项目）不归 {} 所有，无法变卖！'.format(seller.name)
         assert self.owner is not None, '该地无主，不能卖！'
-        ev.event_to_player_add_money.send(self, player=seller, money_delta=self.sell_value)
+        self._add_money(seller, self.sell_value)
         logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(self.owner.name, self.name, self.sell_value))
         self.__owner = None
 
@@ -227,8 +256,10 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert self.owner is not None
         assert player == self.owner, '该地产不归 {} 所有，无法升级！'.format(player.name)
         assert not self.is_level_max, '已经满级，无法升级！'
+        rst = self._subtract_money(player, self.upgrade_value)
+        if not rst:
+            logging.warning('升级失败，当前玩家 {} 余额 {}。'.format(player.name, player.money))
         self.__current_level += 1
-        ev.event_to_player_add_money.send(self, player=player, money_delta=-self.upgrade_value)
         ev.event_from_estate_upgraded.send(self)
         logging.info('{} 升级地产 {} 到 {} 级，花费 {} 元。'.format(self.owner.name,
                                                                   self.name,
@@ -255,8 +286,8 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert self.owner is not None, '该地当前无主，无法抵押！'
         assert player == self.owner, '该地产不归 {} 所有，无法抵押！'.format(player.name)
         assert not self.is_pledged, '该地已经抵押！'
+        self._add_money(player, self.pledge_value)
         self.__is_pledged = True
-        ev.event_to_player_add_money.send(self, player=player, money_delta=self.pledge_value)
         ev.event_from_estate_pledged.send(self)
         logging.info('{} 抵押地产 {}，获得 {} 元。'.format(self.owner.name, self.name, self.pledge_value))
 
@@ -268,8 +299,11 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         assert self.owner is not None, '该地当前无主，赎回无效！'
         assert player == self.owner, '该地产不归 {} 所有，无法赎回！'.format(player.name)
         assert self.is_pledged, '该地当前未被抵押！'
+        rst = self._subtract_money(player, self.buy_value)
+        if not rst:
+            logging.warning('赎回地产失败，当前玩家 {} 余额 {}。'.format(player.name, player.money))
+            return None
         self.__is_pledged = False
-        ev.event_to_player_add_money.send(self, player=player, money_delta=-self.buy_value)
         ev.event_from_estate_rebought.send(self)
         logging.info('{} 赎回地产 {}，花费 {} 元。'.format(self.owner.name, self.name, self.buy_value))
 
@@ -566,20 +600,20 @@ class ProjectTransportation(Project):
             ev.event_to_player_jump_to_estate.send(self, player=player, delay_turns=1)
         assert len(results) == 1
         rst:bool = results[0][-1]
-        if rst:
-            fine = 500
-            if self.owner is None:
-                logging.info('{} 下回合移动位置，支付运输费用 {} 元。'.format(player.name,
-                                                                         fine))
-                ev.event_to_player_add_money.send(self, player=player,
-                                                  money_delta=-fine)
-            elif self.owner == player:
-                logging.info('{} 下回合移动位置。'.format(player.name))
-            else:
-                logging.info('{} 下回合移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
-                                                                            self.owner.name,
-                                                                            fine))
-                self._exchange_money(player, self.owner, fine)
+        if not rst:
+            return None
+        fine = 500
+        if self.owner is None:
+            logging.info('{} 下回合移动位置，支付运输费用 {} 元。'.format(player.name,
+                                                                        fine))
+            self._subtract_money(player, fine)
+        elif self.owner == player:
+            logging.info('{} 下回合移动位置。'.format(player.name))
+        else:
+            logging.info('{} 下回合移动位置，向 {} 支付运输费用 {} 元。'.format(player.name,
+                                                                        self.owner.name,
+                                                                        fine))
+            self._exchange_money(player, self.owner, fine)
 
 
 class ProjectTvStation(Project):
@@ -622,8 +656,7 @@ class ProjectTvStation(Project):
         '''
         assert self.owner is not None
         gain = 500
-        ev.event_to_player_add_money.send(self, player=self.owner,
-                                          money_delta=gain)
+        self._add_money(self.owner, gain)
         logging.info('新闻 或 运气 被触发，{} 获得 {} 元。'.format(self.owner.name,
                                                                  gain))
 

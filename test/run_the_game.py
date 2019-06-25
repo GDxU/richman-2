@@ -13,7 +13,7 @@ from richman.cmdline_display import CmdlineDisplay
 
 def _set_logger(text_log_on=False)->None:
     logger = logging.getLogger()
-    #logger.setLevel(logging.CRITICAL)
+    # logger.setLevel(logging.CRITICAL)
     # logger.setLevel(logging.WARNING)
     logger.setLevel(logging.INFO)
     #logger.setLevel(logging.DEBUG)
@@ -47,11 +47,12 @@ def main(log_on:bool = False, text_log_on:bool = True)->None:
     # player
     init_money = 20000
     players:List[PlayerSimple] = []
-    # players.append(PlayerPersonCommandLine(name='邓哲', money=init_money))
-    players.append(PlayerPersonCommandLine(name='邓彦修', money=init_money))
+    # players.append(PlayerPersonCommandLine(name='邓彦修', money=init_money))
+    players.append(PlayerPersonCommandLine(name='邓哲', money=init_money))
     # players.append(PlayerPersonCommandLine(name='戎萍', money=init_money))
     # players.append(PlayerSimple(name='邓彦修', money=init_money))
-    players.append(PlayerSimple(name='邓哲', money=init_money))
+    # players.append(PlayerSimple(name='邓哲', money=init_money))
+    players.append(PlayerSimple(name='戎萍', money=init_money))
     players.append(PlayerSimple(name='外婆', money=init_money))
     # map
     map = MapTest()

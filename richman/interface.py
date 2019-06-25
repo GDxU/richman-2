@@ -271,6 +271,13 @@ class IPlaceForPlayer(abc.ABC):
         pass
     @property
     @abc.abstractmethod
+    def money(self)->int:
+        '''
+        :return: money of the player
+        '''
+        pass
+    @property
+    @abc.abstractmethod
     def estates(self)->list:
         '''
         :return: estate list that the player has

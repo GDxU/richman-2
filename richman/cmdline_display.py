@@ -19,20 +19,21 @@ def display_player_info(player: BasePlayer):
                       Optional[str], Optional[str]]
     table:List[RowTyping] = []
     table.append((player.name, '{:,}'.format(player.money),
-                  '{:,}'.format(player.total_asset),
-                  None, None, None, None, None))
+                  '{:,}'.format(player.total_asset), None,
+                  None, None,
+                  None, None))
     estates:List[Estate] = cast(List[Estate], player.estates)
     for estate in estates:
-        table.append((None, None, None,
-                      estate.name, estate.current_level,
-                      '抵押' if estate.is_pledged else '正常',
-                      estate.fee,
-                      '{:,}'.format(estate.block_fee)))
+        table.append((None, None,
+                      None, estate.name,
+                      estate.current_level, '抵押' if estate.is_pledged else '正常',
+                      '{:,}'.format(estate.fee), '{:,}'.format(estate.block_fee)))
     projects:List[Project] = cast(List[Project], player.projects)
     for project in projects:
         table.append((None, None,
                       None, project.name,
-                      None, None, None, None))
+                      None, None,
+                      None, None))
     display = tabulate(table, header, showindex='always', tablefmt="grid")
     print(display)
 
