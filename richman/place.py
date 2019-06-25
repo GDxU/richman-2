@@ -83,11 +83,11 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
         '''
         rst = self._subtract_money(player=player_src,
                                    amount=money_delta)
+        self._add_money(player=player_dst,
+                        amount=money_delta)
         if not rst:
             logging.warning('扣钱失败，当前玩家 {} 余额： {} 。'.format(player_src.name, player_src.money))
             return False
-        self._add_money(player=player_dst,
-                        amount=money_delta)
         return True
 
     def _buy(self, buyer: itf.IPlaceForPlayer)->None:
@@ -101,7 +101,8 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
             logging.warning('购买失败，当前玩家 {} 余额 {}。'.format(buyer.name, buyer.money))
             return None
         self.__owner = buyer
-        logging.info('{} 购买地产（项目） {}，花费 {} 元。'.format(buyer.name, self.name, self.buy_value))
+        ev.event_from_place_bought.send(self)
+        logging.debug('{} 购买地产（项目） {}，花费 {} 元。'.format(buyer.name, self.name, self.buy_value))
 
     def _sell(self, seller: itf.IPlaceForPlayer)->None:
         '''remove the owner
@@ -111,6 +112,7 @@ class BasePlace(itf.IPlayerForPlace, itf.IMapForPlace, itf.IPublicForPlace):
         assert seller == self.owner, '该地产（项目）不归 {} 所有，无法变卖！'.format(seller.name)
         assert self.owner is not None, '该地无主，不能卖！'
         self._add_money(seller, self.sell_value)
+        ev.event_from_place_sold.send(self)
         logging.info('{} 变卖地产（项目） {}，获得 {} 元。'.format(self.owner.name, self.name, self.sell_value))
         self.__owner = None
 
@@ -236,7 +238,6 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         :param buyer: buyer to buy the place
         '''
         super()._buy(buyer)
-        ev.event_from_estate_bought.send(self)
 
     def _sell(self, seller: itf.IPlaceForPlayer)->None:
         '''override, override, remove the owner
@@ -246,7 +247,6 @@ class Estate(BasePlace, itf.IMapForEstate, itf.IPlayerForEstate):
         super()._sell(seller)
         self.__current_level = 0
         self.__is_pledged = False
-        ev.event_from_estate_sold.send(self)
 
     def _upgrade(self, player: itf.IEstateForPlayer)->None:
         '''upgrade estate

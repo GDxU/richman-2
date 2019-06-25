@@ -93,7 +93,6 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
 
     def _dice(self)->int:
         dice_num = self._dice_random()
-        logging.info('{} 掷出 {} 点。'.format(self.name, dice_num))
         return dice_num
 
     def _remove_place(self, places: List[itf.IPlayerForPlace])->None:
@@ -324,7 +323,10 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
             self.pos = pos_in_queue
         else:
             self._make_decision_before_dice_start()
-            self.pos += self._dice()
+            dice_num = self._dice()
+            logging.debug('{} 掷出 {} 点！'.format(self.name, dice_num))
+            self.pos += dice_num
+            ev.event_from_player_after_dice.send(self, dice_num=dice_num)
         pos_after_turn = self.pos
         # check if the player passes the start line
         assert self.map is not None
@@ -341,7 +343,7 @@ class BasePlayer(itf.IGameForPlayer, itf.IMapForPlayer,
         '''
         assert self.map is not None
         item:itf.IMapForItem = self.map.items[self.pos]
-        logging.info('{} 走到 {}。'.format(self.name, item.name))
+        logging.debug('{} 走到 {}。'.format(self.name, item.name))
         item.trigger(self)
 
     def __eq__(self, obj):
@@ -511,7 +513,7 @@ class PlayerPersonCommandLine(BasePlayer):
             if choose is None:
                 return None
             if not (euqal_or_bigger_than <= choose < less_than):
-                logging.info('序号超出范围，请重新输入！')
+                print('序号超出范围，请重新输入！')
                 continue
             else:
                 return choose
@@ -532,10 +534,10 @@ class PlayerPersonCommandLine(BasePlayer):
         :return:
         '''
         table:List[List[str]] = []
-        header:List[str] = ['序号', '名称', '归属', '购买费用', '升级费用', '状态']
+        header:List[str] = ['序号', '名称', '归属', '等级', '购买费用', '升级费用', '状态']
         for index, estate in enumerate(estates):
             table.append(['{}'.format(index), estate.name, estate.owner.name if estate.owner else None,
-                          estate.buy_value, estate.upgrade_value,
+                          estate.current_level, estate.buy_value, estate.upgrade_value,
                           '正常' if not estate.is_pledged else '抵押'])
         ev.event_to_display_list_of_dict.send(self, table=table, header=header)
         return self.__get_input_num(len(estates))
@@ -593,7 +595,7 @@ class PlayerPersonCommandLine(BasePlayer):
     def __pledge_for_money(self)->None:
         '''pledge for money
         '''
-        logging.info('抵押地产操作：')
+        print('抵押地产操作：')
         estates_not_pledged = [estate for estate in self.estates
                                 if not estate.is_pledged]
         index = self.__display_place_and_return_index(estates_not_pledged)
@@ -607,7 +609,7 @@ class PlayerPersonCommandLine(BasePlayer):
 
         :param places: list of IPlayerForPlace
         '''
-        logging.info('变卖土地操作：')
+        print('变卖土地操作：')
         index = self.__display_place_and_return_index(places)
         if index is None:
             return None
@@ -629,16 +631,16 @@ class PlayerPersonCommandLine(BasePlayer):
         '''make money my pledging or selling,
         to make player's money more than zero
         '''
-        logging.info('现金不足！')
+        print('现金不足！')
         make_money_ways = {'抵押地产': self.__pledge_for_money,
                             '变卖地产': self.__sell_estate_for_money,
                             '变卖项目': self.__sell_project_for_money}
         make_money_ways_keys = list(make_money_ways.keys())
         while self.money < 0 and (self.estates or self.projects):
-            logging.info('当前现金：{}元，选择变现方式：'.format(self.money))
+            print('当前现金：{}元，选择变现方式：'.format(self.money))
             index = self.__display_str_and_return_index(make_money_ways_keys)
             if index is None:
-                logging.info('输入必须是数字！')
+                print('输入必须是数字！')
                 continue
             way = make_money_ways_keys[index]
             make_money_ways[way]()
@@ -656,7 +658,7 @@ class PlayerPersonCommandLine(BasePlayer):
         '''
         if self.money < place.buy_value:
             return False
-        logging.info('是否购买{}？\n0：不，1：是'.format(place.name))
+        print('是否购买{}？\n0：不，1：是'.format(place.name))
         return self.__get_input_bool()
 
     def _make_decision_upgrade(self, estate: itf.IPlayerForEstate)->bool:
@@ -669,7 +671,7 @@ class PlayerPersonCommandLine(BasePlayer):
             return False
         if self.money < estate.upgrade_value:
             return False
-        logging.info('是否升级{}？\n0：不，1：是'.format(estate.name))
+        print('是否升级{}？\n0：不，1：是'.format(estate.name))
         return self.__get_input_bool()
 
     def _make_decision_jump_to_estate(self)->Optional[int]:
@@ -677,9 +679,9 @@ class PlayerPersonCommandLine(BasePlayer):
 
         :return: position of estate to jump
         '''
-        logging.info('是否跳到其他地产？\n0：不，1：是')
+        print('是否跳到其他地产？\n0：不，1：是')
         if self.__get_input_bool():
-            logging.info('跳转操作：')
+            print('跳转操作：')
             assert self.map is not None
             estates = [item for item in self.map.items
                         if isinstance(item, itf.IPlayerForEstate)]
@@ -697,9 +699,9 @@ class PlayerPersonCommandLine(BasePlayer):
 
         :return: estate to upgrade, or None for not upgrade
         '''
-        logging.info('是否升级任意地产？\n0：不，1：是')
+        print('是否升级任意地产？\n0：不，1：是')
         if self.__get_input_bool():
-            logging.info('升级操作：')
+            print('升级操作：')
             estates = [estate for estate in self.estates
                         if not estate.is_level_max and self.money > estate.upgrade_value]
             index = self.__display_place_and_return_index(estates)
@@ -717,9 +719,9 @@ class PlayerPersonCommandLine(BasePlayer):
                             if estate.is_pledged]
         if not estate_pledged:
             return None
-        logging.info('是否赎回任意地产？\n0：不，1：是')
+        print('是否赎回任意地产？\n0：不，1：是')
         if self.__get_input_bool():
-            logging.info('赎回地产操作：')
+            print('赎回地产操作：')
             estates = [estate for estate in self.estates
                         if estate.is_pledged]
             index = self.__display_place_and_return_index(estates)
@@ -728,14 +730,13 @@ class PlayerPersonCommandLine(BasePlayer):
             ev.event_to_estate_rebuy.send(self, estate=estates[index])
 
     def _dice(self)->int:
-        logging.info('按回车掷骰子或输入筛子数。')
+        print('按回车掷骰子或输入筛子数。')
         assert self.map is not None
         map_length = len(self.map)
         dice_num = self.__get_input_num(euqal_or_bigger_than=-map_length,
                                         less_than=map_length)
         if dice_num is None:
             dice_num = self._dice_random()
-        logging.info('{} 掷出 {} 点！'.format(self.name, dice_num))
         return dice_num
 
 
