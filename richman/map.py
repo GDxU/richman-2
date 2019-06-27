@@ -178,3 +178,6 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
 
     def __len__(self):
         return len(self.items)
+
+    def __str__(self):
+        return 'round %i' % self.round

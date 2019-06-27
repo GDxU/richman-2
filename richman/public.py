@@ -36,6 +36,9 @@ class BasePublic(itf.IMapForPublic,  itf.IPlayerForPublic):
     def __eq__(self, obj):
         return self.name == obj.name
 
+    def __str__(self):
+        return self.name
+
 
 class PublicStart(BasePublic):
     def __init__(self, name: str, pos_in_map: int)->None:

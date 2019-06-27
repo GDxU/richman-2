@@ -48,6 +48,9 @@ event_from_player_block_before_turn = _events.signal("event-from-player-block-be
 event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")
 
 
+# event to game
+event_to_game_rollback = _events.signal("event-to-game-rollback")
+
 # event to player
 event_to_player_add_money = _events.signal("event-to-player-add-money")
 event_to_player_move_to = _events.signal("event-to-player-move-to")

@@ -703,7 +703,7 @@ class ProjectSewerage(Project):
         '''override, init
         '''
         super().__init__(name=name,
-                         buy_value=3000,
+                         buy_value=3500,
                          sell_value=3000,
                          pos_in_map=pos_in_map)
 

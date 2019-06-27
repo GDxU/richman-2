@@ -734,9 +734,14 @@ class PlayerPersonCommandLine(BasePlayer):
         assert self.map is not None
         map_length = len(self.map)
         dice_num = self.__get_input_num(euqal_or_bigger_than=-map_length,
-                                        less_than=map_length)
+                                        less_than=1000)
         if dice_num is None:
             dice_num = self._dice_random()
+        elif dice_num == 999:
+            print('rollback step selection')
+            step = self.__get_input_num(euqal_or_bigger_than=1,
+                                        less_than=5)
+            ev.event_to_game_rollback.send(self, rounds=step)
         return dice_num
 
 
