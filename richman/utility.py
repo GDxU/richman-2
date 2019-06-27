@@ -129,22 +129,23 @@ class MapTopology:
     '''descriptoin of topology for the map
     '''
     
-    def __init__(self, map)->None:
+    def __init__(self, name, map=None, **kwargs)->None:
+        '''
+        :param map: map obj to build the map topology
+        '''
+        self.name = name
+        if map:
+            self._build_from_map(map)
+        else:
+            self.turn_points = kwargs['turn_points']
+            self.map_len = kwargs['map_len']
         self.__pre_pos = 0
         self.__current_pos = 0
-        self._build_map_topo(map)
 
-    def _build_map_topo(self, map):
-        self.name = 'Map Testing'
-        # init turn_points
-        # None means divert to anywhere
-        # treat it as -1 when calculating within a process
-        self.turn_points: Dict[int, int] =\
-            {13: None,
-             23: 10,
-             24: None,
-             33: None}
-        self.map_len = 40
+    def _build_from_map(self, map)->None:
+        raise NotImplementedError()
+        # self.turn_points = None
+        # self.map_len = None
 
     @property
     def pos(self):
@@ -159,15 +160,22 @@ class MapTopology:
         self.__pre_pos += step
         self.__pre_pos = self.__pre_pos % self.map_len
         self.__current_pos = self.__pre_pos
-        self.divert()  # divert if at the turn_points
+        logging.debug('go to {}.'.format(self.__current_pos))
+        # divert if at the turn_points
+        self.__pre_pos = self.divert(self.__current_pos)
         return self.__current_pos
 
-    def divert(self)->None:
+    def divert(self, current_pos: int)->int:
         '''divert if the pos stands at turn_point
+
+        :param current_pos: current position
         '''
-        if self.__pre_pos in self.turn_points:
-            pos_dst = self.turn_points[self.__pre_pos]
-            self.__pre_pos = pos_dst if pos_dst else -1
+        if current_pos in self.turn_points:
+            pos_dst = self.turn_points[current_pos]
+            logging.debug('divert from {} to {}.'.format(current_pos, pos_dst))
+            return pos_dst if pos_dst else -1
+        else:
+            return current_pos
 
     def __len__(self)->int:
         return self.map_len
@@ -192,9 +200,10 @@ class MapStatistics:
         :param rounds: the number of rounds to test
         '''
         random.seed(datetime.datetime.now())
-        rsts:list = [0 for _ in range(len(self.map_topo))]
+        rsts = [0 for _ in range(len(self.map_topo))]
         for _ in range(rounds):
             dice_num = random.randrange(1,dice_max+1)
+            logging.debug('dice {}.'.format(dice_num))
             pos = self.map_topo.go(step=dice_num)
             rsts[pos] += 1
         return [rst/rounds for rst in rsts]
