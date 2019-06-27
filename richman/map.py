@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 '''map
 '''
-from typing import Any, List, Dict, Optional, cast
+from typing import Any, List, Dict, Optional, Iterator, cast
 import logging
 import pickle
 import os
@@ -109,39 +109,50 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
             pickle.dump(map, f)
 
     def _display_players_info(self)->None:
-        logging.info('\n参赛者信息：')
+        logging.debug('\n参赛者信息：')
         for player in self.players:
-            logging.info('{}'.format(player))
+            logging.debug('{}'.format(player))
 
-    def _remove_players_banckrupted(self,
-                                    players_banckrupted: List[itf.IMapForPlayer])->None:
-        '''remove current player from __players_in_game list
-
-        :param players_banckrupted: list of banckrupted player
+    def _remove_players_banckrupted(self)->None:
+        '''remove banckrupted player from __players_in_game list
         '''
-        for player in players_banckrupted:
-            self.__players_in_game.remove(player)
+        for player in self.players_banckrupted:
+            if player in self.players_in_game:
+                self.__players_in_game.remove(player)
 
-    def _player_action(self, player: itf.IMapForPlayer)->None:
+    def run_one_player_turn(self)->bool:
+        '''run one player's turn
+
+        :return: False if all players has done the turn
+        '''
+        # pick the current player
+        player = self.players_in_game[self.__current_player_index]
+        # play the turn
+        logging.debug('\n{}：'.format(player.name))
         player.take_the_turn()
+        if player.is_banckrupted:
+            logging.info('{} 破产。'.format(player.name))
+            self.__players_banckrupted.append(player)
+        # move to next player
+        self.__current_player_index += 1
+        # if all players are done, do the remove operation
+        if self.__current_player_index >= len(self.players_in_game):
+            self.__current_player_index = 0
+            self._remove_players_banckrupted()
+            return False
+        else:
+            return True
 
     def _run_one_round(self)->None:
         '''run one round of the map, which means every player run once
 
         :note: banckrupted players is remove from players list
         '''
-        logging.info('\n\n第 {} 回合开始：'.format(self.round))
+        logging.debug('\n\n第 {} 回合开始：'.format(self.round))
         self._display_players_info()
         ev.event_from_map_start_round.send(self)
-        players_banckrupted = []
-        for player in self.players_in_game:
-            logging.info('\n{}：'.format(player.name))
-            self._player_action(player)
-            if player.is_banckrupted:
-                logging.info('{} 破产。'.format(player.name))
-                players_banckrupted.append(player)
-        self._remove_players_banckrupted(players_banckrupted)
-        self._display_players_info()
+        while self.run_one_player_turn():
+            pass
         self.__round_cnt += 1
         ev.event_from_map_finish_round.send(self)
 
@@ -152,7 +163,9 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         '''
         self._run_one_round()
         if self.winner:
+            ev.event_from_map_finish.send(self)
             logging.info('{} 获得比赛胜利！'.format(self.winner.name))
+            self._display_players_info()
             return False
         else:
             return True
@@ -165,3 +178,6 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
 
     def __len__(self):
         return len(self.items)
+
+    def __str__(self):
+        return 'round %i' % self.round

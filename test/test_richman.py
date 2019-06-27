@@ -13,5 +13,5 @@ class TestRichMan(unittest.TestCase):
         pass
 
     def test_run_the_game_should_not_raise_exceptions(self):
-        for _ in range(50):
+        for _ in range(10):
             run_the_game.main(log_on=False)
