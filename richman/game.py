@@ -53,6 +53,7 @@ class BaseGame:
         '''
         while True:
             try:
+                logging.debug('the map state is:\n%s' % self.map)
                 if not self.map.run_one_round():
                     break
             except util.RollbackException as err:

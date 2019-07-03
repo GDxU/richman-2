@@ -3,8 +3,7 @@
 '''
 from typing import Any, List, Dict, Callable, Optional, Iterable, Deque, cast
 import logging
-from copy import copy
-from copy import deepcopy
+from copy import copy, deepcopy
 from uuid import uuid4
 from collections import deque
 import random
@@ -12,7 +11,7 @@ import datetime
 
 
 class RollbackException(RuntimeError):
-    '''occurs when rollback
+    '''occurs when roll back
     '''
     pass
 
@@ -28,7 +27,7 @@ def _memento(obj: object, deep:bool = False)->Callable:
     def restore()->None:
         obj.__dict__.clear()
         obj.__dict__.update(state)
-        logging.debug('obj to rollback: {}'.format(obj))
+        logging.debug('obj to roll back: {}'.format(obj))
 
     return restore
 
@@ -44,7 +43,7 @@ class Transaction:
 
         :param deep: if deep copy
         :param objs: list of object to use memento
-        :param rollback_len: the max rollback length
+        :param rollback_len: the max roll back length
         :param uid: unique id of the transction
         '''
         if not isinstance(objs, list):
@@ -71,23 +70,29 @@ class Transaction:
         self.__copies.append(states)
 
     def rollback(self, step:int = 1)->None:
-        '''rollback state in memento
+        '''roll back state in memento
 
-        :param step: step to rollback
+        :param step: step to roll back
         '''
         assert step >= 1
+        if step > len(self.__copies):
+            logging.warning('only {} steps is availiable, could not roll back {} step.'.format(len(self.__copies), step))
+            return None
         logging.debug('step is %i' % step)
-        logging.warning('%s is now rollbacking...' % self.__uid)
+        logging.warning('%s is now rolling back...' % self.__uid)
         for _ in range(step-1):
             self.__copies.pop()
         states = self.__copies.pop()
         for state in states:
             state()
 
+    def __len__(self):
+        return len(self.__copies)
+
 
 class Transactional:
     """Adds transactional semantics to methods. Methods decorated  with
-    @Transactional will rollback to entry-state upon exceptions.
+    @Transactional will roll back to entry-state upon exceptions.
 
     example:
 
@@ -104,7 +109,7 @@ class Transactional:
         @Transactional
         def do_stuff(self):
             self.value = '1111'  # <- invalid value
-            self.increment()  # <- will fail and rollback automativly
+            self.increment()  # <- will fail and roll back automativly
     """
 
     def __init__(self, method: Callable):

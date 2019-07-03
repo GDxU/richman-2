@@ -72,10 +72,10 @@ def main(log_on:bool = False, text_log_on:bool = True)->None:
     # game
     game = Game(map, players, cmdline)
     # do something cheat
-    set_estate_owner(map, dengyanxiu, '钓鱼岛', 1)
+    set_estate_owner(map, dengyanxiu, '钓鱼岛', 0)
     # set_estate_owner(map, dengzhe, '长沙', 1)
     # set_estate_owner(map, rongping, '杭州', 1)
-    set_estate_owner(map, limingzhe, '三亚', 1)
+    set_estate_owner(map, limingzhe, '三亚', 0)
     # start
     game.run()
 

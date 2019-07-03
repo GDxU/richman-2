@@ -180,4 +180,5 @@ class BaseMap(itf.IPlayerForMap, itf.IGameForMap):
         return len(self.items)
 
     def __str__(self):
-        return 'round %i' % self.round
+        items_str = str(['%s' % item for item in self.items])
+        return 'round %i with items:\n%s' % (self.round, items_str)

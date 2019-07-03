@@ -4,7 +4,9 @@ import unittest
 from unittest.mock import MagicMock
 
 import richman.event as ev
-from richman.player import BasePlayer
+from richman.player import BasePlayer, PlayerSimple
+import richman.utility as util
+import richman.interface as itf
 
 
 class TestBasePlayer(unittest.TestCase):
@@ -12,7 +14,7 @@ class TestBasePlayer(unittest.TestCase):
     def setUp(self):
         map = MagicMock()
         map.__len__.return_value = 10
-        self.player = BasePlayer(name='Hangzhou', money=10000)
+        self.player = BasePlayer(name='dengzhe', money=10000)
         self.player.add_map(map)
 
     def tearDown(self):
@@ -45,7 +47,40 @@ class TestBasePlayer(unittest.TestCase):
 class TestPlayerSimple(unittest.TestCase):
 
     def setUp(self):
-        pass
+        map = MagicMock()
+        map.__len__.return_value = 10
+        self.player = PlayerSimple(name='dengzhe', money=10000)
+        self.player.add_map(map)
+        estate1 = MagicMock(spec=itf.IPlayerForEstate)
+        estate1.name = 'e1'
+        estate1.buy_value = 10
+        estate1.owner = None
+        estate1.pos_in_map = 0
+        BasePlayer._BasePlayer__event_handler_buy_decision(estate1, self.player)
     
     def tearDown(self):
         pass
+
+    def test_player_should_rollback_correctly(self):
+        self.assertEqual(self.player.estates[0].name, 'e1')
+        mementos = util.Transaction(False, self.player, 5, 'player memento')
+        estate2 = MagicMock(spec=itf.IPlayerForEstate)
+        estate2.name = 'e2'
+        estate2.buy_value = 10
+        estate2.owner = None
+        estate2.pos_in_map = 1
+        BasePlayer._BasePlayer__event_handler_buy_decision(estate2, self.player)
+        mementos.commit()
+        estate3 = MagicMock(spec=itf.IPlayerForEstate)
+        estate3.name = 'e3'
+        estate3.buy_value = 10
+        estate3.owner = None
+        estate3.pos_in_map = 2
+        BasePlayer._BasePlayer__event_handler_buy_decision(estate3, self.player)
+        mementos.commit()
+        self.assertEqual(len(mementos), 3)
+        self.assertListEqual([estate.name for estate in self.player.estates], ['e1', 'e2', 'e3'])
+        # roll back
+        mementos.rollback(step=3)
+        self.assertEqual(len(mementos), 0)
+        self.assertListEqual([estate.name for estate in self.player.estates], ['e1'])

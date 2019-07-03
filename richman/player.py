@@ -740,7 +740,7 @@ class PlayerPersonCommandLine(BasePlayer):
         elif dice_num == 999:
             print('rollback step selection')
             step = self.__get_input_num(euqal_or_bigger_than=1,
-                                        less_than=5)
+                                        less_than=6)
             ev.event_to_game_rollback.send(self, rounds=step)
         return dice_num
 
