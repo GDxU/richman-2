@@ -1,91 +1,75 @@
 # -*- coding: utf-8 -*
-'''事件类，处理全局事件
+'''事件类
 '''
-import logging
+from typing import Any, List, Tuple, Optional
+
+from blinker import Namespace  # type: ignore
 
 
-class BaseEvent:
+def check_event_result_is_true(results: List[Tuple[Any, Optional[bool]]])->bool:
+    '''check whether any result of the event returns True
 
-    def __init__(self, event_name: str):
-        '''init
-        
-        :param event_name: name of event, str
-        '''
-        self.__event_name = event_name
-
-    @property
-    def event_name(self):
-        return self.__event_name
+    :param results: results of event, with struct of [(function, rst)]
+    :return: True if any of results is True
+    '''
+    for _, rst in results:
+        if rst:
+            return True
+    else:
+        return False
 
 
-class EventManager:
+_events = Namespace()
 
-    def __init__(self):
-        self.__handlers_dict = {}  # struct: {event_name1: [handler1, handler2, ...],
-                                   #          event_name2: [handler1, handler2, ...], ...}
+# event from map
+event_from_map_finish = _events.signal("event-from-game-finish")
+event_from_map_start_round = _events.signal("event-from-map-start-round")
+event_from_map_finish_round = _events.signal("event-from-map-finish-round")
 
-    @property
-    def handlers_dict(self):
-        return self.__handlers_dict
+# event from place
+event_from_place_bought = _events.signal("event-from-place-bought")
+event_from_place_sold = _events.signal("event-from-place-sold")
 
-    def __event_process(self, event: BaseEvent):
-        '''process event
-        
-        :param event: the event to process
-        '''
-        if event.event_name in self.__handlers_dict:
-            for handler in self.__handlers_dict[event.event_name]:
-                handler(event)
+# event from estate
+event_from_estate_upgraded = _events.signal("event-from-estate-upgraded")
+event_from_estate_degraded = _events.signal("event-from-estate-degraded")
+event_from_estate_pledged = _events.signal("event-from-estate-pledged")
+event_from_estate_rebought = _events.signal("event-from-estate-rebought")
 
-    def _add_listener(self, event_name: str, handler):
-        '''add handler to the event_name list
+# event from player
+event_from_player_start_turn = _events.signal("event-from-player-start-turn")
+event_from_player_finish_turn = _events.signal("event-from-player-finish-turn")
+event_from_player_after_dice = _events.signal("event-from-player-after-dice")
+event_from_player_pass_start_line = _events.signal("event-from-player-pass-start-line")
+event_from_player_block_before_add_money = _events.signal("event-from-player-block-before-add-money")
+event_from_player_block_before_turn = _events.signal("event-from-player-block-before-turn")
 
-        :param event_name: type of event, str
-        :param handler: handler to process the event
-        '''
-        if event_name not in self.__handlers_dict:
-            self.__handlers_dict[event_name] = []
-        if handler not in self.__handlers_dict[event_name]:
-            self.__handlers_dict[event_name].append(handler)
-            logging.debug('add {} of {} into event manager.'.format(event_name, handler))
+# event from public
+event_from_public_news_or_luck_triggered = _events.signal("event-from-public-news-triggered")
 
-    def add_listeners(self, event_name: str, handlers: list):
-        '''add handler to the event_name list
 
-        :param event_name: type of event, str
-        :param handlers: handlers to process the event
-        '''
-        if not isinstance(handlers, list):
-            handlers = [handlers]
-        for handler in handlers:
-            self._add_listener(event_name, handler)
+# event to game
+event_to_game_rollback = _events.signal("event-to-game-rollback")
 
-    def _remove_listener(self, event_name: str, handler):
-        '''remove handler from the event_name list
+# event to player
+event_to_player_add_money = _events.signal("event-to-player-add-money")
+event_to_player_move_to = _events.signal("event-to-player-move-to")
+event_to_player_buy_place = _events.signal("event-to-player-buy-place")
+event_to_player_upgrade_estate = _events.signal("event-to-player-upgrade-estate")
+event_to_player_jump_to_estate = _events.signal("event-to-player-jump-to-estate")
+event_to_player_upgrade_any_estate = _events.signal("event-to-player-upgrade-any-estate")
 
-        :param event_name: type of event, str
-        :param handler: handler to process the event
-        '''
-        assert event_name in self.__handlers_dict, '没有类型为 {} 的事件。'.format(event_name)
-        self.__handlers_dict[event_name].remove(handler)
-        if not self.__handlers_dict[event_name]:
-            del self.__handlers_dict[event_name]
+# event to place
+event_to_place_buy = _events.signal("event-to-place-buy")
+event_to_place_sell = _events.signal("event-to-place-sell")
 
-    def remove_listeners(self, event_name: str, handlers: list):
-        '''remove handler from the event_name list
+# event to estate
+event_to_estate_upgrade = _events.signal("event-to-estate-upgrade")
+event_to_estate_degrade = _events.signal("event-to-estate-degrade")
+event_to_estate_pledge = _events.signal("event-to-estate-pledge")
+event_to_estate_rebuy = _events.signal("event-to-estate-rebuy")
 
-        :param event_name: type of event, str
-        :param handlers: handlers to process the event
-        '''
-        if not isinstance(handlers, list):
-            handlers = [handlers]
-        for handler in handlers:
-            self._remove_listener(event_name, handler)
+# event to project
 
-    def send(self, event: BaseEvent):
-        '''send the event to handlers
-
-        :param event: the event to send
-        '''
-        self.__event_process(event)
-
+# event to display
+event_to_display_list_of_dict = _events.signal("event-to-display-list-of-dict")

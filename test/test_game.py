@@ -9,27 +9,15 @@ from richman.game import Game
 class TestBaseGame(unittest.TestCase):
 
     def setUp(self):
-        map = MagicMock()
-        self.player1 = MagicMock()
-        self.player1.name = '邓哲'
-        self.player1.is_banckrupted = False
-        self.player1.play = MagicMock()
-        self.player2 = MagicMock()
-        self.player2.name = '戎萍'
-        self.player2.is_banckrupted = False
-        self.player2.play = MagicMock()
-        players = [self.player1, self.player2]
-        self.game = Game(map, players)
+        self.map = MagicMock()
+        self.map.add_players = MagicMock()
+        self.game = Game(self.map, None)
 
     def tearDown(self):
         pass
 
-    def test_run_should_finish_when_all_players_banckrupted(self):
-        self.game._run_one_step()
-        self.player1.play.assert_called_once()
-        self.player2.play.assert_called_once()
-
-        self.player1.is_banckrupted = True
-        self.game._run_one_step()
-        self.assertEqual(len(self.game.players_in_game), 1)
-        self.assertEqual(self.game.players_in_game[0].name, '戎萍')
+    def test_run_should_finish_when_only_one_player_is_left(self):
+        self.map.run_one_round = MagicMock()
+        self.map.run_one_round.side_effect = [True, True, False]
+        self.game.run()
+        self.assertEqual(self.map.run_one_round.call_count, 3)
