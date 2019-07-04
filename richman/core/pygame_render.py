@@ -3,8 +3,8 @@
 '''
 from typing import Any, List
 
-import pygame
-import richman.core.esper as esper
+import pygame  # type: ignore
+import richman.lib.esper as esper  # type: ignore
 
 import richman.core.component as compo
 

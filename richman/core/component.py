@@ -4,7 +4,7 @@
 from typing import Any, List
 import abc
 
-import richman.core.esper as esper
+import richman.lib.esper as esper  # type: ignore
 
 
 class Player:

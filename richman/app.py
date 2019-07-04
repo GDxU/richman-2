@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 '''main app
 '''
-import pygame
-import richman.core.esper as esper
+import pygame  # type: ignore
+import richman.lib.esper as esper  # type: ignore
 
 import richman.core.component as compo
 import richman.core.processor as proc

@@ -3,7 +3,7 @@
 '''
 from typing import Any, List, Type
 
-import richman.core.esper as esper
+import richman.lib.esper as esper  # type: ignore
 
 import richman.core.component as compo
 
