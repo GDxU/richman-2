@@ -10,11 +10,8 @@ import richman.core.component as compo
 
 
 class Renderable:
-    def __init__(self, image: pygame.Surface,
-                 x: int, depth:int = 0):
+    def __init__(self, image: pygame.Surface):
         self.image = image
-        self.depth = depth
-        self.x = x
         self.w = image.get_width()
         self.h = image.get_height()
 
@@ -24,12 +21,14 @@ class ProcessorRender(esper.Processor):
         self.window = window
         self.clear_color = clear_color
 
-    def process(self):
+    def process(self, time_dt: float):
         # Clear the window:
         self.window.fill(self.clear_color)
         # This will iterate over every Entity that has this Component, and blit it:
-        for _, rend in self.world.get_component(Renderable):
-            self.window.blit(rend.image, (rend.x, 0.5*rend.w))
+        entities = self.world.get_components(Renderable,
+                                             compo.Position)
+        for _, (render, position) in entities:
+            self.window.blit(render.image, (position.pos_x, position.pos_y))
         # Flip the framebuffers
         pygame.display.flip()
 
